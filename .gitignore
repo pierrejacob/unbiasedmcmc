@@ -1,0 +1,12 @@
+*.txt
+*.tex
+.*.swp
+.DS_Store
+TODO
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+src/*.o
+src/*.so
+src/*.dll
