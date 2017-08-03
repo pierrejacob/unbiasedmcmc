@@ -4,6 +4,11 @@
 
 # from coupled_chains -----------------------------------------------------
 # Run coupled chains until max(tau, K) where tau is the meeting time and K specified by user
+#'@rdname coupled_chains
+#'@title Coupled MCMC chains
+#'@description sample two MCMC chains, each following 'single_kernel' marginally,
+#' and 'coupled_kernel' jointly, until min(max(tau, K), max_iterations), where tau
+#' is the first time the two chains meet. Or more precisely, they meet with a delay of one, i.e. X_t = Y_{t-1}.
 #'@export
 coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., K = 1, max_iterations = Inf){
   chain_state1 <- rinit()
@@ -60,6 +65,11 @@ coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., K = 1, max
 ## function to continue coupled chains until step K
 ## c_chain should be the output of coupled_chains
 ## and K should be more than c_chain$iteration, otherwise returns c_chain
+#'@rdname continue_coupled_chains
+#'@title Continue coupled MCMC chains up to K steps
+#'@description ## function to continue coupled chains until step K
+#' c_chain should be the output of coupled_chains
+#' and K should be more than c_chain$iteration, otherwise returns c_chain
 #'@export
 continue_coupled_chains <- function(c_chain, single_kernel, K = 1, ...){
   if (K <= c_chain$iteration){
@@ -87,6 +97,13 @@ continue_coupled_chains <- function(c_chain, single_kernel, K = 1, ...){
 
 # from h_bar --------------------------------------------------------------
 
+#'@rdname H_bar
+#'@title Compute unbiased estimators from coupled chains
+#'@description Compute the proposed unbiased estimators, for each of the element
+#'in the list 'c_chains'. The integral of interest is that of the function h,
+#'which can be multivariate. The estimator uses the variance reduction technique
+#'whereby the estimator is the MCMC average between times k and K, with probability
+#'going to one as k increases.
 #'@export
 H_bar <- function(c_chains, h = function(x) x, k = 0, K = 1){
   maxiter <- c_chains$iteration

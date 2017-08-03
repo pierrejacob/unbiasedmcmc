@@ -1,4 +1,7 @@
 ## create histogram
+#'@rdname histogram_c_chains
+#'@title histogram_c_chains
+#'@description Compute histograms based on coupled Markov chains
 #'@export
 histogram_c_chains <- function(c_chains, component, k, K, breaks = NULL, nclass = 30){
   nsamples <- length(c_chains)

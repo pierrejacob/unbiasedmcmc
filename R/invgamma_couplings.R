@@ -1,15 +1,25 @@
+#'@rdname digamma
+#'@title compute log-density of inverse gamma
+#'@description at x > 0 and with given parameters alpha, beta
 #'@export
 digamma <- function(x, alpha, beta){
   return(alpha * log(beta) - lgamma(alpha) - (alpha+1) * log(x) - beta / x)
 }
 
+#'@rdname rigamma
+#'@title Sample from inverse gamma
+#'@description with given parameters alpha, beta
 #'@export
 rigamma <- function(n, alpha, beta){
   return(1/rgamma(n = n, shape = alpha, rate = beta))
 }
 
+#'@rdname rigamma_coupled
+#'@title Sample from coupled inverse gamma
+#'@description with given parameters alpha, beta1, beta2
 #'@export
 rigamma_coupled <- function(alpha, beta1, beta2){
+  # note: check below is unnecessary
   if (beta1 < beta2){
     Z <- rigamma(1, alpha, beta1)
     logratio <- -(beta2 - beta1) / Z
@@ -28,6 +38,10 @@ rigamma_coupled <- function(alpha, beta1, beta2){
     }
   }
 }
+
+#'@rdname rigamma_transport_coupled
+#'@title Sample from transport coupled inverse gamma
+#'@description with given parameters alpha, beta1, beta2
 #'@export
 rigamma_transport_coupled <- function(alpha, beta1, beta2){
   u <- runif(1)

@@ -193,26 +193,3 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
-static const R_CallMethodDef CallEntries[] = {
-    {"debiasedmcmc_gaussian_max_couplingC", (DL_FUNC) &debiasedmcmc_gaussian_max_couplingC, 4},
-    {"debiasedmcmc_gaussian_max_coupling_cholesky", (DL_FUNC) &debiasedmcmc_gaussian_max_coupling_cholesky, 6},
-    {"debiasedmcmc_xbeta_", (DL_FUNC) &debiasedmcmc_xbeta_, 2},
-    {"debiasedmcmc_w_rejsamplerC", (DL_FUNC) &debiasedmcmc_w_rejsamplerC, 3},
-    {"debiasedmcmc_estimator_bin", (DL_FUNC) &debiasedmcmc_estimator_bin, 6},
-    {"debiasedmcmc_sigma_", (DL_FUNC) &debiasedmcmc_sigma_, 2},
-    {"debiasedmcmc_m_sigma_function_", (DL_FUNC) &debiasedmcmc_m_sigma_function_, 4},
-    {"debiasedmcmc_rmvnorm", (DL_FUNC) &debiasedmcmc_rmvnorm, 3},
-    {"debiasedmcmc_rmvnorm_cholesky", (DL_FUNC) &debiasedmcmc_rmvnorm_cholesky, 3},
-    {"debiasedmcmc_dmvnorm", (DL_FUNC) &debiasedmcmc_dmvnorm, 3},
-    {"debiasedmcmc_dmvnorm_cholesky_inverse", (DL_FUNC) &debiasedmcmc_dmvnorm_cholesky_inverse, 3},
-    {"debiasedmcmc_beta2e_", (DL_FUNC) &debiasedmcmc_beta2e_, 2},
-    {"debiasedmcmc_cut_in_fifth_", (DL_FUNC) &debiasedmcmc_cut_in_fifth_, 1},
-    {"debiasedmcmc_propensity_module2_loglik2_", (DL_FUNC) &debiasedmcmc_propensity_module2_loglik2_, 5},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_debiasedmcmc(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-}

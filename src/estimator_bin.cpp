@@ -13,7 +13,6 @@ double estimator_bin(List c_chains, int component, double lower, double upper, i
   NumericMatrix samples2 = c_chains["samples2"];
   double estimator = 0;
   for (int isample = k; isample <= K; isample ++){
-    //std::cerr << isample << ":" << samples1(isample,component-1) << std::endl;
     if (samples1(isample,component-1) > lower && samples1(isample,component-1) < upper){
       estimator += 1;
     }

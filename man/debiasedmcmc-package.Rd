@@ -2,8 +2,8 @@
 % Please edit documentation in R/debiasedmcmc-package.R
 \docType{package}
 \name{debiasedmcmc-package}
-\alias{debiasedmcmc-package}
 \alias{debiasedmcmc}
+\alias{debiasedmcmc-package}
 \title{debiasedmcmc}
 \description{
 ...
@@ -15,3 +15,4 @@
 Pierre E. Jacob <pierre.jacob.work@gmail.com>, John O'Leary
 }
 \keyword{package}
+

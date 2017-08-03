@@ -9,3 +9,4 @@ setmytheme()
 \description{
 This function customizes the theme used by ggplot.
 }
+

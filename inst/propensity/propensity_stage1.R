@@ -4,11 +4,11 @@ setmytheme()
 rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = detectCores())
-setwd("~/Dropbox/PolyaGammaResults/propensity/")
+setwd("~/Dropbox/PolyaGammaResults/reproduce/")
 #
 
 # Generate data
-n <- 1000 # number of observations
+n <- 100 # number of observations
 p <- 6 # number of covariates
 ## create covariates
 X <- fast_rmvnorm(n, rep(0, p), diag(1, nrow = p, ncol = p))
@@ -21,8 +21,10 @@ B <- diag(50, p, p); B[1,1] <- 800
 # precompute some quantities useful both for the Polya-Gamma sampler
 # and for the unbiased estimators
 logistic_setting <- logistic_precomputation(Y, X, b, B)
-## Polya-Gamma sampler
+filename <- "propensity.data.RData"
+save(logistic_setting, file = filename)
 
+## Polya-Gamma sampler
 single_kernel <- function(chain_state){
   beta <- chain_state[1:p]
   zs <- abs(xbeta(X, beta))
@@ -54,10 +56,12 @@ coupled_kernel <- function(chain_state1, chain_state2){
 }
 rinit <- function() fast_rmvnorm(1, rep(0, p), diag(1, p, p))
 nsamples <- 1000
+
+filename <- "propensity.stage1.c_chains.RData"
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit)
 }
-
+save(c_chains_, file = filename)
 meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 summary(meetingtime)
 
@@ -65,7 +69,7 @@ x <- as.numeric(names(table(meetingtime)))
 y <- as.numeric(table(meetingtime)) / nsamples
 g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting time") + ylab("proportion")
 g
-ggsave(filename = "propensity.meetingtime.pdf", plot = g, width = 5, height = 5)
+# ggsave(filename = "propensity.meetingtime.pdf", plot = g, width = 5, height = 5)
 
 
 k <- 20
@@ -75,6 +79,8 @@ K <- 5*k
 c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
   continue_coupled_chains(c_chains_[[irep]], single_kernel, K = K)
 }
+save(c_chains_, c_chains_continued_, file = filename)
+
 sum(sapply(c_chains_continued_, function(x) x$iteration))
 
 # histogram

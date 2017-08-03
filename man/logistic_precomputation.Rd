@@ -12,3 +12,4 @@ problem (the vector of outcome Y, covariate matrix X, the prior mean b and the p
 and precomputes some quantities repeatedly used in the Polya-Gamma sampler and variants of it.
 The precomputed quantities are returned in a list, which is then meant to be passed to the samplers.
 }
+

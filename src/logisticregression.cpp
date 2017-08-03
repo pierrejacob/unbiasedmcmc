@@ -43,7 +43,8 @@ NumericMatrix sigma_(const NumericMatrix & X, const NumericVector & w){
 
 // [[Rcpp::export]]
 List m_sigma_function_(const Eigen::Map<Eigen::MatrixXd>  & omega,
-                       const Eigen::Map<Eigen::MatrixXd>  & X, const Eigen::Map<Eigen::MatrixXd>  & invB,
+                       const Eigen::Map<Eigen::MatrixXd>  & X,
+                       const Eigen::Map<Eigen::MatrixXd>  & invB,
                        const Eigen::Map<Eigen::VectorXd>  & KTkappaplusinvBtimesb){
   int n = X.rows();
   int p = X.cols();

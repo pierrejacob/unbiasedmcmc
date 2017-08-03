@@ -1,7 +1,11 @@
 
 # from gaussian_max_coupling ----------------------------------------------
 
-
+#'@rdname gaussian_max_coupling_cholesky_R
+#'@title Maximal coupling of two multivariate Normal distributions
+#'@description sample from maximal coupling of two multivariate Normal distributions,
+#'specified through their means, the Cholesky factors of their covariance matrices,
+#'and the Cholesky factors of the inverse covariance matrices (i.e. the precision matrices)
 #'@export
 gaussian_max_coupling_cholesky_R <- function(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2){
   # we need Cholesky <- chol(Sigma), not the transpose
@@ -12,6 +16,10 @@ gaussian_max_coupling_cholesky_R <- function(mu1, mu2, Cholesky1, Cholesky2, Cho
   return(gaussian_max_coupling_cholesky(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2))
 }
 
+#'@rdname gaussian_max_coupling
+#'@title Maximal coupling of two multivariate Normal distributions
+#'@description sample from maximal coupling of two multivariate Normal distributions,
+#'specified through their means and covariance matrices
 #'@export
 gaussian_max_coupling <- function(mu1, mu2, Sigma1, Sigma2){
   return(gaussian_max_couplingC(mu1, mu2, Sigma1, Sigma2))
@@ -19,6 +27,9 @@ gaussian_max_coupling <- function(mu1, mu2, Sigma1, Sigma2){
 
 # from gaussian_opt_transport ---------------------------------------------
 
+#'@rdname gaussian_opt_transport
+#'@title Optimal transport coupling between two multivariate Normals
+#'@description sample from optimal transport coupling of two multivariate Normal distributions
 #'@export
 gaussian_opt_transport <- function(nsamples, m1, m2,
                                    S1_chol,
