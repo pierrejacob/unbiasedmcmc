@@ -1,19 +1,6 @@
 #include <RcppEigen.h>
 using namespace Rcpp;
 
-// // [[Rcpp::export]]
-// NumericVector xbeta_(const NumericMatrix & X, const NumericVector & beta){
-//   int n = X.rows();
-//   NumericVector xbeta(n);
-//   for (int i = 0; i < n; i++){
-//     xbeta(i) = 0;
-//     for (int j = 0; j < X.cols(); j++){
-//       xbeta(i) = xbeta(i) + X(i,j) * beta(j);
-//     }
-//   }
-//   return(xbeta);
-// }
-
 // [[Rcpp::export]]
 NumericMatrix sigma_(const NumericMatrix & X, const NumericVector & w){
   int n = X.rows();

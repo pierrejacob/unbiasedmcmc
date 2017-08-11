@@ -58,15 +58,16 @@ coupled_kernel <- function(chain_state1, chain_state2){
 rinit <- function() rnorm(1, sd = 2)
 k <- 5
 K <- 20
-# reject <- TRUE
-# c_chain <- list()
-# while(reject){
-#   c_chain <-  coupled_chains(single_kernel, coupled_kernel, rinit, K = K)
-#   reject <- (c_chain$meetingtime != 10)
-# }
-# c_chain$meetingtime
-# save(c_chain, file = "diagram2.RData")
-load("diagram2.RData")
+reject <- TRUE
+c_chain <- list()
+while(reject){
+  c_chain <-  coupled_chains(single_kernel, coupled_kernel, rinit, K = K)
+  reject <- (c_chain$meetingtime != 10)
+}
+c_chain$meetingtime
+save(c_chain, file = "diagram.RData")
+load("diagram.RData")
+
 tau <- c_chain$meetingtime
 tau
 chain1 <- c_chain$samples1[,1]
@@ -81,9 +82,6 @@ g <- g + geom_vline(xintercept = K, linetype = 3)
 g <- g + scale_x_continuous(breaks = c(0, k, tau, K), labels = c("0", TeX("$k = 5$"), TeX("$\\tau = 10$"), TeX("$m = 20$")))
 g <- g + geom_segment(data=data.frame(x = (k+1):tau, xend = (k+1):tau, y = chain2[(k+1):tau], yend = chain1[(k+2):(tau+1)]),
                       aes(x = x, xend = xend, y = y, yend = yend), colour = "grey")
-# g <- g + geom_text(aes(x = tau-2, y = -7, label = paste("tau", sep = "")), size = 7, parse = TRUE)
-# g <- g + geom_text(aes(x = k-2, y = -7, label = paste("k", sep = "")), size = 7, parse = TRUE)
-# g <- g + geom_text(aes(x = K-2, y = -7, label = paste("m", sep = "")), size = 7, parse = TRUE)
 g <- g + geom_text(aes(x = -.1, y = -.5, label = paste("X[t]", sep = "")), size = 10, parse = TRUE)
 g <- g + geom_text(aes(x = 0.7, y = 1.8, label = paste("Y[t-1]", sep = "")), size = 10, parse = TRUE)
 g <- g + geom_text(aes(x = 6, y = chain1[6] - .5*(chain1[6] - chain2[5]), label = paste("Delta[t]", sep = "")), size = 10, parse = TRUE)

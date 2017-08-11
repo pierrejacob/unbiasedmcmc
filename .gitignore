@@ -11,3 +11,4 @@ TODO
 src/*.o
 src/*.so
 src/*.dll
+inst/tutorials/*cache*/

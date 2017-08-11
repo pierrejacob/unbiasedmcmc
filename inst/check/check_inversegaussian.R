@@ -40,23 +40,23 @@ microbenchmark::microbenchmark(rinvgaussian_coupled(mu1, mu2, lambda1, lambda2),
                                rinvgaussian_coupled(mu2, mu1, lambda2, lambda1), times = 10000)
 
 
-xy <- foreach(i = 1:10000) %dorng% {
-  rinvgaussian_coupled_2(mu1, mu2, lambda1, lambda2)
-}
-
-x1 <- sapply(xy, function(x) x[1])
-x2 <- sapply(xy, function(x) x[2])
-quantile(x1, probs = c(0.99))
-hist(x1, prob = TRUE, nclass = 100)
-curve(exp(dinvgaussian(x, mu1, lambda1)), col = "red", add = TRUE)
-quantile(x2, probs = c(0.99))
-hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 100)
-curve(exp(dinvgaussian(x, mu2, lambda2)), col = "red", add = TRUE)
-
-# same cost in both directions
-microbenchmark::microbenchmark(rinvgaussian_coupled_2(mu1, mu2, lambda1, lambda2),
-                               rinvgaussian_coupled_2(mu2, mu1, lambda2, lambda1), times = 10000)
-
+# xy <- foreach(i = 1:10000) %dorng% {
+#   rinvgaussian_coupled_2(mu1, mu2, lambda1, lambda2)
+# }
+#
+# x1 <- sapply(xy, function(x) x[1])
+# x2 <- sapply(xy, function(x) x[2])
+# quantile(x1, probs = c(0.99))
+# hist(x1, prob = TRUE, nclass = 100)
+# curve(exp(dinvgaussian(x, mu1, lambda1)), col = "red", add = TRUE)
+# quantile(x2, probs = c(0.99))
+# hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 100)
+# curve(exp(dinvgaussian(x, mu2, lambda2)), col = "red", add = TRUE)
+#
+# # same cost in both directions
+# microbenchmark::microbenchmark(rinvgaussian_coupled_2(mu1, mu2, lambda1, lambda2),
+#                                rinvgaussian_coupled_2(mu2, mu1, lambda2, lambda1), times = 10000)
+#
 
 
 # ## Faster implementation in C++
