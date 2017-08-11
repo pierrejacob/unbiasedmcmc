@@ -4,7 +4,6 @@ setmytheme()
 rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = detectCores())
-setwd("~/Dropbox/PolyaGammaResults/reproduce/")
 #
 # Plummer example
 # nhpv considered as Y
@@ -75,15 +74,9 @@ get_kernels <- function(theta1, Sigma_proposal){
   Sigma_chol_inv <- t(solve(chol(Sigma_proposal)))
   coupled_kernel <- function(chain_state1, chain_state2){
     distance_ <- mean((chain_state1 - chain_state2)^2)
-    if (distance_ > 5){
-      proposal_value <- gaussian_opt_transport(1, chain_state1, chain_state2, Sigma_chol, Sigma_chol, Sigma_chol_inv, Sigma_chol_inv)[[1]]
-      proposal1 <- proposal_value[,1]
-      proposal2 <- proposal_value[,2]
-    } else {
-      proposal_value <- gaussian_max_coupling(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
-      proposal1 <- proposal_value[,1]
-      proposal2 <- proposal_value[,2]
-    }
+    proposal_value <- gaussian_max_coupling(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
+    proposal1 <- proposal_value[,1]
+    proposal2 <- proposal_value[,2]
     proposal_pdf1 <- target(proposal1)
     proposal_pdf2 <- target(proposal2)
     current_pdf1 <- target(chain_state1)
@@ -108,39 +101,41 @@ get_kernels <- function(theta1, Sigma_proposal){
   return(list(target = target, coupled_kernel = coupled_kernel, single_kernel = single_kernel))
 }
 
+nsamples <- 1000
+theta1s <- sample_module1(nsamples)
+theta1hat <- colMeans(theta1s)
 ##
 dimension <- 2
-Sigma_proposal <- diag(c(1,4), dimension, dimension)
-nsamples <- 500
-theta1s <- sample_module1(nsamples)
+Sigma_proposal <- diag(c(1,1), dimension, dimension)
 rinit <- function() fast_rmvnorm(1, mean = c(0, 0), diag(1, dimension, dimension))[1,]
 
-filename <- "plummer.results.RData"
+filename <- "plummer.tuning.RData"
+kernels <- get_kernels(theta1hat, Sigma_proposal)
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  theta1 <- theta1s[irep,]
-  kernels <- get_kernels(theta1, Sigma_proposal)
+  # theta1 <- theta1s[irep,]
   single_kernel <- kernels$single_kernel
   coupled_kernel <- kernels$coupled_kernel
   coupled_chains(single_kernel, coupled_kernel, rinit)
 }
 save(c_chains_, file = filename)
 load(file = filename)
-# meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
-# summary(meetingtime)
+meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+summary(meetingtime)
 # hist(meetingtime)
 
-# ##
-K <- 1000
+k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
+K <- 2*k
+
+#
+# K <- 1000
 c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
-  theta1 <- theta1s[irep,]
-  kernels <- get_kernels(theta1, Sigma_proposal)
   single_kernel <- kernels$single_kernel
   continue_coupled_chains(c_chains_[[irep]], single_kernel, K = K)
 }
-save(c_chains_, c_chains_continued_, file = filename)
+save(nsamples, k, K, c_chains_, c_chains_continued_, file = filename)
 load(file = filename)
 #
-k <- 500
+# k <- 500
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
   H_bar(c_chains_continued_[[irep]], k = k, K = K)
@@ -163,57 +158,65 @@ for (component in 1:dimension){
 }
 
 Sigma_proposal <- diag(est_var, dimension, dimension)
-# Sigma_proposal[1,2] <- Sigma_proposal[2,1] <- -0.3
-nsamples <- 5000
+print(Sigma_proposal)
+
+
+filename <- "plummer.results.RData"
+nsamples <- 10000
+
 theta1s <- sample_module1(nsamples)
 dimension <- 2
 rinit <- function() fast_rmvnorm(1, mean = est_mean, Sigma_proposal)[1,]
-c_chains_2 <-  foreach(irep = 1:nsamples) %dorng% {
+c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   theta1 <- theta1s[irep,]
   kernels <- get_kernels(theta1, Sigma_proposal)
   single_kernel <- kernels$single_kernel
   coupled_kernel <- kernels$coupled_kernel
   coupled_chains(single_kernel, coupled_kernel, rinit)
 }
-save(c_chains_, c_chains_continued_, c_chains_2, file = filename)
+save(nsamples, c_chains_, file = filename)
 load(filename)
-meetingtime <- sapply(c_chains_2, function(x) x$meetingtime)
-# summary(meetingtime)
+meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+summary(meetingtime)
 # sum(sapply(c_chains_2, function(x) x$iteration))
 # hist(meetingtime)
 
-x <- as.numeric(names(table(meetingtime)))
-y <- as.numeric(table(meetingtime)) / nsamples
-g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting time") + ylab("proportion")
+# x <- as.numeric(names(table(meetingtime)))
+# y <- as.numeric(table(meetingtime)) / nsamples
+# g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting time") + ylab("proportion")
+# g
+g <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("proportion")
 g
+ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 5, height = 5)
 
-ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 7, height = 7)
 
-k <- 200
-K <- 5*k
-
+k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
+K <- 10*k
+# nsamples <- 1000
 # ##
-c_chains_continued_2 <-  foreach(irep = 1:nsamples) %dorng% {
+c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
   theta1 <- theta1s[irep,]
   kernels <- get_kernels(theta1, Sigma_proposal)
   single_kernel <- kernels$single_kernel
-  continue_coupled_chains(c_chains_2[[irep]], single_kernel, K = K)
+  continue_coupled_chains(c_chains_[[irep]], single_kernel, K = K)
 }
-save(c_chains_, c_chains_continued_, c_chains_2, c_chains_continued_2, file = filename)
+save(k, K, nsamples, c_chains_, c_chains_continued_, file = filename)
+
+# save(c_chains_, c_chains_continued_, c_chains_2, c_chains_continued_2, file = filename)
 load(filename)
-sum(sapply(c_chains_continued_2, function(x) x$iteration))
+sum(sapply(c_chains_continued_, function(x) x$iteration))
 
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_2[[irep]], k = k, K = K)
+  H_bar(c_chains_continued_[[irep]], k = k, K = K)
 }
 
 square_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_2[[irep]], h = function(x) x^2, k = k, K = K)
+  H_bar(c_chains_continued_[[irep]], h = function(x) x^2, k = k, K = K)
 }
 
 cross_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_2[[irep]], h = function(x) x[1] * x[2], k = k, K = K)
+  H_bar(c_chains_continued_[[irep]], h = function(x) x[1] * x[2], k = k, K = K)
 }
 
 est_mean <- rep(0, dimension)

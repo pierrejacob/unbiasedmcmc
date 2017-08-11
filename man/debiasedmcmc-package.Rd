@@ -2,17 +2,18 @@
 % Please edit documentation in R/debiasedmcmc-package.R
 \docType{package}
 \name{debiasedmcmc-package}
-\alias{debiasedmcmc}
 \alias{debiasedmcmc-package}
+\alias{debiasedmcmc}
 \title{debiasedmcmc}
 \description{
-...
+Unbiased MCMC estimators with couplings
 }
 \details{
-...
+This package contains scripts to reproduce the figures of the
+paper "Unbiased Markov chain Monte Carlo with couplings" by
+Pierre E. Jacob, John O'Leary, Yves F Atchade
 }
 \author{
 Pierre E. Jacob <pierre.jacob.work@gmail.com>, John O'Leary
 }
 \keyword{package}
-

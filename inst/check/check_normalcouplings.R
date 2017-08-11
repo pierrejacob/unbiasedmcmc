@@ -1,10 +1,70 @@
-
 # load packages
 library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = 6)
+
+
+### maximal coupling of bivariate Gaussians
+mu1 <- 0.2
+mu2 <- -0.8
+sigma1 <- 0.4
+sigma2 <- 1.7
+# sample
+rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
+
+xy <- foreach(i = 1:100000) %dorng% {
+  rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
+}
+
+hist(sapply(xy, function(x) x[1]), prob = TRUE, nclass = 100)
+curve(dnorm(x, mu1, sigma1), add = TRUE, colour = "red")
+hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 100)
+curve(dnorm(x, mu2, sigma2), add = TRUE, colour = "red")
+
+# redefine function to count the cost
+rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){
+  x <- rnorm(1, mu1, sigma1)
+  if (dnorm(x, mu1, sigma1, log = TRUE) + log(runif(1)) < dnorm(x, mu2, sigma2, log = TRUE)){
+    return(c(x,x,1))
+  } else {
+    reject <- TRUE
+    y <- NA
+    cost <- 1
+    while (reject){
+      y <- rnorm(1, mu2, sigma2)
+      reject <- (dnorm(y, mu2, sigma2, log = TRUE) + log(runif(1)) < dnorm(y, mu1, sigma1, log = TRUE))
+      cost <- cost + 1
+    }
+    return(c(x,y,cost))
+  }
+}
+
+### maximal coupling of bivariate Gaussians
+mu1 <- 0.2
+mu2 <- -0.8
+sigma1 <- 0.4
+sigma2 <- 1.7
+# sample
+rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
+
+xy <- foreach(i = 1:10000) %dorng% {
+  rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
+}
+
+# estimated means
+mean(sapply(xy, function(x) x[1]))
+mean(sapply(xy, function(x) x[2]))
+sd(sapply(xy, function(x) x[1]))
+sd(sapply(xy, function(x) x[2]))
+mean(sapply(xy, function(x) x[3]))
+# note the same cost if we switch the distributions
+xy <- foreach(i = 1:10000) %dorng% {
+  rnorm_max_coupling(mu2, mu1, sigma2, sigma1)
+}
+mean(sapply(xy, function(x) x[3]))
+
 
 ### maximal coupling of bivariate Gaussians
 p <- 2
@@ -24,8 +84,8 @@ rowMeans(sapply(x, function(x) x[,2]))
 # estimated covariances
 cov(t(sapply(x, function(x) x[,1])))
 cov(t(sapply(x, function(x) x[,2])))
-
 ### also try the function based on Cholesky decompositions
+
 
 Sigma1_chol <- chol(Sigma1)
 Sigma1_chol_inv <- solve(chol(Sigma1))

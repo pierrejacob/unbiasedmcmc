@@ -20,4 +20,3 @@ The arguments are:
   \item logistic_setting: a list of precomputed quantities obtained via 'logistic_precomputation'.
   }
 }
-

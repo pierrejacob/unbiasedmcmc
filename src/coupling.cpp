@@ -5,6 +5,19 @@
 
 using namespace Rcpp;
 
+
+// [[Rcpp::export]]
+double logcosh(double x){
+  double result = 0.;
+  if (x > 0.){
+    result = x + log(1.0 + exp(-2.0*x)) - 0.6931472;
+  } else {
+    result = -x + log(1.0 + exp(2.0*x)) - 0.6931472;
+  }
+  return result;
+}
+
+
 // [[Rcpp::export]]
 NumericVector gaussian_max_couplingC(const NumericVector & mu1,
                                      const NumericVector & mu2,
@@ -137,43 +150,53 @@ NumericMatrix w_rejsamplerC(const NumericVector & beta1,
   return w;
 }
 
-//
-// w_rejsampler <- function(beta1, beta2, X, max_iter=1000){
-// # we can do rejection sampling, sampling from z1 and aiming for z2,
-// # provided z2 > z1. The ratio of densities is proportional to
-//   logratio <- function(omega, z_min, z_max){
-//     return(-omega * 0.5 * (z_max^2 - z_min^2))
-//   }
-//
-//   w1 <- rep(0., n)
-//   w2 <- rep(0., n)
-//   z1s <- abs(xbeta(X, beta1))
-//   z2s <- abs(xbeta(X, beta2))
-//
-//   for (i in 1:n){
-//     z_i <- c(z1s[i], z2s[i])
-//     z_min <- min(z_i)
-//     z_max <- max(z_i)
-//
-//     proposal <- rpg(num = 1, h = 1, z = z_min)
-//     w_min <- proposal
-//
-//     iter <- 0
-//     if (log(runif(1)) < logratio(proposal, z_min, z_max)){
-//       w_max <- proposal
-//     } else {
-//       w_max <- rpg(num = 1, h = 1, z = z_max)
-//     }
-//
-//     if (which.min(z_i) == 1){
-//       w1[i] <- w_min
-//       w2[i] <- w_max
-//     } else {
-//       w2[i] <- w_min
-//       w1[i] <- w_max
-//     }
-//   }
-//   return(list(w1 = w1, w2 = w2))
-// }
-//
+
+// [[Rcpp::export]]
+NumericMatrix w_max_couplingC(const NumericVector & beta1,
+                              const NumericVector & beta2,
+                              const NumericMatrix & X){
+  RNGScope scope;
+  int n = X.rows();
+
+  NumericMatrix w(n,2);
+  NumericVector z1s = abs(xbeta_(X, beta1));
+  NumericVector z2s = abs(xbeta_(X, beta2));
+
+  for(int i = 0; i < n; ++i){
+    // std::cerr << i << std::endl;
+    double z1 = z1s(i);
+    double z2 = z2s(i);
+
+    double w1 = rpg_devroye(1,z1);
+    w(i,0) = w1;
+    // std::cerr << w1 << std::endl;
+    // std::cerr << z1 << std::endl;
+    double w2;
+    double u1 = runif(1)(0);
+    double logaccept1 = logcosh(z2/2.) - 0.5*z2*z2*w1 - (logcosh(z1/2.) - 0.5*z1*z1*w1);
+    //double upperbound = cosh(z1/2.)*exp(-0.5*z1*z1*w1);
+    //std::cerr << upperbound << std::endl;
+    //double u1 = runif(1,0,cosh(z1/2.)*exp(-0.5*pow(z1,2.)*w1))(0);
+    // if(log(u1) <= cosh(z2/2.)*exp(-0.5*pow(z2,2.)*w1)){
+    if(log(u1) <= logaccept1){
+      w2 = w1;
+    } else {
+      // std::cerr << "coupling failed" << std::endl;
+      bool accept = FALSE;
+      while (accept==FALSE){
+        w2 = rpg_devroye(1,z2);
+        double u2 = runif(1)(0);
+        double logaccept2 = logcosh(z1/2.) - 0.5*z1*z1*w2 - (logcosh(z2/2.) - 0.5*z2*z2*w2);
+
+        // double u2 = runif(1,0,cosh(z2/2.)*exp(-0.5*pow(z2,2.) * w2))(0);
+        if (log(u2) > logaccept2){
+          accept = TRUE;
+        }
+      }
+    }
+    w(i,1) = w2;
+  }
+  return w;
+}
+
 

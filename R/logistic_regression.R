@@ -92,19 +92,19 @@ pg_gibbs <- function(niterations, logistic_setting){
 }
 
 # from sample_w -----------------------------------------------------------
-w_indep <- function(beta1,beta2,X){
-  n <- nrow(X)
-  w1 <- rep(0., n)
-  w2 <- rep(0., n)
-  z1s <- abs(xbeta(X, beta1))
-  z2s <- abs(xbeta(X, beta2))
-
-  for (i in 1:n){
-    w1[[i]] <- rpg(num=1, h=1, z=z1s[i])
-    w2[[i]] <- rpg(num=1, h=1, z=z2s[i])
-  }
-  return(list(w1=w1, w2=w2))
-}
+# w_indep <- function(beta1,beta2,X){
+#   n <- nrow(X)
+#   w1 <- rep(0., n)
+#   w2 <- rep(0., n)
+#   z1s <- abs(xbeta(X, beta1))
+#   z2s <- abs(xbeta(X, beta2))
+#
+#   for (i in 1:n){
+#     w1[[i]] <- rpg(num=1, h=1, z=z1s[i])
+#     w2[[i]] <- rpg(num=1, h=1, z=z2s[i])
+#   }
+#   return(list(w1=w1, w2=w2))
+# }
 
 #'@export
 w_rejsampler_caller <- function(beta1,beta2,X){
@@ -112,11 +112,16 @@ w_rejsampler_caller <- function(beta1,beta2,X){
 }
 
 #'@export
+w_max_coupling_caller <- function(beta1,beta2,X){
+  w_max_couplingC(beta1, beta2, X)
+}
+
+#'@export
 w_rejsampler <- function(beta1, beta2, X){
   # we can do rejection sampling, sampling from z1 and aiming for z2,
   # provided z2 > z1. The ratio of densities is proportional to
-  logratio <- function(omega, z_min, z_max){
-    return(-omega * 0.5 * (z_max^2 - z_min^2))
+  logratio <- function(proposal, z_min, z_max){
+    return(-proposal * 0.5 * (z_max^2 - z_min^2))
   }
 
   w1 <- rep(0., n)
@@ -180,15 +185,19 @@ w_max_coupling <- function(beta1, beta2, X){
 }
 
 #'@export
-sample_w <- function(beta1, beta2, X, mode='rej_samp'){
+sample_w <- function(beta1, beta2, X, mode='max'){
   if (mode == 'rej_samp'){
     w1w2_mat <- w_rejsamplerC(beta1, beta2, X)
     w1w2 <- list(w1=w1w2_mat[,1], w2=w1w2_mat[,2])
-  } else if (mode=='indep'){
-    w1w2 <- w_indep(beta1,beta2,X)
-  } else if (mode=='max'){
-    w1w2 <- w_max_coupling(beta1,beta2,X)
+  } else if (mode == 'max'){
+    w1w2_mat <- w_max_couplingC(beta1, beta2, X)
+    w1w2 <- list(w1=w1w2_mat[,1], w2=w1w2_mat[,2])
   }
+  #} else if (mode=='indep'){
+  #  w1w2 <- w_indep(beta1,beta2,X)
+  #} else if (mode=='max'){
+  #  w1w2 <- w_max_coupling(beta1,beta2,X)
+  #}
   return(w1w2)
 }
 

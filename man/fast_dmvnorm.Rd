@@ -9,4 +9,3 @@ fast_dmvnorm(x, mean, covariance)
 \description{
 fast_dmvnorm
 }
-

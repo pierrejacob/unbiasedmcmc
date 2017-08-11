@@ -9,4 +9,3 @@ expit(z)
 \description{
 expit function
 }
-

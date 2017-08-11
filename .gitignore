@@ -1,4 +1,5 @@
 *.txt
+*.RData
 *.tex
 .*.swp
 .DS_Store

@@ -10,12 +10,12 @@
 #' and 'coupled_kernel' jointly, until min(max(tau, K), max_iterations), where tau
 #' is the first time the two chains meet. Or more precisely, they meet with a delay of one, i.e. X_t = Y_{t-1}.
 #'@export
-coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., K = 1, max_iterations = Inf){
+coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., K = 1, max_iterations = Inf, preallocate = 10){
   chain_state1 <- rinit()
   chain_state2 <- rinit()
   p <- length(chain_state1)
-  samples1 <- matrix(nrow = K+11, ncol = p)
-  samples2 <- matrix(nrow = K+10, ncol = p)
+  samples1 <- matrix(nrow = K+preallocate+1, ncol = p)
+  samples2 <- matrix(nrow = K+preallocate, ncol = p)
   samples1[1,] <- chain_state1
   samples2[1,] <- chain_state2
   current_nsamples1 <- 1
@@ -42,7 +42,7 @@ coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., K = 1, max
       }
     }
     if ((current_nsamples1+1) > nrow(samples1)){
-      print('increase nrow')
+      # print('increase nrow')
       new_rows <- nrow(samples2)
       samples1 <- rbind(samples1, matrix(NA, nrow = new_rows, ncol = ncol(samples1)))
       samples2 <- rbind(samples2, matrix(NA, nrow = new_rows, ncol = ncol(samples2)))

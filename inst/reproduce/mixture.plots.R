@@ -5,7 +5,6 @@ rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = detectCores())
 #
-setwd("~/Dropbox/PolyaGammaResults/mixture/")
 
 ## target distribution
 target <- function(x){
@@ -17,6 +16,8 @@ load(file = "mixture.c_chains.RData")
 nsamples <- length(c_chains_)
 meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 summary(meetingtime)
+quantile(meetingtime, probs = 0.99)
+mean(meetingtime <= 50)
 hist(meetingtime, nclass = 100)
 x <- as.numeric(names(table(meetingtime)))
 y <- as.numeric(table(meetingtime)) / nsamples
@@ -27,14 +28,15 @@ g
 
 
 ##
+nclass <- 50
 k <- 50
 K <- 200
-histogram <- histogram_c_chains(c_chains_continued_, 1, k, K, nclass = 100)
+histogram <- histogram_c_chains(c_chains_continued_, 1, k, K, nclass = nclass)
 g <- plot_histogram(histogram, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram1.pdf", plot = g, width = 7, height = 7)
+ggsave(filename = "mixture.histogram1.pdf", plot = g, width = 5, height = 5)
 
 
 meetingtime2 <- sapply(c_chains_2, function(x) x$meetingtime)
@@ -44,18 +46,18 @@ sum(meetingtime2>100)
 indices <- sample(which(meetingtime2<100), size = 1000)
 summary(meetingtime2[indices])
 
-histogram2 <- histogram_c_chains(c_chains_continued_2[indices], 1, k, K, nclass = 100)
+histogram2 <- histogram_c_chains(c_chains_continued_2[indices], 1, k, K, nclass = nclass)
 g <- plot_histogram(histogram2, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram2.pdf", plot = g, width = 7, height = 7)
+ggsave(filename = "mixture.histogram2.pdf", plot = g, width = 5, height = 5)
 
 summary(meetingtime2)
-histogram2 <- histogram_c_chains(c_chains_continued_2, 1, k, K, nclass = 100)
+histogram2 <- histogram_c_chains(c_chains_continued_2, 1, k, K, nclass = nclass)
 g <- plot_histogram(histogram2, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram3.pdf", plot = g, width = 7, height = 7)
+ggsave(filename = "mixture.histogram3.pdf", plot = g, width = 5, height = 5)
 

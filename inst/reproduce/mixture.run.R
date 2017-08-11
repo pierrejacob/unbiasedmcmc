@@ -5,7 +5,6 @@ rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = detectCores())
 #
-setwd("~/Dropbox/PolyaGammaResults/mixture/")
 
 ## target distribution
 target <- function(x){
@@ -30,11 +29,10 @@ single_kernel <- function(chain_state){
 }
 
 # Markov kernel of the coupled chain
-Sigma <- diag(sd_proposal^2, 1, 1)
 coupled_kernel <- function(chain_state1, chain_state2){
-  proposal_value <- gaussian_max_coupling(chain_state1, chain_state2, Sigma, Sigma)
-  proposal1 <- proposal_value[,1]
-  proposal2 <- proposal_value[,2]
+  proposal_value <- rnorm_max_coupling(chain_state1, chain_state2, sd_proposal, sd_proposal)
+  proposal1 <- proposal_value[1]
+  proposal2 <- proposal_value[2]
   proposal_pdf1 <- target(proposal1)
   proposal_pdf2 <- target(proposal2)
   current_pdf1 <- target(chain_state1)
@@ -75,7 +73,6 @@ load(file = "mixture.c_chains.RData")
 
 
 sd_proposal <- 1
-Sigma <- diag(sd_proposal^2, 1, 1)
 c_chains_2 <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit)
 }

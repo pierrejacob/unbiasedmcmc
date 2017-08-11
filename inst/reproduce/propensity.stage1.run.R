@@ -2,18 +2,17 @@
 library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
-set.seed(21)
+set.seed(1)
 registerDoParallel(cores = detectCores())
-setwd("~/Dropbox/PolyaGammaResults/pgg")
 #
 
 # Generate data
 n <- 1000 # number of observations
-p <- 100 # number of covariates
+p <- 6 # number of covariates
 ## create covariates
 X <- fast_rmvnorm(n, rep(0, p), diag(1, nrow = p, ncol = p))
 # create outcome
-beta_star <- 1:p / p # data-generating parameters
+beta_star <- 1:p / 10 # data-generating parameters
 Y <- rbinom(n, 1, expit(apply(X = X, MARGIN = 1, FUN = function(row) sum(row * beta_star))))
 # specify prior
 b <- matrix(0, nrow = p, ncol = 1)
@@ -21,8 +20,9 @@ B <- diag(50, p, p); B[1,1] <- 800
 # precompute some quantities useful both for the Polya-Gamma sampler
 # and for the unbiased estimators
 logistic_setting <- logistic_precomputation(Y, X, b, B)
-## Polya-Gamma sampler
+save(logistic_setting, file = "propensity.data.RData")
 
+## Polya-Gamma sampler
 single_kernel <- function(chain_state){
   beta <- chain_state[1:p]
   zs <- abs(xbeta(X, beta))
@@ -32,58 +32,33 @@ single_kernel <- function(chain_state){
   return(beta)
 }
 
-niterations <- 10000
-betas <- matrix(0, ncol=p, nrow=niterations)
-beta <- rep(0, p)
-for (i in 1:niterations){
-  beta <- single_kernel(beta)
-  betas[i,] <- beta
-}
-# save(betas, file = "pgg.mcmc.RData")
-# load("pgg.mcmc.RData")
-matplot(betas[,1:10], type = "l")
-acf(betas[,1])
-
-sample_beta_dist <- function(w1, w2, logistic_setting){
-  X <- logistic_setting$X
-  invB <- logistic_setting$invB
-  res1 <- m_and_sigma(w1, X, invB, logistic_setting$KTkappaplusinvBtimesb)
-  res2 <- m_and_sigma(w2, X, invB, logistic_setting$KTkappaplusinvBtimesb)
-  distance <- sqrt((sum(res1$m - res2$m)^2))
-  cat("distance:", distance, "\n")
-  if(distance <= 10){
-    x <- gaussian_max_coupling_cholesky_R(res1$m, res2$m, t(res1$Cholesky), t(res2$Cholesky), t(res1$Cholesky_inverse), t(res2$Cholesky_inverse))
-    beta1 <- x[,1]
-    beta2 <- x[,2]
-  } else {
-    x <- gaussian_opt_transport(1, res1$m, res2$m, t(res1$Cholesky), t(res2$Cholesky), t(res1$Cholesky_inverse), t(res2$Cholesky_inverse))
-    beta1 <- x[[1]][,1]
-    beta2 <- x[[1]][,2]
-  }
-  return(list(beta1=beta1, beta2=beta2))
-}
+# niterations <- 1000
+# betas <- matrix(0, ncol=p, nrow=niterations)
+# beta <- rep(0, p)
+# for (i in 1:niterations){
+#   beta <- single_kernel(beta)
+#   betas[i,] <- beta
+# }
+# matplot(betas, type = "l")
 
 # Markov kernel of the coupled chain
 coupled_kernel <- function(chain_state1, chain_state2){
   ws <- sample_w(chain_state1, chain_state2, logistic_setting$X)
-  betas <- sample_beta_dist(ws$w1, ws$w2, logistic_setting)
+  betas <- sample_beta(ws$w1, ws$w2, logistic_setting)
   if (all(ws$w1 == ws$w2)){
     betas$beta2 <- betas$beta1
   }
   return(list(chain_state1=cbind(betas$beta1),
               chain_state2=cbind(betas$beta2)))
 }
-
 rinit <- function() fast_rmvnorm(1, rep(0, p), diag(1, p, p))
-# rinit <- function() fast_rmvnorm(1, colMeans(betas), cov(betas))
-c_chain <- coupled_chains(single_kernel, coupled_kernel, rinit)
-c_chain$meetingtime
+nsamples <- 10000
 
-nsamples <- 50
+filename <- "propensity.stage1.c_chains.RData"
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit)
 }
-
+save(nsamples, c_chains_, file = filename)
 meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 summary(meetingtime)
 
@@ -93,20 +68,21 @@ g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting t
 g
 # ggsave(filename = "propensity.meetingtime.pdf", plot = g, width = 5, height = 5)
 
-k <- 1000
-K <- 2000
+
+k <- 20
+K <- k
 
 # ##
 c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
   continue_coupled_chains(c_chains_[[irep]], single_kernel, K = K)
 }
+save(k, K, c_chains_, c_chains_continued_, file = filename)
+
 sum(sapply(c_chains_continued_, function(x) x$iteration))
 
 # histogram
-k <- 950
-K <- 1000
-histogram1 <- histogram_c_chains(c_chains_continued_, 33, k, K, nclass = 50)
-g1 <- plot_histogram(histogram1, with_bar = F) + xlab(expression(theta)) + ylab("density")
+histogram1 <- histogram_c_chains(c_chains_continued_, 3, k, K, nclass = 20)
+g1 <- plot_histogram(histogram1, with_bar = T) + xlab(expression(theta)) + ylab("density")
 g1
 
 
@@ -131,4 +107,3 @@ for (component in 1:p){
   est_var[component] <- mean(s_estimators) - est_mean[component]^2
 }
 
-summary(abs(est_mean - colMeans(betas))/abs(colMeans(betas)))
