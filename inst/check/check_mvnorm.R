@@ -3,7 +3,7 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = 6)
+registerDoParallel(cores = detectCores())
 
 ### maximal coupling of bivariate Gaussians
 p <- 20

@@ -79,7 +79,7 @@ get_blasso <- function(Y, X, lambda){
         tau21[component] <- 1 / invtau2
         tau22[component] <- tau21[component]
       } else {
-        invtau2s <- rinvgaussian_coupled_2(sqrtlambda2sigma21 / abs(beta1[component]),
+        invtau2s <- rinvgaussian_coupled(sqrtlambda2sigma21 / abs(beta1[component]),
                                            sqrtlambda2sigma22 / abs(beta2[component]),
                                            lambda2, lambda2)
         tau21[component] <- 1 / invtau2s[1]

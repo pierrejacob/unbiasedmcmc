@@ -37,23 +37,23 @@ rinvgaussian <- function(n, mu, lambda){
 #'@description with given parameters mu1, mu2, lambda1, lambda2
 #'@export
 rinvgaussian_coupled <- function(mu1, mu2, lambda1, lambda2){
-  x <- rinvgaussian(1, mu1, lambda1)
-  if (x < 1e-20) x <- 1e-20
-  if (dinvgaussian(x, mu1, lambda1) + log(runif(1)) < dinvgaussian(x, mu2, lambda2)){
-    return(c(x,x))
-  } else {
-    reject <- TRUE
-    y <- NA
-    while (reject){
-      y <- rinvgaussian(1, mu2, lambda2)
-      if (y < 1e-20) y <- 1e-20
-      reject <- (dinvgaussian(y, mu2, lambda2) + log(runif(1)) < dinvgaussian(y, mu1, lambda1))
-    }
-    return(c(x,y))
-  }
-}
-
-#'@export
-rinvgaussian_coupled_2 <- function(mu1, mu2, lambda1, lambda2){
   rinvgaussian_coupled_c(mu1, mu2, lambda1, lambda2)
 }
+
+### former implementaiton in R
+# rinvgaussian_coupled <- function(mu1, mu2, lambda1, lambda2){
+#   x <- rinvgaussian(1, mu1, lambda1)
+#   if (x < 1e-20) x <- 1e-20
+#   if (dinvgaussian(x, mu1, lambda1) + log(runif(1)) < dinvgaussian(x, mu2, lambda2)){
+#     return(c(x,x))
+#   } else {
+#     reject <- TRUE
+#     y <- NA
+#     while (reject){
+#       y <- rinvgaussian(1, mu2, lambda2)
+#       if (y < 1e-20) y <- 1e-20
+#       reject <- (dinvgaussian(y, mu2, lambda2) + log(runif(1)) < dinvgaussian(y, mu1, lambda1))
+#     }
+#     return(c(x,y))
+#   }
+# }

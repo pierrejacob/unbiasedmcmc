@@ -90,7 +90,7 @@ qplot(x=it, y=chain1[it], geom = "line") + ylab("X") + xlab("iteration") + geom_
 
 hist(chain1[1000:niterations], nclass = 100, prob = TRUE)
 hist(chain2[1000:niterations], nclass = 100, prob = TRUE, add = TRUE, col = rgb(1,0,0,0.5))
-curve(exp(target(x)), add = T)
+curve(sapply(x, function(y) exp(target(y))), add = T)
 
 ## initial distribution
 rinit <- function() rnorm(1)
@@ -148,6 +148,7 @@ for (ibreak in 2:length(breaks)){
 plot(x = mids, y = (prop+2*sd_prop) / width, type = "l")
 lines(x = mids, y = prop / width, lty = 2)
 lines(x = mids, y = (prop-2*sd_prop) / width)
-curve(sapply(x, function(x_)exp(target(x_))), add = T, col = "red")
+curve(sapply(x, function(x_) exp(target(x_))), add = T, col = "red")
 
 integrate(function(x) sapply(x, function(x_)exp(target(x_))), lower = -7, upper = 7)
+
