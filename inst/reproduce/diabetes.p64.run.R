@@ -1,9 +1,7 @@
 # load packages
 library(debiasedmcmc)
 library(ggthemes)
-library(lars)
 library(parallel)
-setwd("~/Dropbox/PolyaGammaResults")
 setmytheme()
 rm(list = ls())
 set.seed(21)

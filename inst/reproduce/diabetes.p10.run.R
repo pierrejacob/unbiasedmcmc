@@ -1,7 +1,6 @@
 # load packages
 library(debiasedmcmc)
 library(ggthemes)
-library(lars)
 library(parallel)
 
 setmytheme()

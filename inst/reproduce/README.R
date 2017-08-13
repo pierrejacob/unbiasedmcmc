@@ -47,7 +47,7 @@ source(file.path(scriptfolder, "mixture.run.R"))
 # plots
 source(file.path(scriptfolder, "mixture.plots.R"))
 
-### German credit with PGG
+### German credit with PGG (to clean, see files in ../needscleaning)
 # run
 #...
 # plots
@@ -55,9 +55,12 @@ source(file.path(scriptfolder, "mixture.plots.R"))
 
 ### Diabetes with Bayesian Lasso
 # run
-#...
+source(file.path(scriptfolder, "diabetes.p10.run.R"))
+source(file.path(scriptfolder, "diabetes.p64.run.R"))
+source(file.path(scriptfolder, "diabetes.p64.refine.run.R"))
+
 # plots
-#...
+source(file.path(scriptfolder, "diabetes.plots.R"))
 
 ### Cut distribution on Plummer's example
 # run
