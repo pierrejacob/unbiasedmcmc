@@ -75,6 +75,5 @@ setmytheme <- function(){
                title = element_text(size = 30),
                strip.text = element_text(size = 25),
                strip.background = element_rect(fill="white"),
-               # panel.margin = unit(2, "lines"),
                legend.position = "bottom")
 }

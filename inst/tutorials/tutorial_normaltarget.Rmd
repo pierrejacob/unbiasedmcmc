@@ -2,7 +2,7 @@
 title: 'Debiasing random walk Metropolis-Hastings'
 author: "PEJ, JOL, YFA"
 date: "August 2017"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -22,7 +22,7 @@ We begin by loading the package, registering multiple cores, setting the random 
 # load package
 library(debiasedmcmc)
 # register parallel cores
-registerDoParallel(cores = detectCores())
+registerDoParallel(cores = 4)
 # remove all
 rm(list = ls())
 # set RNG seed
@@ -120,8 +120,6 @@ We define a coupled MH kernel using maximally coupled proposals as follows.
 ```{r coupledMH, tidy=TRUE}
 coupledMH_kernel <- function(chain_state1, chain_state2){
   proposal_value <- rnorm_max_coupling(chain_state1, chain_state2, sd_proposal, sd_proposal)
-  proposal1 <- proposal_value[1]
-  proposal2 <- proposal_value[2]
   proposal_pdf1 <- logtarget(proposal_value[1])
   proposal_pdf2 <- logtarget(proposal_value[2])
   current_pdf1 <- logtarget(chain_state1)
@@ -129,12 +127,12 @@ coupledMH_kernel <- function(chain_state1, chain_state2){
   logu <- log(runif(1))
   if (is.finite(proposal_pdf1)){
     if (logu < (proposal_pdf1 - current_pdf1)){
-      chain_state1 <- proposal1
+      chain_state1 <- proposal_value[1]
     }
   }
   if (is.finite(proposal_pdf2)){
     if(logu < (proposal_pdf2 - current_pdf2)){
-      chain_state2 <- proposal2
+      chain_state2 <- proposal_value[2]
     }
   }
   return(list(chain_state1 = chain_state1, chain_state2 = chain_state2))
