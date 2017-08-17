@@ -40,9 +40,9 @@ single_kernel <- function(current_state, ...){
   # update of A given rest
   A <- rigamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
-  mu <- rnorm(1, theta_bar, A/ndata)
+  mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
-  theta <- rnorm(ndata, (mu * V + Y * A) / (V + A), A * V / (V + A))
+  theta <- rnorm(ndata, (mu * V + Y * A) / (V + A), sqrt(A * V / (V + A)))
   return(c(mu, A, theta))
 }
 

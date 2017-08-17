@@ -68,20 +68,21 @@ posterior_var <- mean(s_estimators) - mean(estimators)^2
 
 ## variance going to the variance of perfect sampler
 g <- qplot(x = tuning.k.list$ks, y = tuning.k.list$v, geom = "line") + geom_point()
-g <- g + scale_y_log10(breaks = c(round(posterior_var, 6), 1e-4, 1e-3, 1e-2), limits = c(1e-5, 1e-2))
+# g <- g + scale_y_log10(breaks = c(round(posterior_var, 6), 1e-4, 1e-3, 1e-2), limits = c(1e-5, 1e-2))
 g <- g + geom_hline(yintercept = posterior_var, linetype = 2) + xlab("k") + ylab("variance")
 g
 ggsave(filename = "baseball.tuningk.variance.pdf", plot = g, width = 5, height = 5)
 
 # efficiency
-g <- qplot(x = tuning.k.list$ks, y = 1/(tuning.k.list$cost * tuning.k.list$v), geom = "line") + scale_y_log10()
+g <- qplot(x = tuning.k.list$ks, y = 1/(tuning.k.list$cost * tuning.k.list$v), geom = "line")
 g <- g + xlab("k") + ylab("efficiency")  + geom_point()
 g
 ggsave(filename = "baseball.tuningk.efficiency.pdf", plot = g, width = 5, height = 5)
 
 ## variance of average estimator going to that of MCMC estimator
 g <- qplot(x = tuning.m.list$Ks, y = tuning.m.list$v, geom = "line") + geom_point()
-g <- g + scale_y_continuous(breaks = c(1e-6, 1e-5, round(posterior_var, 6)))
+# g <- g + scale_y_continuous(breaks = c(1e-7, round(posterior_var, 6)))
+g <- g + scale_y_log10(breaks = c(1e-5, 1e-4, 1e-3, round(posterior_var, 6)), limits = c(1e-5, round(posterior_var, 6)))
 g <- g + xlab("m") + ylab("variance") + scale_x_continuous(breaks = c(4, 40, 80, 150, 200))
 g <- g + geom_line(aes(y = mcmc_var / (tuning.m.list$Ks-tuning.m.list$k+1)), colour = "red", linetype = 2)
 g
@@ -129,8 +130,9 @@ for (component in 1:(ndata+2)){
 }
 
 nclass <- 40
-hist_breaks <- seq(0.37, 0.415, length.out = nclass)
-hist_mcmc <- hist(chain[1000:niterations,3], breaks = hist_breaks, plot = F)
+hist_breaks <- seq(0.1, 0.7, length.out = nclass)
+ch3 <- chain[1000:niterations,3]
+hist_mcmc <- hist(ch3[ch3>0.1 & ch3 < 0.7], breaks = hist_breaks, plot = F)
 hist_mcmc$density
 hist_mcmc$mids
 # histogram
@@ -141,9 +143,9 @@ g1
 ggsave(filename = "baseball.histogram.pdf", plot = g1, width = 5, height = 5)
 #
 
-hist_breaks <- seq(0.1, 0.4, length.out = nclass)
+hist_breaks <- seq(-0.3, 0.85, length.out = nclass)
 ch1 <- chain[1000:niterations,1]
-hist_mcmc <- hist(ch1[ch1>0.1 & ch1 < 0.4], breaks = hist_breaks, plot = F)
+hist_mcmc <- hist(ch1[ch1>-0.3 & ch1 < 0.85], breaks = hist_breaks, plot = F)
 # hist_mcmc <- hist(chain[1000:niterations,1], nclass = nclass, plot = F)
 hist_mcmc$density
 hist_mcmc$mids
