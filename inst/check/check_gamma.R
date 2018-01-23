@@ -22,7 +22,7 @@ beta2 <- 1.7
 # sample
 rgamma_coupled(alpha1, alpha2, beta1, beta2)
 
-xy <- foreach(i = 1:50000) %dorng% {
+xy <- foreach(i = 1:10000) %dorng% {
   rgamma_coupled(alpha1, alpha2, beta1, beta2)
 }
 

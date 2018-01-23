@@ -17,11 +17,14 @@ rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
 xy <- foreach(i = 1:100000) %dorng% {
   rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
 }
-
+head(xy)
 hist(sapply(xy, function(x) x[1]), prob = TRUE, nclass = 100)
-curve(dnorm(x, mu1, sigma1), add = TRUE, colour = "red")
+curve(dnorm(x, mu1, sigma1), add = TRUE, col = "red")
+
 hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 100)
-curve(dnorm(x, mu2, sigma2), add = TRUE, colour = "red")
+curve(dnorm(x, mu2, sigma2), add = TRUE, col = "red")
+
+mean(sapply(xy, function(x) x[2] == x[1]))
 
 # redefine function to count the cost
 rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){

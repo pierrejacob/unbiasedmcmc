@@ -3,7 +3,7 @@
 #'@title histogram_c_chains
 #'@description Compute histograms based on coupled Markov chains
 #'@export
-histogram_c_chains <- function(c_chains, component, k, K, breaks = NULL, nclass = 30){
+histogram_c_chains <- function(c_chains, component, k, m, breaks = NULL, nclass = 30){
   nsamples <- length(c_chains)
   if (is.null(breaks)){
     breaks <- find_breaks(c_chains, component, nclass, k)
@@ -14,7 +14,7 @@ histogram_c_chains <- function(c_chains, component, k, K, breaks = NULL, nclass 
   res__ <- foreach (ibreak = 2:length(breaks), .combine = rbind) %dorng% {
     estimators <- rep(0, nsamples)
     for (irep in 1:nsamples){
-      estimators[irep] <- estimator_bin_R(c_chains[[irep]], component, breaks[ibreak-1], breaks[ibreak], k, K)
+      estimators[irep] <- estimator_bin_R(c_chains[[irep]], component, breaks[ibreak-1], breaks[ibreak], k, m)
     }
     prop <- mean(estimators)
     sd_prop <- sd(estimators) / sqrt(nsamples)
@@ -61,6 +61,6 @@ create_mids <- function(breaks){
 }
 ## compute estimator of component being in [lower, upper]
 #'@export
-estimator_bin_R <- function(c_chains, component, lower, upper, k, K){
-  return(estimator_bin(c_chains, component, lower, upper, k, K))
+estimator_bin_R <- function(c_chains, component, lower, upper, k, m){
+  return(estimator_bin(c_chains, component, lower, upper, k, m))
 }

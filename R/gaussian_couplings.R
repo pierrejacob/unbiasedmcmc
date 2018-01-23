@@ -4,18 +4,11 @@
 #'specified through their means and standard deviations
 #'@export
 rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){
-  x <- rnorm(1, mu1, sigma1)
-  if (dnorm(x, mu1, sigma1, log = TRUE) + log(runif(1)) < dnorm(x, mu2, sigma2, log = TRUE)){
-    return(c(x,x))
-  } else {
-    reject <- TRUE
-    y <- NA
-    while (reject){
-      y <- rnorm(1, mu2, sigma2)
-      reject <- (dnorm(y, mu2, sigma2, log = TRUE) + log(runif(1)) < dnorm(y, mu1, sigma1, log = TRUE))
-    }
-    return(c(x,y))
-  }
+  f <- get_max_coupling(function(n) rnorm(n, mu1, sigma1),
+                        function(x) dnorm(x, mu1, sigma1, log = TRUE),
+                        function(n) rnorm(n, mu2, sigma2),
+                        function(x) dnorm(x, mu2, sigma2, log = TRUE))
+  return(f())
 }
 
 

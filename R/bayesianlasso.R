@@ -16,14 +16,18 @@ get_blasso <- function(Y, X, lambda){
     beta <- current_state[1:p]
     tau2 <- current_state[(p+1):(2*p)]
     sigma2 <- current_state[2*p+1]
-    D_tau_inv <- diag(1/tau2, p, p)
-    A <- XtX + D_tau_inv
-    A_inv <- solve(A)
-    # update beta
-    beta <- t(fast_rmvnorm(1, (A_inv %*% XtY)[,1], sigma2 * A_inv))
-    # update sigma
-    norm <- sum((Y - X %*% beta)^2)
-    betaDbeta <- sum(beta^2 / tau2)
+    res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau2, sigma2)
+    beta <- res_$beta
+    norm <- res_$norm
+    betaDbeta <- res_$betaDbeta
+    # D_tau_inv <- diag(1/tau2, p, p)
+    # A <- XtX + D_tau_inv
+    # A_inv <- solve(A)
+    # # update beta
+    # beta <- t(fast_rmvnorm(1, (A_inv %*% XtY)[,1], sigma2 * A_inv))
+    # # update sigma
+    # norm <- sum((Y - X %*% beta)^2)
+    # betaDbeta <- sum(beta^2 / tau2)
     sigma2 <- rigamma(1, alpha1, 0.5 * (norm + betaDbeta))
     # update tau
     sqrtlambda2sigma2 <- sqrt(lambda2 * sigma2)
@@ -41,28 +45,44 @@ get_blasso <- function(Y, X, lambda){
     tau22 <- current_state2[(p+1):(2*p)]
     sigma22 <- current_state2[2*p+1]
     #
-    D_tau_inv1 <- diag(1/tau21, p, p)
-    D_tau_inv2 <- diag(1/tau22, p, p)
-    A1 <- XtX + D_tau_inv1
-    A2 <- XtX + D_tau_inv2
-    A_inv1 <- solve(A1)
-    A_inv2 <- solve(A2)
-    # update beta
     if (all(tau21 == tau22) && all(sigma21 == sigma22)){
-      mean1 <- A_inv1 %*% XtY
-      Sigma1 <- sigma21 * A_inv1
-      beta1 <- t(fast_rmvnorm(1, mean1, Sigma1))
+      res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau21, sigma21)
+      beta1 <- res_$beta
+      norm1 <- res_$norm
+      betaDbeta1 <- res_$betaDbeta
       beta2 <- beta1
+      norm2 <- norm1
+      betaDbeta2 <- betaDbeta1
     } else {
-      betas <- gaussian_max_coupling((A_inv1 %*% XtY)[,1], (A_inv2 %*% XtY)[,1], sigma21 * A_inv1, sigma22 * A_inv2)
-      beta1 <- betas[,1,drop=F]
-      beta2 <- betas[,2,drop=F]
+      res_ <- debiasedmcmc:::blassoconditional_coupled(Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
+      beta1 <- res_$beta1
+      norm1 <- res_$norm1
+      betaDbeta1 <- res_$betaDbeta1
+      beta2 <- res_$beta2
+      norm2 <- res_$norm2
+      betaDbeta2 <- res_$betaDbeta2
     }
+    # D_tau_inv1 <- diag(1/tau21, p, p)
+    # D_tau_inv2 <- diag(1/tau22, p, p)
+    # A1 <- XtX + D_tau_inv1
+    # A2 <- XtX + D_tau_inv2
+    # A_inv1 <- solve(A1)
+    # A_inv2 <- solve(A2)
+    # # update beta
+    #   mean1 <- A_inv1 %*% XtY
+    #   Sigma1 <- sigma21 * A_inv1
+    #   beta1 <- t(fast_rmvnorm(1, mean1, Sigma1))
+    #   beta2 <- beta1
+    # } else {
+    # betas <- gaussian_max_coupling((A_inv1 %*% XtY)[,1], (A_inv2 %*% XtY)[,1], sigma21 * A_inv1, sigma22 * A_inv2)
+    # beta1 <- betas[,1,drop=F]
+    # beta2 <- betas[,2,drop=F]
+    # }
     # update sigma
-    norm1 <- sum((Y - X %*% beta1)^2)
-    norm2 <- sum((Y - X %*% beta2)^2)
-    betaDbeta1 <- sum(beta1^2 / tau21)
-    betaDbeta2 <- sum(beta2^2 / tau22)
+    # norm1 <- sum((Y - X %*% beta1)^2)
+    # norm2 <- sum((Y - X %*% beta2)^2)
+    # betaDbeta1 <- sum(beta1^2 / tau21)
+    # betaDbeta2 <- sum(beta2^2 / tau22)
 
     sigma2s <- rigamma_coupled(alpha1, alpha1,
                                0.5 * (norm1 + betaDbeta1),
@@ -80,8 +100,8 @@ get_blasso <- function(Y, X, lambda){
         tau22[component] <- tau21[component]
       } else {
         invtau2s <- rinvgaussian_coupled(sqrtlambda2sigma21 / abs(beta1[component]),
-                                           sqrtlambda2sigma22 / abs(beta2[component]),
-                                           lambda2, lambda2)
+                                         sqrtlambda2sigma22 / abs(beta2[component]),
+                                         lambda2, lambda2)
         tau21[component] <- 1 / invtau2s[1]
         tau22[component] <- 1 / invtau2s[2]
       }

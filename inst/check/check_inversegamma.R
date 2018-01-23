@@ -21,8 +21,11 @@ alpha2 <- 7.4
 beta2 <- 1.7
 # sample
 rigamma_coupled(alpha1, alpha2, beta1, beta2)
-
-xy <- foreach(i = 1:50000) %dorng% {
+# cig <- get_max_coupling(function(n) rigamma(n, alpha1, beta1),
+#                  function(x) digamma(x, alpha1, beta1),
+#                  function(n) rigamma(n, alpha2, beta2),
+#                  function(x) digamma(x, alpha2, beta2))
+xy <- foreach(i = 1:10000) %dorng% {
   rigamma_coupled(alpha1, alpha2, beta1, beta2)
 }
 
@@ -36,6 +39,6 @@ hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 100)
 curve(exp(digamma(x, alpha2, beta2)), col = "red", add = TRUE)
 
 # same cost in both directions
-microbenchmark::microbenchmark(rigamma_coupled(alpha1, alpha2, beta1, beta2),
-                               rigamma_coupled(alpha2, alpha1, beta2, beta1), times = 10000)
-
+# microbenchmark::microbenchmark(rigamma_coupled(alpha1, alpha2, beta1, beta2),
+#                                 cig(), times = 10000)
+#

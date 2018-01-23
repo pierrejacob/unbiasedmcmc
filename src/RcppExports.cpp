@@ -6,6 +6,40 @@
 
 using namespace Rcpp;
 
+// blassoconditional
+List blassoconditional(const Eigen::VectorXd& Y, const Eigen::MatrixXd& X, const Eigen::VectorXd& XtY, const Eigen::MatrixXd& XtX, const NumericVector tau2, const double sigma2);
+RcppExport SEXP _debiasedmcmc_blassoconditional(SEXP YSEXP, SEXP XSEXP, SEXP XtYSEXP, SEXP XtXSEXP, SEXP tau2SEXP, SEXP sigma2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type XtY(XtYSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XtX(XtXSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type tau2(tau2SEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma2(sigma2SEXP);
+    rcpp_result_gen = Rcpp::wrap(blassoconditional(Y, X, XtY, XtX, tau2, sigma2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// blassoconditional_coupled
+List blassoconditional_coupled(const Eigen::VectorXd& Y, const Eigen::MatrixXd& X, const Eigen::VectorXd& XtY, const Eigen::MatrixXd& XtX, const NumericVector& tau21, const NumericVector& tau22, const double sigma21, const double sigma22);
+RcppExport SEXP _debiasedmcmc_blassoconditional_coupled(SEXP YSEXP, SEXP XSEXP, SEXP XtYSEXP, SEXP XtXSEXP, SEXP tau21SEXP, SEXP tau22SEXP, SEXP sigma21SEXP, SEXP sigma22SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type XtY(XtYSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XtX(XtXSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type tau21(tau21SEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type tau22(tau22SEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma21(sigma21SEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma22(sigma22SEXP);
+    rcpp_result_gen = Rcpp::wrap(blassoconditional_coupled(Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22));
+    return rcpp_result_gen;
+END_RCPP
+}
 // logcosh
 double logcosh(double x);
 RcppExport SEXP _debiasedmcmc_logcosh(SEXP xSEXP) {
@@ -18,7 +52,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // gaussian_max_couplingC
-NumericVector gaussian_max_couplingC(const NumericVector& mu1, const NumericVector& mu2, const NumericMatrix& Sigma1, const NumericMatrix& Sigma2);
+NumericMatrix gaussian_max_couplingC(const NumericVector& mu1, const NumericVector& mu2, const NumericMatrix& Sigma1, const NumericMatrix& Sigma2);
 RcppExport SEXP _debiasedmcmc_gaussian_max_couplingC(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma1SEXP, SEXP Sigma2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -32,7 +66,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // gaussian_max_coupling_cholesky
-NumericVector gaussian_max_coupling_cholesky(const NumericVector& mu1, const NumericVector& mu2, const Eigen::MatrixXd& Cholesky1, const Eigen::MatrixXd& Cholesky2, const Eigen::MatrixXd& Cholesky_inverse1, const Eigen::MatrixXd& Cholesky_inverse2);
+NumericMatrix gaussian_max_coupling_cholesky(const NumericVector& mu1, const NumericVector& mu2, const Eigen::MatrixXd& Cholesky1, const Eigen::MatrixXd& Cholesky2, const Eigen::MatrixXd& Cholesky_inverse1, const Eigen::MatrixXd& Cholesky_inverse2);
 RcppExport SEXP _debiasedmcmc_gaussian_max_coupling_cholesky(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Cholesky1SEXP, SEXP Cholesky2SEXP, SEXP Cholesky_inverse1SEXP, SEXP Cholesky_inverse2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -98,6 +132,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type k(kSEXP);
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     rcpp_result_gen = Rcpp::wrap(estimator_bin(c_chains, component, lower, upper, k, K));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_measure_
+List get_measure_(const List& c_chains, int k, int m);
+RcppExport SEXP _debiasedmcmc_get_measure_(SEXP c_chainsSEXP, SEXP kSEXP, SEXP mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type c_chains(c_chainsSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_measure_(c_chains, k, m));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -244,8 +291,47 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// prune_
+NumericMatrix prune_(const NumericMatrix& df);
+RcppExport SEXP _debiasedmcmc_prune_(SEXP dfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(prune_(df));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sample_pair01
+IntegerVector sample_pair01(const NumericVector& selection);
+RcppExport SEXP _debiasedmcmc_sample_pair01(SEXP selectionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type selection(selectionSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_pair01(selection));
+    return rcpp_result_gen;
+END_RCPP
+}
+// marginal_likelihood_c_2
+double marginal_likelihood_c_2(Eigen::VectorXf selection, const Eigen::MatrixXf& X, const Eigen::VectorXf& Y, double Y2, double g);
+RcppExport SEXP _debiasedmcmc_marginal_likelihood_c_2(SEXP selectionSEXP, SEXP XSEXP, SEXP YSEXP, SEXP Y2SEXP, SEXP gSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXf >::type selection(selectionSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXf& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXf& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< double >::type Y2(Y2SEXP);
+    Rcpp::traits::input_parameter< double >::type g(gSEXP);
+    rcpp_result_gen = Rcpp::wrap(marginal_likelihood_c_2(selection, X, Y, Y2, g));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_debiasedmcmc_blassoconditional", (DL_FUNC) &_debiasedmcmc_blassoconditional, 6},
+    {"_debiasedmcmc_blassoconditional_coupled", (DL_FUNC) &_debiasedmcmc_blassoconditional_coupled, 8},
     {"_debiasedmcmc_logcosh", (DL_FUNC) &_debiasedmcmc_logcosh, 1},
     {"_debiasedmcmc_gaussian_max_couplingC", (DL_FUNC) &_debiasedmcmc_gaussian_max_couplingC, 4},
     {"_debiasedmcmc_gaussian_max_coupling_cholesky", (DL_FUNC) &_debiasedmcmc_gaussian_max_coupling_cholesky, 6},
@@ -253,6 +339,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_w_rejsamplerC", (DL_FUNC) &_debiasedmcmc_w_rejsamplerC, 3},
     {"_debiasedmcmc_w_max_couplingC", (DL_FUNC) &_debiasedmcmc_w_max_couplingC, 3},
     {"_debiasedmcmc_estimator_bin", (DL_FUNC) &_debiasedmcmc_estimator_bin, 6},
+    {"_debiasedmcmc_get_measure_", (DL_FUNC) &_debiasedmcmc_get_measure_, 3},
     {"_debiasedmcmc_rinvgaussian_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_c, 3},
     {"_debiasedmcmc_rinvgaussian_coupled_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_coupled_c, 4},
     {"_debiasedmcmc_sigma_", (DL_FUNC) &_debiasedmcmc_sigma_, 2},
@@ -264,6 +351,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_beta2e_", (DL_FUNC) &_debiasedmcmc_beta2e_, 2},
     {"_debiasedmcmc_cut_in_fifth_", (DL_FUNC) &_debiasedmcmc_cut_in_fifth_, 1},
     {"_debiasedmcmc_propensity_module2_loglik2_", (DL_FUNC) &_debiasedmcmc_propensity_module2_loglik2_, 5},
+    {"_debiasedmcmc_prune_", (DL_FUNC) &_debiasedmcmc_prune_, 1},
+    {"_debiasedmcmc_sample_pair01", (DL_FUNC) &_debiasedmcmc_sample_pair01, 1},
+    {"_debiasedmcmc_marginal_likelihood_c_2", (DL_FUNC) &_debiasedmcmc_marginal_likelihood_c_2, 5},
     {NULL, NULL, 0}
 };
 

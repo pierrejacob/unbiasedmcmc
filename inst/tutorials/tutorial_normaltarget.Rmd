@@ -173,7 +173,7 @@ k <- as.numeric(quantile(meetingtime, 0.95))
 m <- 10*k
 nsamples <- 1000
 c_chains_m <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(MH_kernel, coupledMH_kernel, rinit, K = m)
+  coupled_chains(MH_kernel, coupledMH_kernel, rinit, m = m)
 }
 histogram <- histogram_c_chains(c_chains_m, 1, k, m, nclass = 50)
 g <- plot_histogram(histogram, with_bar = T)

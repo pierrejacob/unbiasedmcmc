@@ -23,18 +23,11 @@ rigamma <- function(n, alpha, beta){
 #' alpha * log(beta) - lgamma(alpha) - (alpha+1) * log(x) - beta / x
 #'@export
 rigamma_coupled <- function(alpha1, alpha2, beta1, beta2){
-  x <- rigamma(1, alpha1, beta1)
-  if (digamma(x, alpha1, beta1) + log(runif(1)) < digamma(x, alpha2, beta2)){
-    return(c(x,x))
-  } else {
-    reject <- TRUE
-    y <- NA
-    while (reject){
-      y <- rigamma(1, alpha2, beta2)
-      reject <- (digamma(y, alpha2, beta2) + log(runif(1)) < digamma(y, alpha1, beta1))
-    }
-    return(c(x,y))
-  }
+  f <- get_max_coupling(function(n) rigamma(n, alpha1, beta1),
+                        function(x) digamma(x, alpha1, beta1),
+                        function(n) rigamma(n, alpha2, beta2),
+                        function(x) digamma(x, alpha2, beta2))
+  return(f())
 }
 
 #' #'@rdname rigamma_transport_coupled
