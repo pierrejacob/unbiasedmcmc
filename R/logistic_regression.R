@@ -71,19 +71,18 @@ m_and_sigma <- function(omega, X, invB, KTkappaplusinvBtimesb){
 #' the regression coefficient at that iteration.
 #'@export
 pg_gibbs <- function(niterations, logistic_setting){
-  X <- logistic_setting$X
   # Y <- logistic_setting$Y
   # invBtimesb <- logistic_setting$invBtimesb
-  n <- nrow(X)
-  p <- ncol(X)
+  n <- nrow(logistic_setting$X)
+  p <- ncol(logistic_setting$X)
   betas <- matrix(0, ncol=p, nrow=niterations)
   beta <- matrix(0, ncol=p, nrow=1)
   for (iteration in 1:niterations){
-    zs <- abs(xbeta(X, beta))
+    zs <- abs(xbeta(logistic_setting$X, beta))
     w <- rpg(n, h=1, z=zs)
-    res <- m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
-    # S <- sigma_function(w, X, invB)
-    # m <- m_function(w, S, X, Y, invBtimesb)
+    res <- m_and_sigma(w, logistic_setting$X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
+    # S <- sigma_function(w, logistic_setting$X, invB)
+    # m <- m_function(w, S, logistic_setting$X, Y, invBtimesb)
     beta <- fast_rmvnorm_chol(1, res$m, res$Cholesky)
     # beta <- fast_rmvnorm(1, m, S)
     betas[iteration,] <- beta
@@ -205,11 +204,9 @@ sample_w <- function(beta1, beta2, X, mode='max'){
 # from sample_beta --------------------------------------------------------
 #'@export
 sample_beta <- function(w1, w2, logistic_setting, mode="max_coupling", mc_prob=0.5){
-  X <- logistic_setting$X
   KTkappaplusinvBtimesb <- logistic_setting$KTkappaplusinvBtimesb
-  invB <- logistic_setting$invB
-  res1 <- m_and_sigma(w1, X, invB, KTkappaplusinvBtimesb)
-  res2 <- m_and_sigma(w2, X, invB, KTkappaplusinvBtimesb)
+  res1 <- m_and_sigma(w1, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
+  res2 <- m_and_sigma(w2, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
 
   if(mode=='max_coupling'){
     x <- gaussian_max_coupling_cholesky(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
