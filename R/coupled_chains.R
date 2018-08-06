@@ -15,7 +15,8 @@ coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., m = 1, max
   samples1[1,] <- chain_state1
   samples2[1,] <- chain_state2
   current_nsamples1 <- 1
-  chain_state1 <- single_kernel(chain_state1, ...)
+  sres1 <- single_kernel(chain_state1, ...)
+  chain_state1 <- sres1$state
   current_nsamples1 <- current_nsamples1 + 1
   samples1[current_nsamples1,] <- chain_state1
   iter <- 1
@@ -25,12 +26,13 @@ coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., m = 1, max
   while (!finished && iter < max_iterations){
     iter <- iter + 1
     if (meet){
-      chain_state1 <- single_kernel(chain_state1, ...)
+      sres1 <- single_kernel(chain_state1, ...)
+      chain_state1 <- sres1$state
       chain_state2 <- chain_state1
     } else {
       res_coupled_kernel <- coupled_kernel(chain_state1, chain_state2, ...)
-      chain_state1 <- res_coupled_kernel$chain_state1
-      chain_state2 <- res_coupled_kernel$chain_state2
+      chain_state1 <- res_coupled_kernel$state1
+      chain_state2 <- res_coupled_kernel$state2
       if (all(chain_state1 == chain_state2) && !meet){
         # recording meeting time tau
         meet <- TRUE

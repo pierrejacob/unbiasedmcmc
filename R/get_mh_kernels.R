@@ -18,19 +18,19 @@ get_mh_kernels <- function(logtarget, Sigma_proposal, dimension){
   Sigma2_chol_inv <- solve(chol(Sigma_proposal))
   zeromean <- rep(0, dimension)
   # single kernel
-  kernel <- function(chain_state, iteration){
+  kernel <- function(chain_state, ...){
     proposal_value <- chain_state + fast_rmvnorm_chol(1, zeromean, Sigma1_chol)[1,]
     proposal_pdf <- logtarget(proposal_value)
     current_pdf <- logtarget(chain_state)
     accept <- (log(runif(1)) < (proposal_pdf - current_pdf))
     if (accept){
-      return(proposal_value)
+      return(list(state = proposal_value))
     } else {
-      return(chain_state)
+      return(list(state = chain_state))
     }
   }
   # coupled kernel
-  coupled_kernel <- function(chain_state1, chain_state2, iteration){
+  coupled_kernel <- function(chain_state1, chain_state2, ...){
     proposal_value <- gaussian_max_coupling_cholesky_R(chain_state1, chain_state2,
                                                        Sigma1_chol, Sigma2_chol, Sigma1_chol_inv, Sigma2_chol_inv)
     proposal1 <- proposal_value[,1]
@@ -54,7 +54,7 @@ get_mh_kernels <- function(logtarget, Sigma_proposal, dimension){
     if (accept2){
       chain_state2 <- proposal2
     }
-    return(list(chain_state1 = chain_state1, chain_state2 = chain_state2))
+    return(list(state1 = chain_state1, state2 = chain_state2))
   }
   return(list(kernel = kernel, coupled_kernel = coupled_kernel))
 }
