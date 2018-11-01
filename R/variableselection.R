@@ -1,20 +1,9 @@
 #' Y and X need to be matrices, and lambda non-negative
 #'@export
 get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
-  n <- nrow(X)
-  p <- ncol(X)
+  # n <- dim(X)[1]
+  p <- dim(X)[2]
   Y2 <- (t(Y) %*% Y)[1,1]
-  # marginal_likelihood <- function(selection){
-  #   Xselected <- as.matrix(X[, selection==1,drop=F])
-  #   if (sum(selection) != 0){
-  #     P <- Xselected %*% tcrossprod(x = solve(crossprod(x = Xselected, y = Xselected)), y = Xselected)
-  #   } else {
-  #     P <- matrix(0, n, n)
-  #   }
-  #   R2_gamma <- t(Y) %*% P %*% Y/ Y2
-  #   return((-sum(selection)/2 * log(1+g) - (n/2) * log(1 + g*(1-R2_gamma)))[1,1])
-  # }
-  # marginal_likelihood <- function(selection) 0
   marginal_likelihood <- function(selection) debiasedmcmc:::marginal_likelihood_c_2(selection, X, Y, Y2, g)
   prior <- function(selection){
     sumones <- sum(selection)
@@ -157,7 +146,8 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
     return(list(state1 = current_state1, pdf1 = current_pdf1,
                 state2 = current_state2, pdf2 = current_pdf2))
   }
-
+  # runs pair of coupled chain for max(tau, m) iterations, and keeping history
+  # (thus memory intensive for large p and large m)
   coupled_chains_vs <- function(single_kernel, coupled_kernel, rinit, m = 1, max_iterations = Inf, preallocate = 10){
     chain_state1 <- rinit()
     chain_state2 <- rinit()
@@ -220,7 +210,8 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
     return(list(samples1 = samples1, samples2 = samples2,
                 meetingtime = meetingtime, iteration = iter, finished = finished))
   }
-
+  # runs pair of coupled chain for max(tau, m) iterations, and only keeping the unbiased
+  # estimator of E[h(X)] computed on the fly (thus not very memory intensive)
   unbiasedestimator_vs <- function(single_kernel, coupled_kernel, rinit, h = function(x) x, k = 0, m = 1, max_iterations = Inf){
     chain_state1 <- rinit()
     chain_state2 <- rinit()
@@ -243,8 +234,6 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
     if (k <= 1 && m >= 1){
       mcmcestimator <- mcmcestimator + h(chain_state1)
     }
-    # current_nsamples1 <- current_nsamples1 + 1
-    # samples1[current_nsamples1,] <- chain_state1
     iter <- 1
     meet <- FALSE
     finished <- FALSE

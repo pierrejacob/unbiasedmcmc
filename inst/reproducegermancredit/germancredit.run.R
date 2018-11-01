@@ -1,11 +1,13 @@
 
 # Load packages
 library(debiasedmcmc)
+library(dplyr)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores()-2)
-setwd("~/Dropbox/UnbiasedMCMCResults/germancredit/")
 #
 #  This example is about the Polya Gamma Gibbs sampler for logistic regression models, as applied to the German credit data of Lichman 2013.
 #
@@ -31,14 +33,22 @@ p <- ncol(X)
 # Prior
 b <- matrix(0, nrow = p, ncol = 1)
 B <- diag(10, p, p)
-logistic_setting <- logistic_precomputation(Y, X, b, B)
+logistic_setting <- logisticregression_precomputation(Y, X, b, B)
 
 
 # MCMC transition kernels
+# single_kernel <- function(chain_state, logistic_setting){
+#   zs <- abs(xbeta(logistic_setting$X, t(chain_state)))
+#   w <- rpg(logistic_setting$n, h=1, z=zs)
+#   res <- m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
+#   chain_state <- t(fast_rmvnorm_chol(1, res$m, res$Cholesky))
+#   return(chain_state)
+# }
+
 single_kernel <- function(chain_state, logistic_setting){
-  zs <- abs(xbeta(logistic_setting$X, t(chain_state)))
-  w <- rpg(logistic_setting$n, h=1, z=zs)
-  res <- m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
+  zs <- abs(logisticregression_xbeta(logistic_setting$X, t(chain_state)))
+  w <- BayesLogit::rpg(logistic_setting$n, h=1, z=zs)
+  res <- logisticregression_m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
   chain_state <- t(fast_rmvnorm_chol(1, res$m, res$Cholesky))
   return(chain_state)
 }
@@ -64,7 +74,7 @@ rinit <- function(){
 # Behavior from a single run
 current_value1 <- rinit()
 current_value2 <- rinit()
-niterations <- 1000
+niterations <- 100
 
 chain1_w <- chain2_w <- matrix(ncol=n, nrow=niterations)
 chain1_beta <- chain2_beta <- matrix(ncol=p, nrow=niterations)
@@ -95,7 +105,7 @@ load(file = "germancredit.tuning.RData")
 
 
 # Distribution of meeting times over many runs
-nsamples <- 1000
+nsamples <- 100
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel = single_kernel, coupled_kernel = coupled_kernel, rinit = rinit, logistic_setting = logistic_setting)
 }
@@ -113,7 +123,7 @@ load(file = "germancredit.tuning.RData")
 k <- 110
 m <- 1100
 
-nsamples <- 1000
+nsamples <- 100
 
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit, m=m, logistic_setting=logistic_setting)

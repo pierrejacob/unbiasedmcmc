@@ -3,6 +3,9 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
+
 registerDoParallel(cores = detectCores())
 #
 # this example is taken from Rosenthal "Parallel Computing and Monte Carlo algorithms", 2000.
@@ -38,7 +41,7 @@ single_kernel <- function(current_state, ...){
   theta <- current_state[3:(ndata+2)]
   theta_bar <- mean(current_state[3:(ndata+2)])
   # update of A given rest
-  A <- rigamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
+  A <- rinversegamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
   mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
@@ -53,7 +56,7 @@ coupled_kernel <- function(current_state1, current_state2, ...){
   theta2 <- current_state2[3:(ndata+2)]
   theta_bar2 <- mean(theta2)
   # update of A given rest
-  As <- rigamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
+  As <- rinversegamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
                         beta1 = b + 0.5 * sum((theta1 - theta_bar1)^2),
                         beta2 = b + 0.5 * sum((theta2 - theta_bar2)^2))
   A1 <- As[1]
@@ -74,7 +77,8 @@ coupled_kernel <- function(current_state1, current_state2, ...){
   return(list(chain_state1 = c(mu1, A1, theta1), chain_state2 = c(mu2, A2, theta2)))
 }
 
-nsamples <- 10000
+## Modify nsamples to create results in the paper
+nsamples <- 1000
 k <- 4
 m <- 10*k
 
@@ -86,17 +90,6 @@ load(file = "baseball.c_chain.RData")
 
 meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 tabulate(meetingtime)
-
-# nsamples <- 10000
-# k <- 4
-# K <- 10*k
-# c_chains_2 <-  foreach(irep = 1:nsamples) %dorng% {
-#   coupled_chains(single_kernel, coupled_kernel, rinit, K = K)
-# }
-# save(c_chains_, c_chains_2, file = "baseball.c_chain.RData")
-# load(file = "baseball.c_chain.RData")
-# meetingtime <- sapply(c_chains_2, function(x) x$meetingtime)
-# tabulate(meetingtime)
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
   H_bar(c_chains_[[irep]], k = k, m = m)

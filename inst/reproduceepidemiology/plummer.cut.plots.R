@@ -1,9 +1,12 @@
 # load packages
 library(debiasedmcmc)
 library(latex2exp)
+library(dplyr)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores())
 
 #

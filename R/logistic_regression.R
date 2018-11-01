@@ -4,22 +4,22 @@
 
 # from util_logisticregression --------------------------------------------
 #'@export
-xbeta <- function(X, beta){
+logisticregression_xbeta <- function(X, beta){
   return(xbeta_(X, beta))
 }
 
 #'@export
-sigma <- function(X, w){
+logisticregression_sigma <- function(X, w){
   return(sigma_(X, w))
 }
 
 #'@export
-sigma_function <- function(omega, X, invB){
-  return(solve(sigma(X, omega) + invB))
+logisticregression_sigma_function <- function(omega, X, invB){
+  return(solve(logisticregression_sigma(X, omega) + invB))
 }
 
 #'@export
-m_function <- function(omega, Sigma, X, Y, invBtimesb){
+logisticregression_m_function <- function(omega, Sigma, X, Y, invBtimesb){
   return(Sigma %*% (t(X) %*% matrix(Y - rep(0.5, length(Y)), ncol = 1) + invBtimesb))
 }
 
@@ -32,7 +32,7 @@ m_function <- function(omega, Sigma, X, Y, invBtimesb){
 #' and precomputes some quantities repeatedly used in the Polya-Gamma sampler and variants of it.
 #' The precomputed quantities are returned in a list, which is then meant to be passed to the samplers.
 #'@export
-logistic_precomputation <- function(Y, X, b, B){
+logisticregression_precomputation <- function(Y, X, b, B){
   invB <- solve(B)
   invBtimesb <- invB %*% b
   Ykappa <- matrix(Y - rep(0.5, length(Y)), ncol=1)
@@ -51,7 +51,7 @@ logistic_precomputation <- function(Y, X, b, B){
 # Cholesky_inverse is the lower triangular matrix L, in the decomposition Sigma^{-1} = L L^T
 # whereas Cholesky is the lower triangular matrix Ltilde in the decomposition Sigma = Ltilde^T Ltilde
 #'@export
-m_and_sigma <- function(omega, X, invB, KTkappaplusinvBtimesb){
+logisticregression_m_and_sigma <- function(omega, X, invB, KTkappaplusinvBtimesb){
   return(m_sigma_function_(omega, X, invB, KTkappaplusinvBtimesb))
 }
 
@@ -71,20 +71,15 @@ m_and_sigma <- function(omega, X, invB, KTkappaplusinvBtimesb){
 #' the regression coefficient at that iteration.
 #'@export
 pg_gibbs <- function(niterations, logistic_setting){
-  # Y <- logistic_setting$Y
-  # invBtimesb <- logistic_setting$invBtimesb
   n <- nrow(logistic_setting$X)
   p <- ncol(logistic_setting$X)
   betas <- matrix(0, ncol=p, nrow=niterations)
   beta <- matrix(0, ncol=p, nrow=1)
   for (iteration in 1:niterations){
-    zs <- abs(xbeta(logistic_setting$X, beta))
-    w <- rpg(n, h=1, z=zs)
-    res <- m_and_sigma(w, logistic_setting$X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
-    # S <- sigma_function(w, logistic_setting$X, invB)
-    # m <- m_function(w, S, logistic_setting$X, Y, invBtimesb)
+    zs <- abs(logisticregression_xbeta(logistic_setting$X, beta))
+    w <- BayesLogit::rpg(n, h=1, z=zs)
+    res <- logisticregression_m_and_sigma(w, logistic_setting$X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
     beta <- fast_rmvnorm_chol(1, res$m, res$Cholesky)
-    # beta <- fast_rmvnorm(1, m, S)
     betas[iteration,] <- beta
   }
   return(betas)
@@ -125,21 +120,21 @@ w_rejsampler <- function(beta1, beta2, X){
 
   w1 <- rep(0., n)
   w2 <- rep(0., n)
-  z1s <- abs(xbeta(X, beta1))
-  z2s <- abs(xbeta(X, beta2))
+  z1s <- abs(logisticregression_xbeta(X, beta1))
+  z2s <- abs(logisticregression_xbeta(X, beta2))
 
   for (i in 1:n){
     z_i <- c(z1s[i], z2s[i])
     z_min <- min(z_i)
     z_max <- max(z_i)
 
-    proposal <- rpg(num=1, h=1, z=z_min)
+    proposal <- BayesLogit::rpg(num=1, h=1, z=z_min)
     w_min <- proposal
 
     if (log(runif(1)) < logratio(proposal, z_min, z_max)){
       w_max <- proposal
     } else {
-      w_max <- rpg(num=1, h=1, z=z_max)
+      w_max <- BayesLogit::rpg(num=1, h=1, z=z_max)
     }
 
     if (which.min(z_i) == 1){
@@ -156,14 +151,14 @@ w_rejsampler <- function(beta1, beta2, X){
 w_max_coupling <- function(beta1, beta2, X){
   w1s <- rep(0., n)
   w2s <- rep(0., n)
-  z1s <- abs(xbeta(X, beta1))
-  z2s <- abs(xbeta(X, beta2))
+  z1s <- abs(logisticregression_xbeta(X, beta1))
+  z2s <- abs(logisticregression_xbeta(X, beta2))
 
   for (i in 1:n){
     z1 <- z1s[i]
     z2 <- z2s[i]
 
-    w1 <- rpg(num=1, h=1, z=z1)
+    w1 <- BayesLogit::rpg(num=1, h=1, z=z1)
     w1s[[i]] <- w1
     u <- runif(1,0,cosh(z1/2)*exp(-0.5*z1^2*w1))
     if(u <= cosh(z2/2)*exp(-0.5*z2^2*w1)){
@@ -171,7 +166,7 @@ w_max_coupling <- function(beta1, beta2, X){
     } else {
       accept <- FALSE
       while(!accept){
-        w2 <- rpg(num=1, h=1, z=z2)
+        w2 <- BayesLogit::rpg(num=1, h=1, z=z2)
         u <- runif(1,0,cosh(z2/2)*exp(-0.5*z2^2*w2))
         if(u > cosh(z1/2)*exp(-0.5*z1^2*w2)){
           accept <- TRUE
@@ -192,11 +187,6 @@ sample_w <- function(beta1, beta2, X, mode='max'){
     w1w2_mat <- w_max_couplingC(beta1, beta2, X)
     w1w2 <- list(w1=w1w2_mat[,1], w2=w1w2_mat[,2])
   }
-  #} else if (mode=='indep'){
-  #  w1w2 <- w_indep(beta1,beta2,X)
-  #} else if (mode=='max'){
-  #  w1w2 <- w_max_coupling(beta1,beta2,X)
-  #}
   return(w1w2)
 }
 
@@ -205,8 +195,8 @@ sample_w <- function(beta1, beta2, X, mode='max'){
 #'@export
 sample_beta <- function(w1, w2, logistic_setting, mode="max_coupling", mc_prob=0.5){
   KTkappaplusinvBtimesb <- logistic_setting$KTkappaplusinvBtimesb
-  res1 <- m_and_sigma(w1, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
-  res2 <- m_and_sigma(w2, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
+  res1 <- logisticregression_m_and_sigma(w1, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
+  res2 <- logisticregression_m_and_sigma(w2, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
 
   if(mode=='max_coupling'){
     x <- gaussian_max_coupling_cholesky(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)

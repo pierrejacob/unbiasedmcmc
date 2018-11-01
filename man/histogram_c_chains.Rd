@@ -4,7 +4,8 @@
 \alias{histogram_c_chains}
 \title{histogram_c_chains}
 \usage{
-histogram_c_chains(c_chains, component, k, m, breaks = NULL, nclass = 30)
+histogram_c_chains(c_chains, component, k, m, breaks = NULL,
+  nclass = 30)
 }
 \description{
 Compute histograms based on coupled Markov chains

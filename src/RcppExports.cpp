@@ -175,6 +175,92 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcouplbern2
+IntegerVector rcouplbern2(double p1, double p2);
+RcppExport SEXP _debiasedmcmc_rcouplbern2(SEXP p1SEXP, SEXP p2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< double >::type p2(p2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rcouplbern2(p1, p2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_sum_
+int ising_sum_(const IntegerMatrix& state);
+RcppExport SEXP _debiasedmcmc_ising_sum_(SEXP stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type state(stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_sum_(state));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_gibbs_sweep_
+IntegerMatrix ising_gibbs_sweep_(IntegerMatrix state, NumericVector proba_beta);
+RcppExport SEXP _debiasedmcmc_ising_gibbs_sweep_(SEXP stateSEXP, SEXP proba_betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type state(stateSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type proba_beta(proba_betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_gibbs_sweep_(state, proba_beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_coupled_gibbs_sweep_
+List ising_coupled_gibbs_sweep_(IntegerMatrix state1, IntegerMatrix state2, NumericVector proba_beta);
+RcppExport SEXP _debiasedmcmc_ising_coupled_gibbs_sweep_(SEXP state1SEXP, SEXP state2SEXP, SEXP proba_betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type state1(state1SEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type state2(state2SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type proba_beta(proba_betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_coupled_gibbs_sweep_(state1, state2, proba_beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_two2one_
+int ising_two2one_(int ix, int iy, int size);
+RcppExport SEXP _debiasedmcmc_ising_two2one_(SEXP ixSEXP, SEXP iySEXP, SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ix(ixSEXP);
+    Rcpp::traits::input_parameter< int >::type iy(iySEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_two2one_(ix, iy, size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_one2two_
+IntegerVector ising_one2two_(int location, int size);
+RcppExport SEXP _debiasedmcmc_ising_one2two_(SEXP locationSEXP, SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type location(locationSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_one2two_(location, size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ising_locationneighbour_
+int ising_locationneighbour_(int location, int ineighbour, int size);
+RcppExport SEXP _debiasedmcmc_ising_locationneighbour_(SEXP locationSEXP, SEXP ineighbourSEXP, SEXP sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type location(locationSEXP);
+    Rcpp::traits::input_parameter< int >::type ineighbour(ineighbourSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ising_locationneighbour_(location, ineighbour, size));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sigma_
 NumericMatrix sigma_(const NumericMatrix& X, const NumericVector& w);
 RcppExport SEXP _debiasedmcmc_sigma_(SEXP XSEXP, SEXP wSEXP) {
@@ -302,6 +388,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rnorm_reflectionmax_
+Rcpp::List rnorm_reflectionmax_(const Eigen::VectorXd& mu1, const Eigen::VectorXd& mu2, const Eigen::MatrixXd& Sigma_chol, const Eigen::MatrixXd& inv_Sigma_chol);
+RcppExport SEXP _debiasedmcmc_rnorm_reflectionmax_(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma_cholSEXP, SEXP inv_Sigma_cholSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu1(mu1SEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu2(mu2SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Sigma_chol(Sigma_cholSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type inv_Sigma_chol(inv_Sigma_cholSEXP);
+    rcpp_result_gen = Rcpp::wrap(rnorm_reflectionmax_(mu1, mu2, Sigma_chol, inv_Sigma_chol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sample_pair01
 IntegerVector sample_pair01(const NumericVector& selection);
 RcppExport SEXP _debiasedmcmc_sample_pair01(SEXP selectionSEXP) {
@@ -342,6 +442,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_get_measure_", (DL_FUNC) &_debiasedmcmc_get_measure_, 3},
     {"_debiasedmcmc_rinvgaussian_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_c, 3},
     {"_debiasedmcmc_rinvgaussian_coupled_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_coupled_c, 4},
+    {"_debiasedmcmc_rcouplbern2", (DL_FUNC) &_debiasedmcmc_rcouplbern2, 2},
+    {"_debiasedmcmc_ising_sum_", (DL_FUNC) &_debiasedmcmc_ising_sum_, 1},
+    {"_debiasedmcmc_ising_gibbs_sweep_", (DL_FUNC) &_debiasedmcmc_ising_gibbs_sweep_, 2},
+    {"_debiasedmcmc_ising_coupled_gibbs_sweep_", (DL_FUNC) &_debiasedmcmc_ising_coupled_gibbs_sweep_, 3},
+    {"_debiasedmcmc_ising_two2one_", (DL_FUNC) &_debiasedmcmc_ising_two2one_, 3},
+    {"_debiasedmcmc_ising_one2two_", (DL_FUNC) &_debiasedmcmc_ising_one2two_, 2},
+    {"_debiasedmcmc_ising_locationneighbour_", (DL_FUNC) &_debiasedmcmc_ising_locationneighbour_, 3},
     {"_debiasedmcmc_sigma_", (DL_FUNC) &_debiasedmcmc_sigma_, 2},
     {"_debiasedmcmc_m_sigma_function_", (DL_FUNC) &_debiasedmcmc_m_sigma_function_, 4},
     {"_debiasedmcmc_rmvnorm", (DL_FUNC) &_debiasedmcmc_rmvnorm, 3},
@@ -352,6 +459,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_cut_in_fifth_", (DL_FUNC) &_debiasedmcmc_cut_in_fifth_, 1},
     {"_debiasedmcmc_propensity_module2_loglik2_", (DL_FUNC) &_debiasedmcmc_propensity_module2_loglik2_, 5},
     {"_debiasedmcmc_prune_", (DL_FUNC) &_debiasedmcmc_prune_, 1},
+    {"_debiasedmcmc_rnorm_reflectionmax_", (DL_FUNC) &_debiasedmcmc_rnorm_reflectionmax_, 4},
     {"_debiasedmcmc_sample_pair01", (DL_FUNC) &_debiasedmcmc_sample_pair01, 1},
     {"_debiasedmcmc_marginal_likelihood_c_2", (DL_FUNC) &_debiasedmcmc_marginal_likelihood_c_2, 5},
     {NULL, NULL, 0}

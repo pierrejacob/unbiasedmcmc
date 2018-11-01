@@ -4,6 +4,8 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores())
 
 #

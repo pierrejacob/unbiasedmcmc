@@ -7,5 +7,6 @@
 setmytheme()
 }
 \description{
-This function customizes the theme used by ggplot.
+This function customizes the theme used by ggplot2. Loads the packages ggplot2 and
+ggthemes.
 }

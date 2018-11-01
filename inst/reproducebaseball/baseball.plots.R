@@ -3,7 +3,6 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = detectCores())
 #
 # this example is taken from Rosenthal "Parallel Computing and Monte Carlo algorithms", 2000.
 # The data are baseball player's batting averages, as in Efron and Morris 1975 or Morris 1983
@@ -68,14 +67,6 @@ colnames(formatted.df) <- c("k", "m", "expected cost", "variance", "inefficiency
 formatted.df <- xtable(formatted.df, digits = 4, caption = cap)
 
 print.xtable(formatted.df, include.rownames = FALSE, include.colnames = TRUE, file = "baseball.inefficiency.tex")
-
-
-# x <- as.numeric(names(table(meetingtime)))
-# y <- as.numeric(table(meetingtime)) / nsamples
-# g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting time") + ylab("proportion")
-# g <- g + scale_x_continuous(breaks = c(2,3,4))
-# g
-# ggsave(filename = "baseball.meetingtime.pdf", plot = g, width = 7, height = 7)
 
 
 rm(c_chains_)

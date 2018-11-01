@@ -1,9 +1,7 @@
 # load packages
 library(debiasedmcmc)
-setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = detectCores())
 
 #
 target <- function(x){
@@ -31,7 +29,8 @@ get_pb <- function(sd_proposal, initmean, initsd){
 
 # test function
 testfunction <- function(x) (x > 3)
-nmcmc <- 1000000
+## Modify nmcmc
+nmcmc <- 100000
 burnin <- 10000
 # easy setting: good proposal, but bad init
 pb <- get_pb(3, initmean = 10, initsd = 10)

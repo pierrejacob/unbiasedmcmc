@@ -2,8 +2,8 @@
 # and compute a number of estimators using that seed
 #
 arguments <- commandArgs(TRUE)
-if (length(arguments)!=7){
-  cat("needs 7 integers as arguments; JOB_ID, NRUNS, n, p, SNR, k, m")
+if (length(arguments)!=8){
+  cat("needs 8 integers as arguments; JOB_ID, NRUNS, design, n, p, SNR, k, m")
   q()
 }
 
@@ -11,15 +11,16 @@ if (length(arguments)!=7){
 #
 JOB_ID <- as.numeric(arguments[1])
 NRUNS <- as.numeric(arguments[2]) # number of runs for this job
-n <- as.numeric(arguments[3])
-p <- as.numeric(arguments[4])
-SNR <- as.numeric(arguments[5])
-k <- as.numeric(arguments[6])
-m <- as.numeric(arguments[7])
+design <- as.numeric(arguments[3]) # 0 for independent design, 1 for correlated
+n <- as.numeric(arguments[4])
+p <- as.numeric(arguments[5])
+SNR <- as.numeric(arguments[6])
+k <- as.numeric(arguments[7])
+m <- as.numeric(arguments[8])
 
 # file paths
-workingdirectory <- "~/Dropbox/UnbiasedMCMCResults/varselection/"
-resultpath <- paste0("varselection.SNR", SNR, ".n", n, ".p", p, ".k", k, ".m", m, ".job", JOB_ID, ".RData")
+workingdirectory <- ""
+resultpath <- paste0("varselection.design", design, ".SNR", SNR, ".n", n, ".p", p, ".k", k, ".m", m, ".job", JOB_ID, ".RData")
 #
 setwd(workingdirectory)
 # load packages
@@ -34,14 +35,18 @@ stream.names <- paste(1:nstream)
 .lec.CurrentStream(paste(JOB_ID))
 
 ### beginning of job
-load(paste0("~/Dropbox/UnbiasedMCMCResults/varselection/varselection.dataSNR", SNR, ".RData"))
+if (design == 0){
+  load(paste0("varselection.dataSNR", SNR, ".RData"))
+} else {
+  load(paste0("varselection.data.correlatedSNR", SNR, ".RData"))
+}
 Ysub <- Y[1:n]
 Xsub <- X[1:n,1:p]
 Y2 <- (t(Ysub) %*% Ysub)[1,1]
 g <- p^3
 
 s0 <- 100
-kappa <- 0.1
+kappa <- 2
 proportion_singleflip <- 0.5
 
 vs <- get_variableselection(Ysub,Xsub,g,kappa,s0,proportion_singleflip)
@@ -61,12 +66,6 @@ for (irun in 1:NRUNS){
   result[[irun]] <- list(irun = irun, JOB_ID = JOB_ID,
                          mcmcestimator = ue$mcmcestimator, correction = ue$correction,
                          uestimator = ue$uestimator, meetingtime = ue$meetingtime, niterations = ue$iteration)
-  # cc <- coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
-  # measure <- debiasedmcmc:::get_measure_(cc, k, m)
-  # approximation <- data.frame(rep = rep(irun, length(measure$weights)), weights = measure$weights, atoms = measure$atoms)
-  # approximation <- data.frame(debiasedmcmc:::prune_(as.matrix(approximation[do.call(order, as.list(approximation[,3:ncol(approximation)])),])))
-  # approximation <- approximation[approximation$weights != 0,]
-  # result[[irun]] <- list(irun = irun, JOB_ID = JOB_ID, approximation = approximation, meetingtime = cc$meetingtime, niterations = cc$iteration)
   save(result, file = resultpath)
 }
 .lec.CurrentStreamEnd()

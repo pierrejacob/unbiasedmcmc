@@ -3,6 +3,8 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores())
 
 #
@@ -39,7 +41,7 @@ single_kernel <- function(current_state, ...){
   theta <- current_state[3:(ndata+2)]
   theta_bar <- mean(current_state[3:(ndata+2)])
   # update of A given rest
-  A <- rigamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
+  A <- rinversegamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
   mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
@@ -54,7 +56,7 @@ coupled_kernel <- function(current_state1, current_state2, ...){
   theta2 <- current_state2[3:(ndata+2)]
   theta_bar2 <- mean(theta2)
   # update of A given rest
-  As <- rigamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
+  As <- rinversegamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
                         beta1 = b + 0.5 * sum((theta1 - theta_bar1)^2),
                         beta2 = b + 0.5 * sum((theta2 - theta_bar2)^2))
   A1 <- As[1]
@@ -121,7 +123,8 @@ table(meetingtime)
 # we have seen only times = to 2 and 3
 # so we pick k = 4
 
-nsamples <- 10000
+## Modify nsamples
+nsamples <- 1000
 m <- 100
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
@@ -129,86 +132,10 @@ c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
 
 save(meetingtime.list, c_chains_, m, file = "baseball.tuning.RData")
 
-nsamples <- 10000
+nsamples <- 1000
 m <- 100
 final.c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
 }
 
 save(meetingtime.list, c_chains_, m, final.c_chains_, file = "baseball.tuning.RData")
-
-
-
-
-
-# load(file = "baseball.mcmc.RData")
-#
-# library(coda)
-#
-# chain_ <- chain[1000:nrow(chain),1]^2
-# spectrum0(chain_)
-#
-#
-#
-# #
-# nsamples <- 10000
-# ks <- 2:10
-# cost <- rep(0, length(ks))
-# v <- rep(0, length(ks))
-# for (ik in 1:length(ks)){
-#   k <- ks[ik]
-#   cat("k = ", k, "\n")
-#   K <- k
-#   c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-#     coupled_chains(single_kernel, coupled_kernel, rinit, K = K)
-#   }
-#   estimators <-  foreach(irep = 1:nsamples) %dorng% {
-#     H_bar(c_chains_[[irep]], h = function(x) x[3], k = k, K = K)
-#   }
-#   cost[ik] <- sum(sapply(c_chains_, function(x) x$iteration)) / nsamples
-#   v[ik] <- var(unlist(estimators))
-# }
-# tuning.k.list <- list(nsamples = nsamples, ks = ks, cost = cost, v = v)
-# save(meetingtime.list, tuning.k.list, file = "baseball.tuning.RData")
-#
-# load(file = "baseball.tuning.RData")
-# qplot(x = ks, y = cost * v, geom = "line") + scale_y_log10()
-# clearly k = 4 was a good choice !
-
-# Then with our heuristics we would choose m = 10 * k,
-# so m = 40.
-# Let's try different values of m and compare.
-
-# k <- 4
-# Ks <- c(4, 10, 20, 40, 60, 80, 100, 150, 200)
-# Ks
-# cost <- rep(0, length(Ks))
-# v <- rep(0, length(Ks))
-# for (iK in 1:length(Ks)){
-#   K <- Ks[iK]
-#   cat("K = ", K, "\n")
-#   c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-#     coupled_chains(single_kernel, coupled_kernel, rinit, K = K)
-#   }
-#   estimators <-  foreach(irep = 1:nsamples) %dorng% {
-#     H_bar(c_chains_[[irep]], h = function(x) x[3], k = k, K = K)
-#   }
-#   cost[iK] <- sum(sapply(c_chains_, function(x) x$iteration)) / nsamples
-#   v[iK] <- var(unlist(estimators))
-# }
-# tuning.m.list <- list(nsamples = nsamples, k = k, Ks = Ks, cost = cost, v = v)
-# save(meetingtime.list, tuning.k.list, tuning.m.list, file = "baseball.tuning.RData")
-# load(file = "baseball.tuning.RData")
-#
-# qplot(x = Ks, y = 1/(cost * v), geom = "line") + geom_point() + geom_vline(xintercept = 4 * 10)
-# achieves nearly maximum efficiency
-
-
-# library(mcmcse)
-# niterations <- nrow(chain)
-# mcmcse::mcse(chain[1000:niterations,3])$se
-# ?mcmcse::mcse
-# library(mcmc)
-# library(MCMCpack)
-# mcmc_var <- spectrum0(chain[1000:niterations,3])
-

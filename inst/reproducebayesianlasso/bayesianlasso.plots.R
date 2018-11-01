@@ -1,11 +1,10 @@
 # load packages
 library(debiasedmcmc)
-library(ggthemes)
 library(latex2exp)
+library(dplyr)
 setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = detectCores())
 
 data(diabetes)
 X <- scale(diabetes$x2)
@@ -28,8 +27,6 @@ ggsave(filename = "bayesianlasso.meetings.pdf", plot = g, width = 8, height = 6)
 
 ## effective sample sizes as a function of lambda
 load("bayesianlasso.mcmc.RData")
-nmcmc <- 50000
-burnin <- floor(nmcmc / 10)
 g <- ggplot(df, aes(x = lambda, y = ess / (nmcmc - burnin + 1))) + geom_point()
 g <- g + scale_x_log10(breaks = c(1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4))
 g <- g + xlab(expression(lambda)) + ylab("effective sample sizes")

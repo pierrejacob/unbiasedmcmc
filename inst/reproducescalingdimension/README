@@ -1,0 +1,26 @@
+These scripts produce the results of Section 4, on the scaling of the proposed couplings with respect to the dimension.
+
+The target is multivariate Normal with mean 0 and variance defined as the inverse of a Wishart(d, I_d) distribution,
+where d is the dimension, and I_d is the identity matrix of dimension d. For the Gibbs sampler, another target with weak correlations
+is also considered.
+
+Each script corresponds to a different algorithm, and runs the simulation
+with chains started either at stationarity, or from a Normal(1_d, I_d), where 1_d is a vector of ones.
+
+Scripts:
+
+-  scaling.rwmh.maximalcoupling.R: random walk Metropolis Hastings,
+with maximal coupling of the Gaussian proposals (that is the coupling referred to as gamma-coupling, with independent residuals).
+
+-  scaling.rwmh.reflectionmaxcouping.R: random walk Metropolis Hastings,
+with reflection-maximal coupling of the Gaussian proposals (that is the coupling described in Bou-Rabee, Eberle & Zimmer 2018, with mirrored residuals)
+
+-  scaling.gibbs.R: MH within Gibbs,
+  with max coupling of each proposal,
+  both on the target described above and on a target with weak correlations.
+
+-  scaling.hmc.R: Hamiltonian Monte Carlo,
+  with preconditioned mass matrix, synchronous coupling of momenta in HMC steps, combined with MH moves, as described in Heng & Jacob 2018.
+
+- scaling.plots.R creates the plots, with the files created by the above scripts.
+

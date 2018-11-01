@@ -49,6 +49,34 @@ rinvgaussian_coupled_c <- function(mu1, mu2, lambda1, lambda2) {
     .Call('_debiasedmcmc_rinvgaussian_coupled_c', PACKAGE = 'debiasedmcmc', mu1, mu2, lambda1, lambda2)
 }
 
+rcouplbern2 <- function(p1, p2) {
+    .Call('_debiasedmcmc_rcouplbern2', PACKAGE = 'debiasedmcmc', p1, p2)
+}
+
+ising_sum_ <- function(state) {
+    .Call('_debiasedmcmc_ising_sum_', PACKAGE = 'debiasedmcmc', state)
+}
+
+ising_gibbs_sweep_ <- function(state, proba_beta) {
+    .Call('_debiasedmcmc_ising_gibbs_sweep_', PACKAGE = 'debiasedmcmc', state, proba_beta)
+}
+
+ising_coupled_gibbs_sweep_ <- function(state1, state2, proba_beta) {
+    .Call('_debiasedmcmc_ising_coupled_gibbs_sweep_', PACKAGE = 'debiasedmcmc', state1, state2, proba_beta)
+}
+
+ising_two2one_ <- function(ix, iy, size) {
+    .Call('_debiasedmcmc_ising_two2one_', PACKAGE = 'debiasedmcmc', ix, iy, size)
+}
+
+ising_one2two_ <- function(location, size) {
+    .Call('_debiasedmcmc_ising_one2two_', PACKAGE = 'debiasedmcmc', location, size)
+}
+
+ising_locationneighbour_ <- function(location, ineighbour, size) {
+    .Call('_debiasedmcmc_ising_locationneighbour_', PACKAGE = 'debiasedmcmc', location, ineighbour, size)
+}
+
 sigma_ <- function(X, w) {
     .Call('_debiasedmcmc_sigma_', PACKAGE = 'debiasedmcmc', X, w)
 }
@@ -87,6 +115,10 @@ propensity_module2_loglik2_ <- function(theta1s, theta2s, X, C, Y) {
 
 prune_ <- function(df) {
     .Call('_debiasedmcmc_prune_', PACKAGE = 'debiasedmcmc', df)
+}
+
+rnorm_reflectionmax_ <- function(mu1, mu2, Sigma_chol, inv_Sigma_chol) {
+    .Call('_debiasedmcmc_rnorm_reflectionmax_', PACKAGE = 'debiasedmcmc', mu1, mu2, Sigma_chol, inv_Sigma_chol)
 }
 
 sample_pair01 <- function(selection) {

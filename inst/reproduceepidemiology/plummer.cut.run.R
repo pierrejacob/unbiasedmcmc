@@ -3,10 +3,12 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores())
 
-#
-# Plummer example
+## This scripts illustrates the approximation of the cut distribution
+# Plummer's example on HPV
 # nhpv considered as Y
 nhpv <- c(7, 6, 10, 10, 1, 1, 10, 4, 35, 0, 10, 8, 4)
 y1 <- matrix(nhpv, nrow = 1)
@@ -102,7 +104,8 @@ get_kernels <- function(theta1, Sigma_proposal){
   return(list(target = target, coupled_kernel = coupled_kernel, single_kernel = single_kernel))
 }
 
-nsamples <- 1000
+## Modify nsamples
+nsamples <- 100
 theta1s <- sample_module1(nsamples)
 theta1hat <- colMeans(theta1s)
 ##
@@ -128,7 +131,6 @@ k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
 m <- 5*k
 
 #
-# K <- 1000
 c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
   single_kernel <- kernels$single_kernel
   continue_coupled_chains(c_chains_[[irep]], single_kernel, m = m)
@@ -136,7 +138,6 @@ c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
 save(nsamples, k, m, c_chains_, c_chains_continued_, file = filename)
 load(file = filename)
 #
-# k <- 500
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
   H_bar(c_chains_continued_[[irep]], k = k, m = m)
@@ -163,7 +164,8 @@ print(Sigma_proposal)
 
 
 filename <- "plummer.results.RData"
-nsamples <- 10000
+## modify nsamples
+nsamples <- 1000
 
 theta1s <- sample_module1(nsamples)
 dimension <- 2
@@ -181,19 +183,13 @@ meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 summary(meetingtime)
 # sum(sapply(c_chains_2, function(x) x$iteration))
 # hist(meetingtime)
-
-# x <- as.numeric(names(table(meetingtime)))
-# y <- as.numeric(table(meetingtime)) / nsamples
-# g <- qplot(x = x, y = 0, yend = y, xend = x, geom = "segment") + xlab("meeting time") + ylab("proportion")
+# g <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("proportion")
 # g
-g <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("proportion")
-g
-ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 5, height = 5)
+# ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 5, height = 5)
 
 
 k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
 m <- 10*k
-# nsamples <- 1000
 # ##
 c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
   theta1 <- theta1s[irep,]
@@ -235,22 +231,9 @@ for (component in 1:dimension){
 c_estimators <- sapply(cross_estimators, function(x) x[1])
 cat("estimated covariance: ", mean(c_estimators) - prod(est_mean), "\n")
 
-# # histogram
-# histogram1 <- histogram_c_chains(c_chains_continued_2, 1, k, K, nclass = 100)
-# g1 <- plot_histogram(histogram1, with_bar = F) + xlab(expression(theta[2.1])) + ylab("density")
-# g1
-# ggsave("plummer.histogram1.pdf", plot = g1, width = 7, height = 7)
-#
-# # g
-#
-# histogram2 <- histogram_c_chains(c_chains_continued_2, 2, k, K, nclass = 100)
-# g2 <- plot_histogram(histogram2, with_bar = F) + xlab(expression(theta[2.2])) + ylab("density")
-# g2
-# ggsave("plummer.histogram2.pdf", plot = g2, width = 7, height = 7)
-# # g
-
-### exact cut distribution from tedious parallel MCMC
-niterations <- 1000
+### exact cut distribution from parallel MCMC runs
+## Modify niterations
+niterations <- 100
 theta2s <- foreach(itheta = 1:nrow(theta1s), .combine = rbind) %dorng% {
   theta1 <- theta1s[itheta,]
   kernels <-  get_kernels(theta1, Sigma_proposal)

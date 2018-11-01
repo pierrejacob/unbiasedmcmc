@@ -7,7 +7,6 @@
 #'@title fast_dmvnorm
 #'@description fast_dmvnorm
 #'@export
-
 fast_dmvnorm <- function(x, mean, covariance){
   return(dmvnorm(x, mean, covariance))
 }
@@ -23,7 +22,6 @@ fast_dmvnorm_chol_inverse <- function(x, mean, chol_inverse){
 #'@title fast_rmvnorm
 #'@description fast_rmvnorm
 #'@export
-
 fast_rmvnorm <- function(nparticles, mean, covariance){
   return(rmvnorm(nparticles, mean, covariance))
 }
@@ -39,7 +37,6 @@ fast_rmvnorm_chol <- function(nparticles, mean, chol){
 #'@title expit
 #'@description expit function
 #'@export
-
 expit <- function(z) 1 / (1 + exp(-z))
 
 
@@ -62,9 +59,12 @@ cut_in_fifth <- function(x){
 
 #'@rdname setmytheme
 #'@title Customize graphical settings
-#'@description This function customizes the theme used by ggplot.
+#'@description This function customizes the theme used by ggplot2. Loads the packages ggplot2 and
+#'ggthemes.
 #'@export
 setmytheme <- function(){
+  library(ggplot2)
+  library(ggthemes)
   theme_set(theme_bw())
   theme_update(axis.text.x = element_text(size = 20),
                axis.text.y = element_text(size = 20),

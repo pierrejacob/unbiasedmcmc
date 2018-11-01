@@ -1,20 +1,19 @@
 Package: debiasedmcmc
 Type: Package
 Title: Debiasing MCMC with couplings
-Version: 0.1.0
+Version: 0.2.0
 Author: Pierre E Jacob & John O'Leary
 Maintainer: Pierre E Jacob <pjacob@fas.harvard.edu>
 Description: This package includes the scripts to reproduce the article
     "Unbiased Markov chain Monte Carlo with couplings" by Pierre E. Jacob, John
     O'Leary, Yves F. Atchade, where it is described how the bias of MCMC can
-    be exactly removed, using couplings of Markov chains. Illustrations include
-    Metropolis--Hastings and Gibbs samplers, with applications to approximation of
-    the cut distribution.
+    be exactly removed, using couplings of Markov chains. The technical report
+    is available at https://arxiv.org/abs/1708.03625.
 License: GPL (>= 2)
 Encoding: UTF-8
 Depends:
-    Rcpp,RcppEigen,doParallel,foreach,doRNG,tidyr,dplyr,reshape2,ggplot2,BayesLogit
+    Rcpp,RcppEigen
 Imports:
     Rcpp (>= 0.11.6),RcppEigen
 LinkingTo: Rcpp,RcppEigen
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

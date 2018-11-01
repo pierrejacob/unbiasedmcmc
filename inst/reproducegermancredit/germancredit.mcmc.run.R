@@ -1,10 +1,8 @@
 
 # load packages
 library(debiasedmcmc)
-setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = detectCores())
 
 #
 ##  This example is about the Polya Gamma Gibbs sampler for logistic regression models, as applied to the German credit data of Lichman 2013.
@@ -31,13 +29,13 @@ p <- ncol(X)
 # prior
 b <- matrix(0, nrow = p, ncol = 1)
 B <- diag(10, p, p)
-logistic_setting <- logistic_precomputation(Y, X, b, B)
+logistic_setting <- logisticregression_precomputation(Y, X, b, B)
 
 # define MCMC transition kernel
 single_kernel <- function(chain_state, logistic_setting){
-  zs <- abs(xbeta(logistic_setting$X, t(chain_state)))
-  w <- rpg(logistic_setting$n, h=1, z=zs)
-  res <- m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
+  zs <- abs(logisticregression_xbeta(logistic_setting$X, t(chain_state)))
+  w <- BayesLogit::rpg(logistic_setting$n, h=1, z=zs)
+  res <- logisticregression_m_and_sigma(w, X, logistic_setting$invB, logistic_setting$KTkappaplusinvBtimesb)
   chain_state <- t(fast_rmvnorm_chol(1, res$m, res$Cholesky))
   return(chain_state)
 }
@@ -46,7 +44,8 @@ rinit <- function(){
   t(fast_rmvnorm(1, mean = b, covariance = B))
 }
 
-niterations <- 10000
+# modify niterations
+niterations <- 1000
 
 chain <- matrix(nrow = niterations, ncol = p)
 chain[1,] <- rinit()

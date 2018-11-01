@@ -3,6 +3,8 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
+library(doParallel)
+library(doRNG)
 registerDoParallel(cores = detectCores())
 
 #
@@ -39,7 +41,7 @@ single_kernel <- function(current_state, ...){
   theta <- current_state[3:(ndata+2)]
   theta_bar <- mean(current_state[3:(ndata+2)])
   # update of A given rest
-  A <- rigamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
+  A <- rinversegamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
   mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
@@ -47,7 +49,8 @@ single_kernel <- function(current_state, ...){
   return(c(mu, A, theta))
 }
 
-niterations <- 5e5
+## Modify niterations
+niterations <- 5e4
 chain <- matrix(nrow = niterations, ncol = ndata+2)
 chain[1,] <- rinit()
 for (iteration in 2:niterations){

@@ -1,4 +1,4 @@
-# Run coupled chains until max(tau, K) where tau is the meeting time and K specified by user
+# Run coupled chains until max(tau, m) where tau is the meeting time and m specified by user
 #'@rdname coupled_chains
 #'@title Coupled MCMC chains
 #'@description sample two MCMC chains, each following 'single_kernel' marginally,
@@ -70,8 +70,8 @@ unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, ..., h = fun
   }
   # correction computes the sum of min(1, (t - k + 1) / (m - k + 1)) * (h(X_{t+1}) - h(X_t)) for t=k,...,max(m, tau - 1)
   correction <- rep(0, dimh)
-  sres1 <- single_kernel(chain_state1, ...)
-  chain_state1 <- sres1$state
+  chain_state1 <- single_kernel(chain_state1, ...)
+  # chain_state1 <- sres1$state
   if (k == 0){
     correction <- correction + (min(1, (0 - k + 1)/(m - k + 1))) * (h(chain_state1) - h(chain_state2))
   }
@@ -88,16 +88,16 @@ unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, ..., h = fun
   while (!finished && iter < max_iterations){
     iter <- iter + 1
     if (meet){
-      sres1 <- single_kernel(chain_state1, ...)
-      chain_state1 <- sres1$state
+      chain_state1 <- single_kernel(chain_state1, ...)
+      # chain_state1 <- sres1$state
       chain_state2 <- chain_state1
       if (k <= iter && iter <= m){
         mcmcestimator <- mcmcestimator + h(chain_state1)
       }
     } else {
       res_coupled_kernel <- coupled_kernel(chain_state1, chain_state2, ...)
-      chain_state1 <- res_coupled_kernel$state1
-      chain_state2 <- res_coupled_kernel$state2
+      chain_state1 <- res_coupled_kernel$chain_state1
+      chain_state2 <- res_coupled_kernel$chain_state2
       if (all(chain_state1 == chain_state2) && !meet){
         # recording meeting time tau
         meet <- TRUE

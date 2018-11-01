@@ -4,7 +4,6 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
-registerDoParallel(cores = detectCores())
 
 ndata <- 10
 
