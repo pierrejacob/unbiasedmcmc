@@ -27,7 +27,7 @@ mcmc_blasso <- function(nmcmc, burnin, lambda){
 
 
 ## Modify nmcmc
-nmcmc <- 5000
+nmcmc <- 50000
 burnin <- floor(nmcmc / 10)
 
 # result <- mcmc_blasso(nmcmc, burnin, .1)
