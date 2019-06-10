@@ -4,9 +4,7 @@ rm(list = ls())
 set.seed(21)
 library(doParallel)
 library(doRNG)
-library(dplyr)
-
-registerDoParallel(cores = detectCores())
+registerDoParallel(cores = detectCores()-2)
 
 target <- function(x){
   evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
@@ -66,20 +64,21 @@ get_pb <- function(sd_proposal, initmean, initsd){
 }
 
 pb <- get_pb(3, initmean = 10, initsd = 10)
+
+## test
 # state1 <- pb$rinit()
 # state2 <- pb$rinit()
 # state1 <- pb$single_kernel(state1)
 # pb$coupled_kernel(state1, state2)
 
 # easy setting: good proposal
-nsamples <- 100
+nsamples <- 1000
 meetingtimes.easy <-  foreach(irep = 1:nsamples, .combine = c) %dorng% {
   sample_meetingtime(pb$single_kernel, pb$coupled_kernel, pb$rinit)$meetingtime
 }
-hist(meetingtimes.easy)
+# hist(meetingtimes.easy)
 
 m <- 10000
-nsamples <- 100
 c_chains.easy <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
@@ -88,14 +87,12 @@ save(meetingtimes.easy, c_chains.easy, file = "bimodal.c_chains.easy.RData")
 
 # intermediate setting: bad proposal, good init
 pb <- get_pb(1, initmean = 10, initsd = 10)
-nsamples <- 100
 meetingtimes.intermediate <-  foreach(irep = 1:nsamples, .combine = c) %dorng% {
   sample_meetingtime(pb$single_kernel, pb$coupled_kernel, pb$rinit)$meetingtime
 }
-hist(meetingtimes.intermediate)
+# hist(meetingtimes.intermediate)
 
 m <- 30000
-nsamples <- 100
 c_chains.intermediate <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
@@ -104,25 +101,24 @@ save(meetingtimes.intermediate, c_chains.intermediate, file = "bimodal.c_chains.
 
 # hard setting: bad proposal, bad init
 pb <- get_pb(1, initmean = 10, initsd = 1)
-nsamples <- 100
 meetingtimes.hard <-  foreach(irep = 1:nsamples, .combine = c) %dorng% {
   sample_meetingtime(pb$single_kernel, pb$coupled_kernel, pb$rinit)$meetingtime
 }
-hist(meetingtimes.hard)
+# hist(meetingtimes.hard)
 
+## coupled chains, first 1000 repeats
 m <- 1000
-nsamples <- 100
+nsamples <- 1000
 c_chains.hard <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
-sapply(c_chains.hard, function(x) x$meetingtime) %>% hist
 save(meetingtimes.hard, c_chains.hard, file = "bimodal.c_chains.hard.RData")
 
+## coupled chains, next 9000 repeats
 m <- 1000
-nsamples <- 900
+nsamples <- 9000
 c_chains.hard.extra <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
 
-sapply(c_chains.hard.extra, function(x) x$meetingtime) %>% hist
 save(meetingtimes.hard, c_chains.hard, c_chains.hard.extra, file = "bimodal.c_chains.hard.RData")

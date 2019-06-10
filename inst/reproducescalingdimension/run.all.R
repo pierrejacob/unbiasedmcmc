@@ -1,5 +1,4 @@
-
-setwd("~/Dropbox/PolyaGamma/code/debiasedmcmc/inst/reproducescalingdimension/")
+## set working directory to the directory containing this script
 
 print("runs on scaling of meeting times with respect to the dimension of a Normal target")
 
