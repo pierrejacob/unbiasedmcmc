@@ -54,7 +54,9 @@ NumericMatrix w_rejsamplerC(const NumericVector & beta1,
     double z_max = std::max(z1,z2);
     double w_max;
     double w_min = rpg_devroye(1,z_min);
+    GetRNGstate();
     double log_u = log(runif(1,0,1)(0));
+    PutRNGstate();
     double log_ratio = - 0.5 * w_min * (pow(z_max,2.)-pow(z_min,2.));
     if(log_u < log_ratio){
       w_max = w_min;
@@ -88,7 +90,9 @@ NumericMatrix w_max_couplingC(const NumericVector & beta1,
     double w1 = rpg_devroye(1,z1);
     w(i,0) = w1;
     double w2;
+    GetRNGstate();
     double u1 = runif(1)(0);
+    PutRNGstate();
     double logaccept1 = logcosh(z2/2.) - 0.5*z2*z2*w1 - (logcosh(z1/2.) - 0.5*z1*z1*w1);
     if(log(u1) <= logaccept1){
       w2 = w1;
@@ -96,7 +100,9 @@ NumericMatrix w_max_couplingC(const NumericVector & beta1,
       bool accept = FALSE;
       while (accept==FALSE){
         w2 = rpg_devroye(1,z2);
+        GetRNGstate();
         double u2 = runif(1)(0);
+        PutRNGstate();
         double logaccept2 = logcosh(z1/2.) - 0.5*z1*z1*w2 - (logcosh(z2/2.) - 0.5*z2*z2*w2);
         if (log(u2) > logaccept2){
           accept = TRUE;

@@ -16,7 +16,9 @@ IntegerVector sample_pair01(const NumericVector & selection){
   IntegerVector indices(2);
   indices(0) = -1;
   indices(1) = -1;
+  GetRNGstate();
   NumericVector us = runif(2);
+  PutRNGstate();
   double u0 = us(0);
   double u1 = us(1);
   double w0 = 1. / (l - sumones);

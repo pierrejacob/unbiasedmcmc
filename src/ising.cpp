@@ -53,7 +53,9 @@ IntegerMatrix ising_gibbs_sweep_(IntegerMatrix state, NumericVector proba_beta){
       jright = (j+1) % size;
       jleft = (j + size - 1) % size;
       s += state(itop, j) + state(ibottom, j) + state(i, jright) + state(i, jleft);
+      GetRNGstate();
       state(i,j) = 2*((runif(1))(0) < proba_beta((s+4)/2)) - 1;
+      PutRNGstate();
     }
   }
   return state;
@@ -83,7 +85,9 @@ List ising_coupled_gibbs_sweep_(IntegerMatrix state1, IntegerMatrix state2, Nume
       jleft = (j + size - 1) % size;
       s1 += state1(itop, j) + state1(ibottom, j) + state1(i, jright) + state1(i, jleft);
       s2 += state2(itop, j) + state2(ibottom, j) + state2(i, jright) + state2(i, jleft);
+      GetRNGstate();
       double u_ = (runif(1))(0);
+      PutRNGstate();
       state1(i,j) = 2*(u_ < proba_beta((s1+4)/2)) - 1;
       state2(i,j) = 2*(u_ < proba_beta((s2+4)/2)) - 1;
     }

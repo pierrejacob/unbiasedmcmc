@@ -1,5 +1,7 @@
 ### This script creates plots
 library(debiasedmcmc)
+library(viridis)
+library(dplyr)
 rm(list = ls())
 set.seed(21)
 setmytheme()
@@ -7,7 +9,6 @@ setmytheme()
 
 ## Load meeting times associated with single-site Gibbs sampler
 load(file = "ising.singlesite.meetings.RData")
-library(dplyr)
 tail(singlesite.meetings.df)
 unique(singlesite.meetings.df$beta)
 g <- ggplot(singlesite.meetings.df %>% group_by(beta) %>% summarise(m = mean(meeting)),
@@ -15,7 +16,7 @@ g <- ggplot(singlesite.meetings.df %>% group_by(beta) %>% summarise(m = mean(mee
 g <- g + xlab(expression(theta)) + ylab("average meeting time")
 g
 
-# ggsave(filename = "ising.singlesite.meetings.pdf", plot = g, width = 8, height = 6)
+ggsave(filename = "ising.singlesite.meetings.pdf", plot = g, width = 8, height = 6)
 
 ## Load meetings associated with parallel tempering
 
@@ -34,7 +35,7 @@ g <- ggplot(nchains.df, aes(x = nchains, y = mean))
 g <- g + geom_line() + geom_point() +  scale_y_log10(limits = c(1e1, 1e7), breaks = c(1e2, 1e3, 1e4, 1e5, 1e6, 1e7))
 g <- g + xlab("# of chains") + ylab("average meeting time") + scale_x_continuous(breaks = nchains_values)
 g
-# ggsave(filename = "ising.parallel.meetings.pdf", plot = g, width = 8, height = 6)
+ggsave(filename = "ising.parallel.meetings.pdf", plot = g, width = 8, height = 6)
 
 ### load results from cluster
 # datafiles <- list.files(path = "output/", pattern = "5000")
@@ -62,13 +63,12 @@ max(df_full$endtime)/3600
 # subset df by completion time in seconds
 df <- df_full %>% filter(endtime < 30*60)
 
-library(viridis)
+
 g <- ggplot(df, aes(y = rep, yend = rep, x = starttime/60+0.01, xend = endtime/60-0.01, colour = isample)) + geom_segment(lineend = "round", alpha = 1)
 g <- g + geom_point() +  scale_color_viridis(name = "sample index:", discrete = FALSE)
 g <- g + theme(legend.position = "none") + xlab("time (minutes)") + ylab("processor")  + geom_vline(xintercept = max(df$endtime)/60, linetype = 2)
 g
-
-# ggsave(filename = "ising.chronology.png", plot = g, width = 8, height = 6)
+ggsave(filename = "ising.chronology.png", plot = g, width = 8, height = 6)
 
 # sort(unique((df %>% group_by(rep) %>% summarise(max = max(isample)))$max))
 nrow(df)
@@ -117,8 +117,6 @@ g <- ggplot(df.plot, aes(x = betas, y = estimators)) + geom_line() + xlab(expres
   # geom_errorbar(aes(ymin = estimators - 2*shat.eq35, ymax = estimators + 2*shat.eq35)) +
 g <- g + scale_x_continuous(breaks = seq(from = 0.3, to = 0.55, by = 0.05)) + ylab("natural stat.")
 g
-# ggsave(filename = "ising.estimates.pdf", plot = g, width = 8, height = 4)
-#
 
 # comparison of standard deviation, Eqs. (3.4) and (3.5)
 g2 <- ggplot(df.plot, aes(x = betas, y = shat.eq34)) + geom_line() + geom_point() # + geom_line(aes(y = shat.eq35), colour = "red")
@@ -126,7 +124,6 @@ g2 <- ggplot(df.plot, aes(x = betas, y = shat.eq34)) + geom_line() + geom_point(
 g2 <- g2 + xlab(expression(theta)) + scale_x_continuous(breaks = seq(from = 0.3, to = 0.55, by = 0.05))
 g2 <- g2 + ylab("standard error")
 g2
-# ggsave(filename = "ising.stderror.pdf", plot = g2, width = 8, height = 4)
 
 g12 <- gridExtra::grid.arrange(g, g2, ncol = 1)
 ggsave(filename = "ising.estimates.pdf", plot = g12, width = 8, height = 6)

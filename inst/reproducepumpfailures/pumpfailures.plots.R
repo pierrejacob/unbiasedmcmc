@@ -1,6 +1,9 @@
 
 # load packages
 library(debiasedmcmc)
+library(doParallel)
+library(doRNG)
+registerDoParallel(cores = detectCores()-2)
 setmytheme()
 rm(list = ls())
 set.seed(21)
@@ -120,8 +123,9 @@ m
 nclass <- 27
 histogram1 <- histogram_c_chains(c_chains_, ndata+1, k, m, nclass = nclass)
 niterations <- nrow(chain)
-hist_mcmc <- hist(chain[1000:niterations,ndata+1], breaks = histogram1$breaks, plot = FALSE)
+hist_mcmc <- hist(chain[1000:niterations,ndata+1], nclass = 100, plot = FALSE)
+
 g1 <- plot_histogram(histogram1, with_bar = TRUE) + xlab(expression(beta)) + ylab("density")
-g1 <- g1 + geom_line(aes(x = hist_mcmc$mids, y = hist_mcmc$density), colour = "red")
+g1 <- g1 + geom_line(data = data.frame(x = hist_mcmc$mids, y = hist_mcmc$density), aes(x = x, y = y, xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL), colour = "red")
 g1
 ggsave(filename = "pump.histogram.pdf", plot = g1, width = 5, height = 5)
