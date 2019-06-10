@@ -209,7 +209,7 @@ init_Sigma <- Sigma_proposal
 
 filename <- "plummer.results.RData"
 ## Using the new covariance matrix estimate we draw new meeting times
-nsamples <- 1000
+nsamples <- 10000
 theta1s <- sample_module1(nsamples)
 dimension <- 2
 meetingtimes_2 <-  foreach(irep = 1:nsamples) %dorng% {
