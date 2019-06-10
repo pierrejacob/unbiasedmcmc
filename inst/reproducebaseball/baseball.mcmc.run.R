@@ -50,7 +50,7 @@ single_kernel <- function(state){
 }
 
 ## Modify niterations
-niterations <- 5e4
+niterations <- 5e5
 chain <- matrix(nrow = niterations, ncol = ndata+2)
 state <- rinit()
 chain[1,] <- state$chain_state

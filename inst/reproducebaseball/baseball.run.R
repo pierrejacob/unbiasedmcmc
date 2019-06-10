@@ -1,12 +1,12 @@
-  # load packages
+# load packages
 library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
 library(doParallel)
 library(doRNG)
-
 registerDoParallel(cores = detectCores())
+
 #
 # this example is taken from Rosenthal "Parallel Computing and Monte Carlo algorithms", 2000.
 # The data are baseball player's batting averages, as in Efron and Morris 1975 or Morris 1983
@@ -58,8 +58,8 @@ coupled_kernel <- function(state1, state2){
   identical_components <- logical(length = ndata+2)
   # update of A given rest
   As <- rinversegamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
-                        beta1 = b + 0.5 * sum((theta1 - theta_bar1)^2),
-                        beta2 = b + 0.5 * sum((theta2 - theta_bar2)^2))
+                              beta1 = b + 0.5 * sum((theta1 - theta_bar1)^2),
+                              beta2 = b + 0.5 * sum((theta2 - theta_bar2)^2))
   A1 <- As$xy[1]
   A2 <- As$xy[2]
   identical_components[1] <- As$identical
@@ -73,7 +73,7 @@ coupled_kernel <- function(state1, state2){
   thetas <- matrix(nrow = ndata, ncol = 2)
   for (idata in 1:ndata){
     theta_coupled_ <- rnorm_max_coupling((mu1 * V + Y[idata] * A1) / (V + A1), (mu2 * V + Y[idata] * A2) / (V + A2),
-                       sqrt(A1 * V / (V + A1)), sqrt(A2 * V / (V + A2)))
+                                         sqrt(A1 * V / (V + A1)), sqrt(A2 * V / (V + A2)))
     thetas[idata,] <- theta_coupled_$xy
     identical_components[2+idata] <- theta_coupled_$identical
 
@@ -84,40 +84,32 @@ coupled_kernel <- function(state1, state2){
               identical = all(identical_components)))
 }
 
-## Modify nsamples to create results in the paper
+
+### First, get a sample of i.i.d. meeting times
 nsamples <- 1000
-k <- 4
-m <- 10*k
+c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
+  sample_meetingtime(single_kernel, coupled_kernel, rinit)
+}
+meetingtime.list <- list(c_chains = c_chains_, nsamples = nsamples)
+save(meetingtime.list, file = "baseball.tuning.RData")
+load(file = "baseball.tuning.RData")
+meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+table(meetingtime)
+# we have seen only times = to 2 and 3
+# so we pick k = 4
 
-
+## Modify nsamples
+nsamples <- 1000
+m <- 100
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
 }
 
-save(nsamples, k, m, c_chains_, file = "baseball.c_chain.RData")
-load(file = "baseball.c_chain.RData")
+save(meetingtime.list, c_chains_, m, file = "baseball.tuning.RData")
 
-meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
-tabulate(meetingtime)
-
-mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_[[irep]], k = k, m = m)
-}
-
-square_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_[[irep]], h = function(x) x^2, k = k, m = m)
-}
-
-est_mean <- rep(0, ndata+2)
-est_var <- rep(0, ndata+2)
-for (component in 1:(ndata+2)){
-  cat("component ", component, "\n")
-  estimators <- sapply(mean_estimators, function(x) x[component])
-  cat("estimated mean: ", mean(estimators), "+/- ", 2*sd(estimators)/sqrt(nsamples), "\n")
-  s_estimators <- sapply(square_estimators, function(x) x[component])
-  cat("estimated second moment: ", mean(s_estimators), "+/- ", 2*sd(s_estimators)/sqrt(nsamples), "\n")
-  cat("estimated variance: ", mean(s_estimators) - mean(estimators)^2, "\n")
-  est_mean[component] <- mean(estimators)
-  est_var[component] <- mean(s_estimators) - est_mean[component]^2
-}
-
+# nsamples <- 1000
+# m <- 100
+# final.c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
+#   sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
+# }
+# save(meetingtime.list, c_chains_, m, final.c_chains_, file = "baseball.tuning.RData")

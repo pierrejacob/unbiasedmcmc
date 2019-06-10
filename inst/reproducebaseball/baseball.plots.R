@@ -3,7 +3,9 @@ library(debiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)
-#
+library(doParallel)
+library(doRNG)
+registerDoParallel(cores = detectCores())
 # this example is taken from Rosenthal "Parallel Computing and Monte Carlo algorithms", 2000.
 # The data are baseball player's batting averages, as in Efron and Morris 1975 or Morris 1983
 # In particular, the data are listed in Morris 1983, and available as part of Rosenthal's online code:
@@ -65,11 +67,10 @@ cap <- "Cost, variance and inefficiency compared to MCMC, for various choices of
 in the baseball batting averages example. \\label{table:baseball}"
 colnames(formatted.df) <- c("k", "m", "expected cost", "variance", "inefficiency / MCMC")
 formatted.df <- xtable(formatted.df, digits = 4, caption = cap)
-
+formatted.df
 print.xtable(formatted.df, include.rownames = FALSE, include.colnames = TRUE, file = "baseball.inefficiency.tex")
 
 
-rm(c_chains_)
 # Histogram approximating marginal distributions
 k <- 3
 m <- 30
@@ -81,7 +82,7 @@ hist_mcmc <- hist(ch3[ch3>0.1 & ch3 < 0.7], breaks = hist_breaks, plot = F)
 hist_mcmc$density
 hist_mcmc$mids
 # histogram
-histogram1 <- histogram_c_chains(final.c_chains_, 3, k, m, breaks = hist_breaks)
+histogram1 <- histogram_c_chains(c_chains_, 3, k, m, breaks = hist_breaks)
 g1 <- plot_histogram(histogram1, with_bar = T) + xlab(expression(theta[1])) + ylab("density")
 g1 <- g1 + geom_line(aes(x = hist_mcmc$mids, y = hist_mcmc$density), colour = "red", alpha = 0.5)
 g1
@@ -94,7 +95,7 @@ hist_mcmc <- hist(ch1[ch1>-0.3 & ch1 < 0.85], breaks = hist_breaks, plot = F)
 # hist_mcmc <- hist(chain[1000:niterations,1], nclass = nclass, plot = F)
 hist_mcmc$density
 hist_mcmc$mids
-histogram1 <- histogram_c_chains(final.c_chains_, 1, k, m, breaks = hist_mcmc$breaks)
+histogram1 <- histogram_c_chains(c_chains_, 1, k, m, breaks = hist_mcmc$breaks)
 g1 <- plot_histogram(histogram1, with_bar = T) + xlab(expression(mu)) + ylab("density")
 g1 <- g1 + geom_line(aes(x = hist_mcmc$mids, y = hist_mcmc$density), colour = "red", alpha = 0.5)
 g1
@@ -107,7 +108,7 @@ hist_mcmc <- hist(ch1[ch1>0 & ch1 < 1.2], breaks = hist_breaks, plot = F)
 # hist_mcmc <- hist(chain[1000:niterations,1], nclass = nclass, plot = F)
 hist_mcmc$density
 hist_mcmc$mids
-histogram1 <- histogram_c_chains(final.c_chains_, 2, k, m, breaks = hist_mcmc$breaks)
+histogram1 <- histogram_c_chains(c_chains_, 2, k, m, breaks = hist_mcmc$breaks)
 g1 <- plot_histogram(histogram1, with_bar = T) + xlab(expression(A)) + ylab("density")
 g1 <- g1 + geom_line(aes(x = hist_mcmc$mids, y = hist_mcmc$density), colour = "red", alpha = 0.5)
 g1
