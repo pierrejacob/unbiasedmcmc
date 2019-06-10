@@ -119,8 +119,8 @@ for (i in 1:igrid){
 nchains <- 16
 betas <- seq(from = 0.3, to = 0.55, length.out = nchains)
 proba_swapmove <- 0.01
-k <- 50000
-m <- 250000
+k <- 100000
+m <- 200000
 
 ptm_irep <- proc.time()
 last_start <- ptm_irep

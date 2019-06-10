@@ -9,13 +9,13 @@ get_blasso <- function(Y, X, lambda){
   lambda2 <- lambda^2
   # naive initialization
   rinit <- function(){
-    return(c(rep(0, p), rep(1, p), 1))
+    return(list(chain_state = c(rep(0, p), rep(1, p), 1)))
   }
   #
-  gibbs_kernel <- function(current_state, ...){
-    beta <- current_state[1:p]
-    tau2 <- current_state[(p+1):(2*p)]
-    sigma2 <- current_state[2*p+1]
+  gibbs_kernel <- function(state){
+    beta <- state$chain_state[1:p]
+    tau2 <- state$chain_state[(p+1):(2*p)]
+    sigma2 <- state$chain_state[2*p+1]
     res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau2, sigma2)
     beta <- res_$beta
     norm <- res_$norm
@@ -26,16 +26,16 @@ get_blasso <- function(Y, X, lambda){
     for (component in 1:p){
       tau2[component] <- 1 / rinvgaussian(1, sqrtlambda2sigma2 / abs(beta[component]), lambda2)
     }
-    return(c(beta, tau2, sigma2))
+    return(list(chain_state = c(beta, tau2, sigma2)))
   }
 
-  coupled_gibbs_kernel <- function(current_state1, current_state2, ...){
-    beta1 <- current_state1[1:p]
-    tau21 <- current_state1[(p+1):(2*p)]
-    sigma21 <- current_state1[2*p+1]
-    beta2 <- current_state2[1:p]
-    tau22 <- current_state2[(p+1):(2*p)]
-    sigma22 <- current_state2[2*p+1]
+  coupled_gibbs_kernel <- function(state1, state2){
+    beta1 <- state1$chain_state[1:p]
+    tau21 <- state1$chain_state[(p+1):(2*p)]
+    sigma21 <- state1$chain_state[2*p+1]
+    beta2 <- state2$chain_state[1:p]
+    tau22 <- state2$chain_state[(p+1):(2*p)]
+    sigma22 <- state2$chain_state[2*p+1]
     #
     if (all(tau21 == tau22) && all(sigma21 == sigma22)){
       res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau21, sigma21)
@@ -57,8 +57,8 @@ get_blasso <- function(Y, X, lambda){
     sigma2s <- rinversegamma_coupled(alpha1, alpha1,
                                0.5 * (norm1 + betaDbeta1),
                                0.5 * (norm2 + betaDbeta2))
-    sigma21 <- sigma2s[1]
-    sigma22 <- sigma2s[2]
+    sigma21 <- sigma2s$xy[1]
+    sigma22 <- sigma2s$xy[2]
     # update tau
     sqrtlambda2sigma21 <- sqrt(lambda2 * sigma21)
     sqrtlambda2sigma22 <- sqrt(lambda2 * sigma22)
@@ -75,7 +75,12 @@ get_blasso <- function(Y, X, lambda){
         tau22[component] <- 1 / invtau2s[2]
       }
     }
-    return(list(chain_state1 = c(beta1, tau21, sigma21), chain_state2 = c(beta2, tau22, sigma22)))
+    chain_state1 <- c(beta1, tau21, sigma21)
+    chain_state2 <- c(beta2, tau22, sigma22)
+    identical_ <- all(chain_state1 == chain_state2)
+    return(list(state1 = list(chain_state = chain_state1),
+                state2 = list(chain_state = chain_state2),
+                identical = identical_))
   }
   return(list(rinit = rinit, gibbs_kernel = gibbs_kernel, coupled_gibbs_kernel = coupled_gibbs_kernel))
 }

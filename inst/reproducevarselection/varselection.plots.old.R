@@ -1,4 +1,6 @@
 library(debiasedmcmc)
+library(dplyr)
+library(doParallel)
 setmytheme()
 rm(list = ls())
 set.seed(1)

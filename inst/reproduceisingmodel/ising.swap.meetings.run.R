@@ -94,8 +94,9 @@ ising_pt_coupled_chains <- function(betas, proba_swapmove, m = 1, max_iterations
 ## res_$meetingtime
 ## cat(100*res_$nswap_accepts1 / res_$nswap_attempts, "%\n")
 
-nrep <- 100
-nchains_values <- c(12,24)
+nrep <- 50
+nchains_values <- c(8, 12, 16)
+# nchains_values <- c(4,8,12,16,24,32)
 proba_swapmove <- 0.01
 for (nchains in nchains_values){
   print(nchains)
@@ -107,7 +108,7 @@ for (nchains in nchains_values){
   save(nchains, nrep, betas, meetings, proba_swapmove, file = paste0("ising.swapN", nchains, ".meetings.RData"))
 }
 
-nchains_values <- c(4,8,12,16,24,32)
+
 nchains.df <- data.frame()
 for (nchains in nchains_values){
   load(paste0("ising.swapN", nchains, ".meetings.RData"))

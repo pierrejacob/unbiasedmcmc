@@ -9,15 +9,13 @@ library(doRNG)
 registerDoParallel(cores = detectCores())
 
 #
-
-## target distribution
 target <- function(x){
   evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
   return(max(evals) + log(sum(exp(evals - max(evals)))))
 }
 curve(sapply(x, function(v) exp(target(v))), from = -10, to = 10)
 
-load(file = "mixture.c_chains.easy.RData")
+load(file = "bimodal.c_chains.easy.RData")
 
 x <- as.numeric(names(table(meetingtimes.easy)))
 y <- as.numeric(table(meetingtimes.easy)) / length(meetingtimes.easy)
@@ -60,7 +58,7 @@ ineff.df
 
 exact_x2 <- integrate(f = function(x) sapply(x, function(v) (v>3) * exp(target(v))), lower = -20, upper = 20, subdivisions = 1e5)
 exact_x2$value
-load("mixture.mcmc.RData")
+load("bimodal.mcmc.RData")
 mcmcvar.easy
 ineff.df$inef <- ineff.df$inef / mcmcvar.easy
 
@@ -74,9 +72,9 @@ formatted.df$`variance` <- format(formatted.df$`variance`, digits = 2, scientifi
 formatted.df$`inefficiency / MCMC` <- format(formatted.df$`inefficiency / MCMC`, digits = 2)
 formatted.df
 formatted.df <- xtable(formatted.df, caption = cap)
-print.xtable(formatted.df, include.rownames = FALSE, include.colnames = TRUE, file = "mixtureinefficiency.tex")
+print.xtable(formatted.df, include.rownames = FALSE, include.colnames = TRUE, file = "bimodal.inefficiency.tex")
 
-# ggsave(filename = "mixture.meetingtime.pdf", plot = g, width = 7, height = 7)
+# ggsave(filename = "bimodal.meetingtime.pdf", plot = g, width = 7, height = 7)
 ##
 nclass <- 50
 k <- 200
@@ -86,10 +84,10 @@ g <- plot_histogram(histogram, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram.easy.pdf", plot = g, width = 5, height = 5)
+ggsave(filename = "bimodal.histogram.easy.pdf", plot = g, width = 5, height = 5)
 
 
-load(file = "mixture.c_chains.intermediate.RData")
+load(file = "bimodal.c_chains.intermediate.RData")
 
 print(mean(meetingtimes.intermediate))
 print(quantile(meetingtimes.intermediate, probs = c(0.9, 0.99)))
@@ -106,7 +104,7 @@ g <- plot_histogram(histogram, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram.intermediate.pdf", plot = g, width = 5, height = 5)
+ggsave(filename = "bimodal.histogram.intermediate.pdf", plot = g, width = 5, height = 5)
 
 estimators <-  foreach(irep = 1:nsamples) %dorng% {
   H_bar(c_chains.intermediate[[irep]], h = testfunction, k = k, m = m)
@@ -117,7 +115,7 @@ s <- 2*sqrt(v / length(c_chains.intermediate))
 cat(meanh-s, meanh+s)
 
 
-load(file = "mixture.c_chains.hard.RData")
+load(file = "bimodal.c_chains.hard.RData")
 
 print(mean(meetingtimes.hard))
 print(quantile(meetingtimes.hard, probs = c(0.9, 0.99)))
@@ -136,7 +134,7 @@ g <- plot_histogram(histogram, with_bar = T)
 g <- g + stat_function(fun = function(x) sapply(x, function(x_)exp(target(x_))), colour = "red", alpha = 1)
 g <- g + xlim(-10,10)
 g
-ggsave(filename = "mixture.histogram.hard.pdf", plot = g, width = 5, height = 5)
+ggsave(filename = "bimodal.histogram.hard.pdf", plot = g, width = 5, height = 5)
 
 estimators <-  foreach(irep = 1:length(c_chains.hard)) %dorng% {
   H_bar(c_chains.hard[[irep]], h = testfunction, k = k, m = m)

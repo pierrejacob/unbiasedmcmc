@@ -1,7 +1,7 @@
 ---
 title: 'Debiasing random walk Metropolis-Hastings'
 author: "PEJ, JOL, YFA"
-date: "August 2017"
+date: "June 2019"
 output: pdf_document
 ---
 
@@ -21,8 +21,10 @@ We begin by loading the package, registering multiple cores, setting the random 
 ```{r init, message=FALSE,warning=FALSE}
 # load package
 library(debiasedmcmc)
+library(doParallel)
+library(doRNG)
 # register parallel cores
-registerDoParallel(cores = 4)
+registerDoParallel(cores = detectCores()-2)
 # remove all
 rm(list = ls())
 # set RNG seed
@@ -40,16 +42,21 @@ The following code defines the target and the MH kernel.
 
 ```{r singlekernel, tidy = T}
 logtarget <- function(x) dnorm(x, mean = 0, sd = 1, log = TRUE)
-sd_proposal <- 1
-rinit <- function() rnorm(1, 1, 1)
-MH_kernel <- function(chain_state){
-  proposal_value <- rnorm(1, chain_state, sd_proposal)
-  proposal_pdf <- logtarget(proposal_value)
+rinit <- function(){
+  chain_state <- rnorm(1, 1, 1)
   current_pdf <- logtarget(chain_state)
+  return(list(chain_state = chain_state, current_pdf = current_pdf))
+}
+sd_proposal <- 1
+MH_kernel <- function(state){
+  chain_state <- state$chain_state
+  current_pdf <- state$current_pdf
+  proposal <- rnorm(1, chain_state, sd_proposal)
+  proposal_pdf <- logtarget(proposal)
   if (log(runif(1)) < (proposal_pdf - current_pdf)){
-    return(proposal_value)
+    return(list(chain_state = proposal, current_pdf = proposal_pdf))
   } else {
-    return(chain_state)
+    return(list(chain_state = chain_state, current_pdf = current_pdf))
   }
 }
 ```
@@ -61,10 +68,10 @@ probability density function.
 ```{r testsinglkerel, tidy = T, cache = TRUE}
 niterations <- 10000
 chain <- rep(0, niterations)
-chain_state <- rinit()
+state <- rinit()
 for (i in 1:niterations){
-  chain_state <- MH_kernel(chain_state)
-  chain[i] <- chain_state
+  state <- MH_kernel(state)
+  chain[i] <- state$chain_state
 }
 hist(chain, prob = TRUE, nclass = 40, main = "")
 curve(exp(logtarget(x)), add = TRUE, col = "red")
@@ -77,20 +84,18 @@ curve(exp(logtarget(x)), add = TRUE, col = "red")
 We now introduce a coupled MH kernel, by maximally coupling the Normal
 proposals. The code to sample from a maximal coupling of two Normals is provided below.
 
-
 ```{r maxcouplingnormal, tidy=TRUE}
 rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){
   x <- rnorm(1, mu1, sigma1)
   if (dnorm(x, mu1, sigma1, log = TRUE) + log(runif(1)) < dnorm(x, mu2, sigma2, log = TRUE)){
-    return(c(x,x))
+    return(list(xy = c(x,x), identical = TRUE))
   } else {
-    reject <- TRUE
-    y <- NA
+    reject <- TRUE; y <- NA
     while (reject){
       y <- rnorm(1, mu2, sigma2)
       reject <- (dnorm(y, mu2, sigma2, log = TRUE) + log(runif(1)) < dnorm(y, mu1, sigma1, log = TRUE))
     }
-    return(c(x,y))
+    return(list(xy = c(x,y), identical = FALSE))
   }
 }
 ```
@@ -106,11 +111,11 @@ xy <- foreach(i = 1:10000) %dorng% {
   rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
 }
 par(mfrow = c(1,2))
-hist(sapply(xy, function(x) x[1]), prob = TRUE, nclass = 50, main = "", xlab = "x")
+hist(sapply(xy, function(x) x$xy[1]), prob = TRUE, nclass = 50, main = "", xlab = "x")
 curve(dnorm(x, mu1, sigma1), add = TRUE, col = "red")
-hist(sapply(xy, function(x) x[2]), prob = TRUE, nclass = 50, main = "", xlab = "y")
+hist(sapply(xy, function(x) x$xy[2]), prob = TRUE, nclass = 50, main = "", xlab = "y")
 curve(dnorm(x, mu2, sigma2), add = TRUE, col = "red")
-print(mean(sapply(xy, function(x) x[1]) == sapply(xy, function(x) x[2])))
+print(mean(sapply(xy, function(x) x$identical)))
 ```
 
 Here the probability of the event $\{X=Y\}$ is about $35\%$ for the given means and standard deviations.
@@ -118,24 +123,35 @@ Here the probability of the event $\{X=Y\}$ is about $35\%$ for the given means 
 We define a coupled MH kernel using maximally coupled proposals as follows.
 
 ```{r coupledMH, tidy=TRUE}
-coupledMH_kernel <- function(chain_state1, chain_state2){
-  proposal_value <- rnorm_max_coupling(chain_state1, chain_state2, sd_proposal, sd_proposal)
-  proposal_pdf1 <- logtarget(proposal_value[1])
-  proposal_pdf2 <- logtarget(proposal_value[2])
-  current_pdf1 <- logtarget(chain_state1)
-  current_pdf2 <- logtarget(chain_state2)
+coupledMH_kernel <- function(state1, state2){
+  chain_state1 <- state1$chain_state;  current_pdf1 <- state1$current_pdf
+  chain_state2 <- state2$chain_state;  current_pdf2 <- state2$current_pdf
+  # proposal from a maximal coupling
+  proposal <- rnorm_max_coupling(chain_state1, chain_state2, sd_proposal, sd_proposal)
+  proposal_pdf1 <- logtarget(proposal$xy[1])
+  # only compute target pdf on 2nd proposal if it is not identical to 1st proposal
+  proposal_pdf2 <- proposal_pdf1
+  if (!proposal$identical){
+    proposal_pdf2 <- logtarget(proposal$xy[2])
+  }
   logu <- log(runif(1))
+  accept1 <- FALSE; accept2 <- FALSE
   if (is.finite(proposal_pdf1)){
     if (logu < (proposal_pdf1 - current_pdf1)){
-      chain_state1 <- proposal_value[1]
+      accept1 <- TRUE
+      chain_state1 <- proposal$xy[1]; current_pdf1 <- proposal_pdf1
     }
   }
   if (is.finite(proposal_pdf2)){
     if(logu < (proposal_pdf2 - current_pdf2)){
-      chain_state2 <- proposal_value[2]
+      accept2 <- TRUE
+      chain_state2 <- proposal$xy[2]; current_pdf2 <- proposal_pdf2
     }
   }
-  return(list(chain_state1 = chain_state1, chain_state2 = chain_state2))
+  identical_ <- (proposal$identical) && (accept1) && accept2
+  return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
+              state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
+              identical = identical_))
 }
 ```
 
@@ -147,7 +163,7 @@ It returns the two chains, in 'samples1' and 'samples2', the meeting time,
 and the total number of iterations performed, which here is equal to the meeting time.
 
 ```{r testcoupledMH, tidy=TRUE, cache=TRUE}
-coupled_chains(MH_kernel, coupledMH_kernel, rinit)
+sample_coupled_chains(MH_kernel, coupledMH_kernel, rinit)
 ```
 
 We then run $1000$ independent copies of the chains, and plot a histogram
@@ -155,7 +171,7 @@ of the meeting times.
 ```{r meetingtimes, tidy=TRUE, cache=TRUE}
 nsamples <- 1000
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(MH_kernel, coupledMH_kernel, rinit)
+  sample_coupled_chains(MH_kernel, coupledMH_kernel, rinit)
 }
 meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
 hist(meetingtime, breaks = 1:max(meetingtime), prob = TRUE, main = "", xlab = "meeting times")
@@ -173,9 +189,10 @@ k <- as.numeric(quantile(meetingtime, 0.95))
 m <- 10*k
 nsamples <- 1000
 c_chains_m <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(MH_kernel, coupledMH_kernel, rinit, m = m)
+  sample_coupled_chains(MH_kernel, coupledMH_kernel, rinit, m = m)
 }
 histogram <- histogram_c_chains(c_chains_m, 1, k, m, nclass = 50)
+library(ggplot2)
 g <- plot_histogram(histogram, with_bar = T)
 g <- g + stat_function(fun = function(x) exp(logtarget(x)), colour = "red", alpha = 1)
 g

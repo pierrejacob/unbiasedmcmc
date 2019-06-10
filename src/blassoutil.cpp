@@ -1,6 +1,5 @@
 #include <RcppEigen.h>
 #include "mvnorm.h"
-#include "coupling.h"
 using namespace Rcpp;
 using namespace std;
 using namespace Eigen;
@@ -28,7 +27,7 @@ List blassoconditional(const Eigen::VectorXd & Y, const Eigen::MatrixXd & X,
   A_inv = (XtX + D_tau_inv).inverse();
   NumericVector mean(wrap(A_inv * XtY));
   NumericMatrix Sigma(wrap(A_inv.array() * sigma2));
-  NumericMatrix beta = rmvnorm(1, mean, Sigma);
+  NumericMatrix beta = fast_rmvnorm_(1, mean, Sigma);
   Eigen::VectorXd beta_eigen = as<Eigen::VectorXd >(beta);
   double norm = (Y - X * beta_eigen).array().square().sum();
   double betaDbeta = 0;
@@ -65,7 +64,8 @@ List blassoconditional_coupled(const Eigen::VectorXd & Y, const Eigen::MatrixXd 
   NumericMatrix Sigma2(wrap(A_inv2.array() * sigma22));
 
 
-  NumericMatrix betas = gaussian_max_couplingC(mean1, mean2, Sigma1, Sigma2);
+  List betas_coupled = rmvnorm_max_coupling_(mean1, mean2, Sigma1, Sigma2);
+  NumericMatrix betas = betas_coupled["xy"];
   // NumericMatrix beta = rmvnorm(1, mean, Sigma);
   Eigen::VectorXd beta_eigen1(p);
   Eigen::VectorXd beta_eigen2(p);

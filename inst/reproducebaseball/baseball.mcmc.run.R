@@ -34,27 +34,29 @@ b <- 2
 # we store the parameters as (mu, A, theta_1, ..., theta_K) so the parameter space is of dimension 20
 # the initialization comes from Rosenthal (except the initialization of mu and A which is irrelevant)
 rinit <- function(){
-  return(c(0,1,rep(mean(Y), ndata)))
+  return(list(chain_state = c(0,1,rep(mean(Y), ndata))))
 }
 # here is the code for the Gibbs sampler
-single_kernel <- function(current_state, ...){
-  theta <- current_state[3:(ndata+2)]
-  theta_bar <- mean(current_state[3:(ndata+2)])
+single_kernel <- function(state){
+  theta <- state$chain_state[3:(ndata+2)]
+  theta_bar <- mean(theta)
   # update of A given rest
   A <- rinversegamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
   mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
   theta <- rnorm(ndata, (mu * V + Y * A) / (V + A), sqrt(A * V / (V + A)))
-  return(c(mu, A, theta))
+  return(list(chain_state = c(mu, A, theta)))
 }
 
 ## Modify niterations
 niterations <- 5e4
 chain <- matrix(nrow = niterations, ncol = ndata+2)
-chain[1,] <- rinit()
+state <- rinit()
+chain[1,] <- state$chain_state
 for (iteration in 2:niterations){
-  chain[iteration,] <- single_kernel(chain[iteration-1,])
+  state <- single_kernel(state)
+  chain[iteration,] <- state$chain_state
 }
 save(niterations, chain, file = "baseball.mcmc.RData")
 load(file = "baseball.mcmc.RData")

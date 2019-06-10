@@ -16,7 +16,7 @@ load("germancredit.tuning.RData")
 
 # Plot histogram of meetingtimes
 nsamples <- meetingtime.list$nsamples
-meetingtimes <- sapply(X = meetingtime.list$c_chains, FUN = function(x) x$meetingtime)
+meetingtimes <- sapply(X = meetingtime.list$meetings_1, FUN = function(x) x$meetingtime)
 #upper quantiles: 90% = 81, 95% = 96, 99% = 135. In the paper we consider 110.
 
 mt_df = data.frame(meetingtime=meetingtimes)
@@ -98,7 +98,7 @@ c <- mean(2 * taus + pmax(1, m + 1 - taus))
 inef <- c * v
 # loss of efficiency for this choice of k and m
 inef / mcmcvar
-# around 7
+#
 
 # mean(unlist(estimators))
 # mean(chain[1000:nrow(chain), idx1])

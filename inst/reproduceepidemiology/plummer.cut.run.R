@@ -5,7 +5,7 @@ rm(list = ls())
 set.seed(21)
 library(doParallel)
 library(doRNG)
-registerDoParallel(cores = detectCores())
+registerDoParallel(cores = detectCores()-2)
 
 ## This scripts illustrates the approximation of the cut distribution
 # Plummer's example on HPV
@@ -55,35 +55,43 @@ cppFunction("double plummer_module2_loglikelihood_(NumericVector theta1, Numeric
             }
             ")
 
-get_kernels <- function(theta1, Sigma_proposal){
+get_kernels <- function(theta1, Sigma_proposal, init_mean, init_Sigma){
   target <- function(x) plummer_module2_loglikelihood_(theta1, x, ncases, Npop_normalized) + dprior2(x, hyper2)
   ##
+  Sigma_proposal_chol <- chol(Sigma_proposal)
+  Sigma_proposal_chol_inv <- solve(Sigma_proposal_chol)
+
   # Markov kernel of the chain
-  single_kernel <- function(chain_state){
-    proposal_value <- chain_state + fast_rmvnorm(1, rep(0, dimension), Sigma_proposal)[1,]
+  single_kernel <- function(state){
+    chain_state <- state$chain_state
+    current_pdf <- state$current_pdf
+    proposal_value <- chain_state + fast_rmvnorm_chol(1, rep(0, dimension), Sigma_proposal_chol)[1,]
     proposal_pdf <- target(proposal_value)
-    current_pdf <- target(chain_state)
     accept <- (log(runif(1)) < (proposal_pdf - current_pdf))
     if (accept){
-      return(proposal_value)
+      return(list(chain_state = proposal_value, current_pdf = proposal_pdf))
     } else {
-      return(chain_state)
+      return(list(chain_state = chain_state, current_pdf = current_pdf))
     }
   }
 
   # Markov kernel of the coupled chain
-  # Sigma <- diag(sd_proposal^2, dimension, dimension)
-  Sigma_chol <- t(chol(Sigma_proposal))
-  Sigma_chol_inv <- t(solve(chol(Sigma_proposal)))
-  coupled_kernel <- function(chain_state1, chain_state2){
-    distance_ <- mean((chain_state1 - chain_state2)^2)
-    proposal_value <- gaussian_max_coupling(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
-    proposal1 <- proposal_value[,1]
-    proposal2 <- proposal_value[,2]
+  coupled_kernel <- function(state1, state2){
+    chain_state1 <- state1$chain_state
+    chain_state2 <- state2$chain_state
+    current_pdf1 <- state1$current_pdf
+    current_pdf2 <- state2$current_pdf
+    # distance_ <- mean((chain_state1 - chain_state2)^2)
+    # proposal_value <- rmvnorm_max(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
+    proposal_value <- rmvnorm_reflectionmax(chain_state1, chain_state2, Sigma_proposal_chol, Sigma_proposal_chol_inv)
+    proposal1 <- proposal_value$xy[,1]
+    proposal2 <- proposal_value$xy[,2]
+    identical_proposal <- proposal_value$identical
     proposal_pdf1 <- target(proposal1)
-    proposal_pdf2 <- target(proposal2)
-    current_pdf1 <- target(chain_state1)
-    current_pdf2 <- target(chain_state2)
+    proposal_pdf2 <- proposal_pdf1
+    if (!identical_proposal){
+      proposal_pdf2 <- target(proposal2)
+    }
     logu <- log(runif(1))
     accept1 <- FALSE
     accept2 <- FALSE
@@ -95,125 +103,153 @@ get_kernels <- function(theta1, Sigma_proposal){
     }
     if (accept1){
       chain_state1 <- proposal1
+      current_pdf1 <- proposal_pdf1
     }
     if (accept2){
       chain_state2 <- proposal2
+      current_pdf2 <- proposal_pdf2
     }
-    return(list(chain_state1 = chain_state1, chain_state2 = chain_state2))
+    identical_ <- ((proposal_value$identical) && (accept1) && (accept2))
+    return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
+                state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
+                identical = identical_))
   }
-  return(list(target = target, coupled_kernel = coupled_kernel, single_kernel = single_kernel))
+  rinit <- function(){
+    chain_state <- fast_rmvnorm_chol(1, mean = init_mean, init_Sigma)[1,]
+    current_pdf <- target(chain_state)
+    return(list(chain_state = chain_state, current_pdf = current_pdf))
+  }
+  return(list(target = target, coupled_kernel = coupled_kernel, single_kernel = single_kernel, rinit = rinit))
 }
 
-## Modify nsamples
-nsamples <- 100
+## (modify nsamples if desired)
+# first sample theta1's and compute posterior mean under first model
+nsamples <- 1000
 theta1s <- sample_module1(nsamples)
 theta1hat <- colMeans(theta1s)
-##
+## then try to perform inference on theta2 given theta1hat
 dimension <- 2
-Sigma_proposal <- diag(c(1,1), dimension, dimension)
-rinit <- function() fast_rmvnorm(1, mean = c(0, 0), diag(1, dimension, dimension))[1,]
-
+Sigma_proposal <- diag(0.1, dimension, dimension)
+init_mean <- rep(0, dimension)
+init_Sigma <- diag(1, dimension, dimension)
+## first run standard MCMC
 filename <- "plummer.tuning.RData"
-kernels <- get_kernels(theta1hat, Sigma_proposal)
-c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  # theta1 <- theta1s[irep,]
-  single_kernel <- kernels$single_kernel
-  coupled_kernel <- kernels$coupled_kernel
-  coupled_chains(single_kernel, coupled_kernel, rinit)
+pb <- get_kernels(theta1hat, Sigma_proposal, init_mean, init_Sigma)
+niterations <- 5e3
+chain <- matrix(0, nrow = niterations, ncol = dimension)
+state <- pb$rinit()
+for (iteration in 1:niterations){
+  state <- pb$single_kernel(state)
+  chain[iteration,] <- state$chain_state
 }
-save(c_chains_, file = filename)
+matplot(chain, type = "l")
+# then refine the initial distribution and the estimate of posterior covariance matrix
+chain_postburn <- chain[2e3:niterations,]
+init_mean <- colMeans(chain_postburn)
+init_Sigma <- cov(chain_postburn)
+Sigma_proposal <- init_Sigma
+pb <- get_kernels(theta1hat, Sigma_proposal, init_mean, init_Sigma)
+chain <- matrix(0, nrow = niterations, ncol = dimension)
+state <- pb$rinit()
+for (iteration in 1:niterations){
+  state <- pb$single_kernel(state)
+  chain[iteration,] <- state$chain_state
+}
+matplot(chain, type = "l")
+chain_postburn <- chain[2e3:niterations,]
+init_mean <- colMeans(chain_postburn)
+init_Sigma <- cov(chain_postburn)
+Sigma_proposal <- init_Sigma
+# the chain seems to mix OK
+
+## Now let theta1 vary too and see how
+## meeting times behave with the tuning selected as above (under a fixed theta1 = theta1hat)
+theta1s <- sample_module1(nsamples)
+meetingtimes_1 <-  foreach(irep = 1:nsamples) %dorng% {
+  pb <- get_kernels(theta1s[irep,], Sigma_proposal, init_mean, init_Sigma)
+  sample_meetingtime(pb$single_kernel, pb$coupled_kernel, pb$rinit)
+}
+save(meetingtimes_1, file = filename)
 load(file = filename)
-meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+meetingtime <- sapply(meetingtimes_1, function(x) x$meetingtime)
 summary(meetingtime)
-# hist(meetingtime)
+## the meeting times are quite short
+k <- 100
+m <- 1000
 
-k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
-m <- 5*k
-
-#
-c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
-  single_kernel <- kernels$single_kernel
-  continue_coupled_chains(c_chains_[[irep]], single_kernel, m = m)
+# now we will re-estimate the target covariance matrix using unbiased MCMC
+c_chains_1 <-  foreach(irep = 1:nsamples) %dorng% {
+  pb <- get_kernels(theta1s[irep,], Sigma_proposal, init_mean, init_Sigma)
+  sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
-save(nsamples, k, m, c_chains_, c_chains_continued_, file = filename)
+save(nsamples, k, m, meetingtimes_1, c_chains_1, file = filename)
 load(file = filename)
 #
+max(sapply(c_chains_1, function(x) x$meetingtime))
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_[[irep]], k = k, m = m)
+  H_bar(c_chains_1[[irep]], h = function(x) x, k = k, m = m)
 }
 
 square_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_[[irep]], h = function(x) x^2, k = k, m = m)
+  H_bar(c_chains_1[[irep]], h = function(x) x^2, k = k, m = m)
 }
 
-est_mean <- rep(0, dimension)
-est_var <- rep(0, dimension)
-for (component in 1:dimension){
-  estimators <- sapply(mean_estimators, function(x) x[component])
-  est_mean[component] <- mean(estimators)
-  cat("estimated mean: ", est_mean[component], "+/- ", 2*sd(estimators)/sqrt(nsamples), "\n")
-  s_estimators <- sapply(square_estimators, function(x) x[component])
-  cat("estimated second moment: ", mean(s_estimators), "+/- ", 2*sd(s_estimators)/sqrt(nsamples), "\n")
-  est_var[component] <- mean(s_estimators) - est_mean[component]^2
-  cat("estimated variance: ", est_var[component], "\n")
+cross_estimator <- foreach(irep = 1:nsamples) %dorng% {
+  H_bar(c_chains_1[[irep]], h = function(x) x[1]*x[2], k = k, m = m)
 }
 
-Sigma_proposal <- diag(est_var, dimension, dimension)
-print(Sigma_proposal)
+post_mean <- rowMeans(sapply(mean_estimators, function(x) x))
+post_var <- rowMeans(sapply(square_estimators, function(x) x)) - post_mean^2
+post_cross <- mean(sapply(cross_estimator, function(x) x)) - prod(post_mean)
+Sigma_proposal <- diag(post_var)
+Sigma_proposal[1,2] <- Sigma_proposal[2,1] <- post_cross
+init_Sigma <- Sigma_proposal
 
 
 filename <- "plummer.results.RData"
-## modify nsamples
+## Using the new covariance matrix estimate we draw new meeting times
 nsamples <- 1000
-
 theta1s <- sample_module1(nsamples)
 dimension <- 2
-rinit <- function() fast_rmvnorm(1, mean = est_mean, Sigma_proposal)[1,]
-c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
+meetingtimes_2 <-  foreach(irep = 1:nsamples) %dorng% {
   theta1 <- theta1s[irep,]
-  kernels <- get_kernels(theta1, Sigma_proposal)
-  single_kernel <- kernels$single_kernel
-  coupled_kernel <- kernels$coupled_kernel
-  coupled_chains(single_kernel, coupled_kernel, rinit)
+  pb <- get_kernels(theta1, Sigma_proposal, init_mean, init_Sigma)
+  sample_meetingtime(pb$single_kernel, pb$coupled_kernel, pb$rinit)
 }
-save(nsamples, c_chains_, file = filename)
+save(nsamples, meetingtimes_2, file = filename)
 load(filename)
-meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+meetingtime <- sapply(meetingtimes_2, function(x) x$meetingtime)
 summary(meetingtime)
-# sum(sapply(c_chains_2, function(x) x$iteration))
-# hist(meetingtime)
+hist(meetingtime)
+
 # g <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("proportion")
 # g
 # ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 5, height = 5)
 
-
-k <- as.numeric(floor(quantile(meetingtime, probs = 0.95)))
+k <- 100
 m <- 10*k
-# ##
-c_chains_continued_ <-  foreach(irep = 1:nsamples) %dorng% {
+### Now we run the final pairs of chains
+c_chains_2 <-  foreach(irep = 1:nsamples) %dorng% {
   theta1 <- theta1s[irep,]
-  kernels <- get_kernels(theta1, Sigma_proposal)
-  single_kernel <- kernels$single_kernel
-  continue_coupled_chains(c_chains_[[irep]], single_kernel, m = m)
+  pb <- get_kernels(theta1, Sigma_proposal, init_mean, init_Sigma)
+  sample_coupled_chains(pb$single_kernel, pb$coupled_kernel, pb$rinit, m = m)
 }
-save(k, m, nsamples, c_chains_, c_chains_continued_, file = filename)
+save(k, m, nsamples, meetingtimes_2, c_chains_2, file = filename)
 
-# save(c_chains_, c_chains_continued_, c_chains_2, c_chains_continued_2, file = filename)
 load(filename)
-sum(sapply(c_chains_continued_, function(x) x$iteration))
-
+sum(sapply(c_chains_2, function(x) x$iteration))
 
 mean_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_[[irep]], k = k, m = m)
+  H_bar(c_chains_2[[irep]], k = k, m = m)
 }
 
 square_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_[[irep]], h = function(x) x^2, k = k, m = m)
+  H_bar(c_chains_2[[irep]], h = function(x) x^2, k = k, m = m)
 }
 
 cross_estimators <-  foreach(irep = 1:nsamples) %dorng% {
-  H_bar(c_chains_continued_[[irep]], h = function(x) x[1] * x[2], k = k, m = m)
+  H_bar(c_chains_2[[irep]], h = function(x) x[1] * x[2], k = k, m = m)
 }
 
 est_mean <- rep(0, dimension)
@@ -228,21 +264,23 @@ for (component in 1:dimension){
   est_mean[component] <- mean(estimators)
   est_var[component] <- mean(s_estimators) - est_mean[component]^2
 }
-c_estimators <- sapply(cross_estimators, function(x) x[1])
+c_estimators <- sapply(cross_estimators, function(x) x)
 cat("estimated covariance: ", mean(c_estimators) - prod(est_mean), "\n")
 
 ### exact cut distribution from parallel MCMC runs
 ## Modify niterations
-niterations <- 100
+niterations <- 1000
 theta2s <- foreach(itheta = 1:nrow(theta1s), .combine = rbind) %dorng% {
   theta1 <- theta1s[itheta,]
-  kernels <-  get_kernels(theta1, Sigma_proposal)
-  chain <- rinit()
+  pb <-  get_kernels(theta1, Sigma_proposal, init_mean, init_Sigma)
+  chain <- pb$rinit()
   for (iter in 1:niterations){
-    chain <- kernels$single_kernel(chain)
+    chain <- pb$single_kernel(chain)
   }
-  chain
+  chain$chain_state
 }
 save(theta2s, file = "plummer.mcmc.RData")
 # load(file = "plummer.mcmc.RData")
 
+# colMeans(theta2s)
+# sqrt(diag(cov(theta2s)))

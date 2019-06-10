@@ -1,9 +1,7 @@
-
 # load packages
 library(debiasedmcmc)
 library(doParallel)
 library(doRNG)
-# library(dplyr)
 # setmytheme()
 rm(list = ls())
 set.seed(21)
@@ -41,7 +39,6 @@ get_problem <- function(dimension,
   } else if(scale_type=='optimal'){
     Sigma_proposal <- Sigma_pi/dimension
   }
-
   Sigma_proposal_chol <- chol(Sigma_proposal)
   Sigma_proposal_chol_inv <- solve(Sigma_proposal_chol)
 
@@ -64,9 +61,7 @@ get_problem <- function(dimension,
   coupled_kernel <- function(state1, state2){
     chain_state1 <- state1$chain_state; current_pdf1 <- state1$current_pdf
     chain_state2 <- state2$chain_state; current_pdf2 <- state2$current_pdf
-    proposal_value <- rmvnorm_max(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
-    # proposal_value <- rmvnorm_max_chol(chain_state1, chain_state2, Sigma_proposal_chol, Sigma_proposal_chol,
-    #                                    Sigma_proposal_chol_inv, Sigma_proposal_chol_inv)
+    proposal_value <- rmvnorm_reflectionmax(chain_state1, chain_state2, Sigma_proposal_chol, Sigma_proposal_chol_inv)
     proposal1 <- proposal_value$xy[,1]; proposal_pdf1 <- target(proposal1)
     if (proposal_value$identical){
       proposal2 <- proposal1; proposal_pdf2 <- proposal_pdf1
@@ -77,14 +72,8 @@ get_problem <- function(dimension,
     accept1 <- FALSE; accept2 <- FALSE
     if (is.finite(proposal_pdf1)) accept1 <- (logu < (proposal_pdf1 - current_pdf1))
     if (is.finite(proposal_pdf2)) accept2 <- (logu < (proposal_pdf2 - current_pdf2))
-    if (accept1){
-      chain_state1 <- proposal1
-      current_pdf1 <- proposal_pdf1
-    }
-    if (accept2){
-      chain_state2 <- proposal2
-      urrent_pdf2 <- proposal_pdf2
-    }
+    if (accept1)                  chain_state1 <- proposal1; current_pdf1 <- proposal_pdf1
+    if (accept2)                  chain_state2 <- proposal2; current_pdf2 <- proposal_pdf2
     identical_ <- ((proposal_value$identical) && (accept1) && (accept2))
     return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
                 state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
@@ -92,24 +81,25 @@ get_problem <- function(dimension,
   }
   if (init_type=='target'){
     rinit <- function(){
-      state_ <- fast_rmvnorm(1, mean_pi, Sigma_pi)[1,]
+      state_ <- fast_rmvnorm_chol(1, mean_pi, Sigma_pi_chol)[1,]
       pdf_ <- target(state_)
       return(list(chain_state = state_, current_pdf = pdf_))
     }
   } else if (init_type=='offset'){
     rinit <- function(){
-      state_ <- fast_rmvnorm(1, rep(1, dimension), diag(dimension))[1,]
+      state_ <- fast_rmvnorm_chol(1, rep(1, dimension), diag(dimension))[1,]
       pdf_ <- target(state_)
       return(list(chain_state = state_, current_pdf = pdf_))
     }
   }
-  return(list(single_kernel = single_kernel, coupled_kernel = coupled_kernel, rinit = rinit))
+  return(list(single_kernel = single_kernel, coupled_kernel = coupled_kernel, rinit = rinit,
+              target = target, Sigma_proposal = Sigma_proposal))
 }
+#
 
-nsamples <- 1000 ## how many meetings to generate?
-
-dim_vec <- floor(seq(from = 1, to = 5, length.out = 5))
-target_type_vec <- c('sparse','dense')[2]
+nsamples <- 1000
+dim_vec <- floor(seq(from = 1, to = 50, length.out = 5))
+target_type_vec <- c('dense')
 init_type_vec <- c('target','offset')
 scale_type_vec <- c('optimal')
 run_parameters <- expand.grid(d=dim_vec,
@@ -124,32 +114,29 @@ for (i in 1:nrow(run_parameters)){
   target_type = run_parameters[i,'target_type']
   init_type = run_parameters[i,'init_type']
   scale_type = run_parameters[i,'scale_type']
-
-  c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
+  res_ <- foreach(irep = 1:nsamples) %dorng% {
     problem <- get_problem(d, target_type, init_type, scale_type=scale_type)
     sample_meetingtime(problem$single_kernel, problem$coupled_kernel, problem$rinit)
   }
-  meetingtime <- sapply(c_chains_, function(x) x$meetingtime)
+  meetingtime <- sapply(res_, function(x) x$meetingtime)
   cat("dim ", d, ", target ", target_type, ", init ", init_type, ", scale ", scale_type, "\n")
   print(summary(meetingtime))
-  q5 <- as.numeric(quantile(meetingtime, probs = 0.05))
-  q95 <- as.numeric(quantile(meetingtime, probs = 0.95))
   df <- rbind(df, data.frame(d = d,
                              target_type = target_type,
                              init_type = init_type,
                              scale_type = scale_type,
                              mean_time = mean(meetingtime), max_time = max(meetingtime),
-                             q5 = q5, q95 = q95,
                              median_time = median(meetingtime)))
-  save(nsamples, run_parameters, df, file = "scalingdimension.rwmh.maxcoupling.RData")
+  save(nsamples, run_parameters, df, file = "scalingdimension.rwmh.reflmaxcoupling.RData")
 }
 
-load(file = "scalingdimension.rwmh.maxcoupling.RData")
-# df
+load(file = "scalingdimension.rwmh.reflmaxcoupling.RData")
+df
 
+# library(dplyr)
 # g <- ggplot(df %>% filter(target_type == "dense"), aes(x = d, y = mean_time, group = init_type, linetype = factor(init_type))) + geom_line() + ylab("average meeting time")
-# g <- g + scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "dense"))$d)))
-# g <- g + scale_y_log10(breaks = c(10,100,1e3, 1e4)) + xlab("dimension")
+# g <- g +  scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "dense"))$d)))
+# g <- g + xlab("dimension")
 # g
-
-#
+# ggsave(filename = "scalingdimension.rwmh.reflmaxcoupling.pdf", plot = g, width = 8, height = 6)
+# g

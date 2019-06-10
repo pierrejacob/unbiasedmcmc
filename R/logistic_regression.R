@@ -197,25 +197,27 @@ sample_beta <- function(w1, w2, logistic_setting, mode="max_coupling", mc_prob=0
   KTkappaplusinvBtimesb <- logistic_setting$KTkappaplusinvBtimesb
   res1 <- logisticregression_m_and_sigma(w1, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
   res2 <- logisticregression_m_and_sigma(w2, logistic_setting$X, logistic_setting$invB, KTkappaplusinvBtimesb)
-
   if(mode=='max_coupling'){
-    x <- gaussian_max_coupling_cholesky(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
-    beta1 <- x[,1]
-    beta2 <- x[,2]
-  } else if(mode=='opt_transport'){
-    x <- gaussian_opt_transport(1, res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
-    beta1 <- x[[1]][,1]
-    beta2 <- x[[1]][,2]
-  } else if(mode=='both'){
-    if (runif(1) < mc_prob){
-      x <- gaussian_max_coupling_cholesky(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
-      beta1 <- x[,1]
-      beta2 <- x[,2]
-    } else {
-      x <- gaussian_opt_transport(1, res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
-      beta1 <- x[[1]][,1]
-      beta2 <- x[[1]][,2]
-    }
+    # x <- rmvnorm_max_chol(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
+    ## slow but valid
+    x <- rmvnorm_max(res1$m, res2$m, t(res1$Cholesky) %*% res1$Cholesky, t(res2$Cholesky) %*% res2$Cholesky)
+    beta1 <- x$xy[,1]
+    beta2 <- x$xy[,2]
+  # }
+  # else if(mode=='opt_transport'){
+  #   x <- gaussian_opt_transport(1, res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
+  #   beta1 <- x[[1]][,1]
+  #   beta2 <- x[[1]][,2]
+  # } else if(mode=='both'){
+  #   if (runif(1) < mc_prob){
+  #     x <- gaussian_max_coupling_cholesky(res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
+  #     beta1 <- x[,1]
+  #     beta2 <- x[,2]
+  #   } else {
+  #     x <- gaussian_opt_transport(1, res1$m, res2$m, res1$Cholesky, res2$Cholesky, res1$Cholesky_inverse, res2$Cholesky_inverse)
+  #     beta1 <- x[[1]][,1]
+  #     beta2 <- x[[1]][,2]
+  #   }
   } else {
     stop('invalid coupling method')
   }

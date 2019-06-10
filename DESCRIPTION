@@ -1,8 +1,8 @@
 Package: debiasedmcmc
 Type: Package
 Title: Debiasing MCMC with couplings
-Version: 0.2.0
-Author: Pierre E Jacob & John O'Leary
+Version: 0.3.0
+Author: Pierre E Jacob, John O'Leary, Yves F Atchade
 Maintainer: Pierre E Jacob <pjacob@fas.harvard.edu>
 Description: This package includes the scripts to reproduce the article
     "Unbiased Markov chain Monte Carlo with couplings" by Pierre E. Jacob, John
@@ -12,8 +12,12 @@ Description: This package includes the scripts to reproduce the article
 License: GPL (>= 2)
 Encoding: UTF-8
 Depends:
-    Rcpp,RcppEigen
+    Rcpp,RcppEigen,lubridate
 Imports:
     Rcpp (>= 0.11.6),RcppEigen
 LinkingTo: Rcpp,RcppEigen
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

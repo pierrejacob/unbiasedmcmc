@@ -16,7 +16,7 @@ ss_ <- c(-4,-2,0,2,4)
 
 nchains <- 16
 # number of iterations
-niterations <- 5e5
+niterations <- 5e4
 # history
 history_sumstates <- matrix(0, ncol = nchains, nrow = niterations)
 # probability of doing a swap move
@@ -49,7 +49,7 @@ niterations <- nrow(history_sumstates)
 cat(paste0(round(100*nswap_accepts/nswap_attempts, 2), " %"), "\n")
 par(mfrow = c(2,1))
 # traceplots
-matplot(apply(history_sumstates[2000:1e4,1:5], 2, function(x) cumsum(x)/(1:(niterations-2000+1))), type = "l")
+matplot(apply(history_sumstates[2000:niterations,1:5], 2, function(x) cumsum(x)/(1:(niterations-2000+1))), type = "l", ylab = "sum of states at different temperatures")
 # plot estimated average natural parameters
 plot(betas, colMeans(history_sumstates[2000:niterations,]), type = "l")
 

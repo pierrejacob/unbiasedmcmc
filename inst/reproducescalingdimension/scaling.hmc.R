@@ -1,7 +1,7 @@
 library(debiasedmcmc)
 library(doParallel)
 library(doRNG)
-setmytheme()
+# setmytheme()
 rm(list = ls())
 set.seed(21)
 registerDoParallel(cores = detectCores()-2)
@@ -33,7 +33,6 @@ cppFunction('
 hmc_single_kernel <- function(chain_state, current_pdf, nsteps, stepsize, pb){
   dimension_ <- length(chain_state)
   current_v <- fast_rmvnorm(1, rep(0, dimension_), pb$precision_pi)
-  # current_v <- rnorm(length(chain_state)) # momentum/velocity (mass is one)
   leapfrog_result <- leapfrog_c(chain_state, current_v, pb$precision_pi, pb$Sigma_pi, nsteps, stepsize)
   proposed_v <- - leapfrog_result$v
   proposed_x <- leapfrog_result$x
@@ -57,7 +56,6 @@ hmc_single_kernel <- function(chain_state, current_pdf, nsteps, stepsize, pb){
 
 hmc_coupled_kernel <- function(chain_state1, chain_state2, current_pdf1, current_pdf2, nsteps, stepsize, pb){
   dimension_ <- length(chain_state1)
-  # current_v <- rnorm(length(chain_state1)) # velocity or momentum, shared by both chains
   current_v <- fast_rmvnorm(1, rep(0, dimension_), pb$precision_pi)
   leapfrog_result1 <- leapfrog_c(chain_state1, current_v, pb$precision_pi, pb$Sigma_pi, nsteps, stepsize)
   leapfrog_result2 <- leapfrog_c(chain_state2, current_v, pb$precision_pi, pb$Sigma_pi, nsteps, stepsize)
@@ -223,7 +221,7 @@ samplemeetingtime <- function(omega, mh_stepsize, hmcconstant, dimension, max_it
 
 # dimensions <- c(10, 50, 100)
 dimensions <- c(10, 50, 100, 200, 300)
-nrep <- 1000
+nsamples <- 1000
 df <- data.frame()
 precisions <- list()
 for (idim in seq_along(dimensions)){
@@ -235,7 +233,7 @@ for (idim in seq_along(dimensions)){
   hmc_nsteps <- 1 + floor(1 / hmc_stepsize)
   print(dimension)
   # sample meeting times
-  results <- foreach(irep = 1:nrep) %dorng% {
+  results <- foreach(irep = 1:nsamples) %dorng% {
     precision_pi <- rWishart(1, dimension, diag(dimension))[,,1]
     # precisions[[idim]] <- precision_pi
     Sigma_pi <- solve(precision_pi)
@@ -259,14 +257,14 @@ for (idim in seq_along(dimensions)){
   meetingtimes <- sapply(results, function(x) x$meetingtime)
   print(summary(meetingtimes))
   df <- rbind(df, data.frame(idim = idim, dimension = dimension, hmc_nsteps = hmc_nsteps, hmc_stepsize = hmc_stepsize,
-             irep = 1:nrep, meetingtimes = meetingtimes, init_type = "target"))
+             irep = 1:nsamples, meetingtimes = meetingtimes, init_type = "target"))
   ## Starting outside of stationarity
   ## in that case, the initialization is from Normal(1,I)
   ## and then, 10 times in a row, the chain is propagated through the leap frog integrator
   ## without doing the MH acceptance step as in the usual HMC kernel
 
   # sample meeting times
-  results <- foreach(irep = 1:nrep) %dorng% {
+  results <- foreach(irep = 1:nsamples) %dorng% {
     precision_pi <- rWishart(1, dimension, diag(dimension))[,,1]
     # precisions[[idim]] <- precision_pi
     Sigma_pi <- solve(precision_pi)
@@ -294,23 +292,21 @@ for (idim in seq_along(dimensions)){
   }
   meetingtimes <- sapply(results, function(x) x$meetingtime)
   df <- rbind(df, data.frame(idim = idim, dimension = dimension, hmc_nsteps = hmc_nsteps, hmc_stepsize = hmc_stepsize,
-                             irep = 1:nrep, meetingtimes = meetingtimes, init_type = "offset"))
+                             irep = 1:nsamples, meetingtimes = meetingtimes, init_type = "offset"))
   save(df, file = "scalingdimension.wishart.hmc.meetings.RData")
 }
 
 load("scalingdimension.wishart.hmc.meetings.RData")
 
-head(df)
-
-max(df$meetingtimes)
-
-library(dplyr)
-library(tidyr)
-df %>% filter(irep == 1)
-
-df.summary <- df %>% group_by(dimension, init_type) %>% summarise(mean_time = mean(meetingtimes))
-
-g <- ggplot(df.summary, aes(x = dimension, y = mean_time, group = init_type, linetype = factor(init_type))) + geom_line() + ylab("average meeting time")
-g <- g + scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique(df.summary$dimension))) + xlab("dimension")
-g
+# head(df)
+# max(df$meetingtimes)
+# library(dplyr)
+# library(tidyr)
+# df %>% filter(irep == 1)
+#
+# df.summary <- df %>% group_by(dimension, init_type) %>% summarise(mean_time = mean(meetingtimes))
+#
+# g <- ggplot(df.summary, aes(x = dimension, y = mean_time, group = init_type, linetype = factor(init_type))) + geom_line() + ylab("average meeting time")
+# g <- g + scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique(df.summary$dimension))) + xlab("dimension")
+# g
 

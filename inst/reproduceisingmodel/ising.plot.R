@@ -22,7 +22,7 @@ g
 nchains_values <- c(4,8,12,16,24,32)
 nchains.df <- data.frame()
 for (nchains in nchains_values){
-  load(paste0("isingmodel/ising.swapN", nchains, ".meetings.RData"))
+  load(paste0("ising.swapN", nchains, ".meetings.RData"))
   nchains.df <- rbind(nchains.df, data.frame(nchains = nchains, mean = mean(meetings),
                                              q90 = as.numeric(quantile(meetings, probs = 0.9)),
                                              max = max(meetings)))

@@ -1,5 +1,5 @@
 .First <- function(){
   print("hello")
-  Sys.setenv(MAKEFLAGS = " -j4")
+  Sys.setenv(MAKEFLAGS = " -j6")
 }
 

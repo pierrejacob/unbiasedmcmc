@@ -7,7 +7,7 @@ set.seed(21)
 #
 library(doRNG)
 library(doParallel)
-registerDoParallel(cores = 2)
+registerDoParallel(cores = detectCores()-2)
 
 ising_unbiased_estimator <- function(betas, proba_swapmove, k = 0, m = 1, max_iterations = Inf){
   nchains  <- length(betas)
@@ -96,20 +96,13 @@ proba_swapmove <- 0.01
 nchains <- 10
 betas <- seq(from = 0.30, to = 0.40, length.out = nchains)
 
-# nrep <- 50
-# res_preliminary <- foreach(i = 1:nrep) %dorng% {
-#   ising_unbiased_estimator(betas, proba_swapmove, k = 0, m = 1)
-# }
-# hist(sapply(res_preliminary, function(x) x$meetingtime))
-# floor(as.numeric(quantile(sapply(res_preliminary, function(x) x$meetingtime), probs = 0.95)))
-
 k <- 300
 nrep <- 250
 #
-# results <- foreach(i = 1:nrep) %dorng% {
-#   ising_unbiased_estimator(betas, proba_swapmove, k = k, m = 5*k)
-# }
-# save(k, nrep, betas, nchains, proba_swapmove, results, file = "ising.testunbiasedestimators.RData")
+results <- foreach(i = 1:nrep) %dorng% {
+  ising_unbiased_estimator(betas, proba_swapmove, k = k, m = 5*k)
+}
+save(k, nrep, betas, nchains, proba_swapmove, results, file = "ising.testunbiasedestimators.RData")
 load("ising.testunbiasedestimators.RData")
 nrep <- length(results)
 

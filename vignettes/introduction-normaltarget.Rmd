@@ -1,0 +1,308 @@
+---
+title: "Introduction to the debiasedmcmc package: unbiased MCMC on a univariate Normal target"
+author: "Pierre E. Jacob"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction-normaltarget}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This script accompanies the article "Unbiased Markov chain Monte Carlo with couplings", by Pierre E. Jacob, John O'Leary and Yves F Atchade.
+The paper is available here: https://arxiv.org/abs/1708.03625.
+
+The purpose of the package is to reproduce the figures of the article, nothing more. Some of the functions in there might
+be useful to other people, so a minimal effort has been made to make them understandable, via vignettes and the package documentation.
+However this is not a general purpose package, it has not been thoroughly tested, and you should use it at your own risk.
+
+This script illustrates how the bias of a random walk Metropolis-Hastings (MH) algorithm.
+The bias, sometimes called the "burn-in bias", stems from the chains not starting at stationarity, but instead from an arbitrary initial distribution.
+That bias can be removed using couplings of Markov chains, as per
+
+* *Exact estimation for Markov chain equilibrium expectations* by Peter W. Glynn and Chang-Han Rhee, https://projecteuclid.org/euclid.jap/1417528487
+
+Our work builds upon the above article to remove the bias of generic MCMC algorithms.
+One the bias is removed, various tasks are made easier, such as parallelizing MCMC computations.
+
+We begin by loading the package, as well as extra packages for parallel calculations,
+registering multiple cores and setting the random number generator.
+
+```{r setup,message=FALSE,warning=FALSE}
+library(debiasedmcmc)
+library(doParallel)
+library(doRNG)
+# register parallel cores
+registerDoParallel(cores = 2)
+# set RNG seed
+set.seed(1)
+```
+
+## Target distribution and MCMC algorithm
+
+The target distribution $\pi$ is here defined as $\mathcal{N}(0,1)$. 
+We consider an MH algorithm with Normal random walk proposals, with a proposal standard deviation of $1$. 
+The initial distribution $\pi_0$ is chosen as $\mathcal{N}(10,1)$.
+The following code defines the target via its probability density function (returning log-values),
+and the MH kernel.
+
+
+```{r singlekernel, tidy = T}
+# target log-pdf 
+logtarget <- function(x) dnorm(x, mean = 0, sd = 1, log = TRUE)
+# initial distribution
+rinit <- function(){
+  chain_state <- rnorm(1, 10, 1)
+  current_pdf <- logtarget(chain_state)
+  return(list(chain_state = chain_state, current_pdf = current_pdf))
+}
+# MH kernel
+sd_proposal <- 1
+MH_kernel <- function(state){
+  chain_state <- state$chain_state
+  current_pdf <- state$current_pdf
+  proposal <- rnorm(1, chain_state, sd_proposal)
+  proposal_pdf <- logtarget(proposal)
+  if (log(runif(1)) < (proposal_pdf - current_pdf)){
+    return(list(chain_state = proposal, current_pdf = proposal_pdf))
+  } else {
+    return(list(chain_state = chain_state, current_pdf = current_pdf))
+  }
+}
+```
+
+The implementation of the Markov kernel takes a list ("state") as input,
+and returns a list. The idea is that it must be able to take as an input
+whatever it returns as an output. Furthermore, "rinit" is a function that outputs a list that can 
+be given to "MH_kernel" as an input. For illustration the above code shows 
+that these lists can contain more than the current state of the Markov chain. Above they contain previously-computed target pdf evaluations,
+with the aim of speeding-up forthcoming computations.
+
+We can check that the algorithm is correctly implemented by sampling
+many iterations, in the usual MCMC way, and plotting the histogram of the chain overlaid with the target
+probability density function.
+
+```{r testsinglkerel, tidy = T, cache = TRUE, fig.width=7}
+niterations <- 10000
+chain <- rep(0, niterations)
+state <- rinit()
+for (i in 1:niterations){
+  state <- MH_kernel(state)
+  chain[i] <- state$chain_state
+}
+# trace plot
+plot(chain[1:100], type = "l")  
+# histogram of the chain after removing 100 first iterations 
+hist(chain[101:niterations], prob = TRUE, nclass = 40, main = "")
+curve(exp(logtarget(x)), add = TRUE, col = "red")
+```
+
+## Coupled MCMC kernel
+
+We now introduce a coupled MH kernel, obtained by maximally coupling the Normal
+proposals. The code to sample from a  maximal coupling of two Normals is provided below.
+
+```{r maxcouplingnormal, tidy=TRUE}
+rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){
+  x <- rnorm(1, mu1, sigma1)
+  if (dnorm(x, mu1, sigma1, log = TRUE) + log(runif(1)) < 
+        dnorm(x, mu2, sigma2, log = TRUE)){
+    return(list(xy = c(x,x), identical = TRUE))
+  } else {
+    reject <- TRUE; y <- NA
+    while (reject){
+      y <- rnorm(1, mu2, sigma2)
+      reject <- (dnorm(y, mu2, sigma2, log = TRUE) + log(runif(1)) <
+                   dnorm(y, mu1, sigma1, log = TRUE))
+    }
+    return(list(xy = c(x,y), identical = FALSE))
+  }
+}
+```
+
+The function "rnorm_max_coupling" takes two means and two standard deviations as inputs,
+and returns a pair of samples $(X,Y)$ such that $X$ follows the
+first specified Normal, $Y$ follows the second specified Normal, and sometimes the two samples take identical values.
+The returned list contains a boolean variable named "identical" which is true if $X=Y$.
+
+We next test that the above code produces the desired output.
+
+```{r testmaxcoupling, tidy=TRUE, cache = TRUE, warning=F, message=F, fig.width=7}
+mu1 <- 0.2
+mu2 <- -0.8
+sigma1 <- 0.4
+sigma2 <- 1.7
+xy <- foreach(i = 1:1000) %dorng% {
+  rnorm_max_coupling(mu1, mu2, sigma1, sigma2)
+}
+par(mfrow = c(1,2))
+hist(sapply(xy, function(x) x$xy[1]), prob = TRUE, nclass = 40, main = "", xlab = "x")
+curve(dnorm(x, mu1, sigma1), add = TRUE, col = "red")
+hist(sapply(xy, function(x) x$xy[2]), prob = TRUE, nclass = 40, main = "", xlab = "y")
+curve(dnorm(x, mu2, sigma2), add = TRUE, col = "red")
+print(mean(sapply(xy, function(x) x$identical)))
+```
+
+We next define a coupled MH kernel, using maximally coupled proposals obtained with the function "rnorm_max_coupling".
+It also uses the same uniform variable to accept or reject the two proposals.
+
+```{r coupledMH, tidy=TRUE}
+coupledMH_kernel <- function(state1, state2){
+  chain_state1 <- state1$chain_state;  current_pdf1 <- state1$current_pdf
+  chain_state2 <- state2$chain_state;  current_pdf2 <- state2$current_pdf
+  # proposal from a maximal coupling
+  proposal <- rnorm_max_coupling(chain_state1, chain_state2, sd_proposal, sd_proposal)
+  proposal_pdf1 <- logtarget(proposal$xy[1])
+  # only compute target pdf on 2nd proposal if it is not identical to 1st proposal
+  proposal_pdf2 <- proposal_pdf1
+  if (!proposal$identical){
+    proposal_pdf2 <- logtarget(proposal$xy[2])
+  }
+  logu <- log(runif(1))
+  accept1 <- FALSE; accept2 <- FALSE
+  if (is.finite(proposal_pdf1)){
+    if (logu < (proposal_pdf1 - current_pdf1)){
+      accept1 <- TRUE
+      chain_state1 <- proposal$xy[1]; current_pdf1 <- proposal_pdf1
+    }
+  }
+  if (is.finite(proposal_pdf2)){
+    if(logu < (proposal_pdf2 - current_pdf2)){
+      accept2 <- TRUE
+      chain_state2 <- proposal$xy[2]; current_pdf2 <- proposal_pdf2
+    }
+  }
+  identical_ <- proposal$identical && accept1 && accept2
+  return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
+              state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
+              identical = identical_))
+}
+```
+
+The above function takes two states, which are lists such as the ones produced by "rinit" and "MH_kernel".
+It outputs two new states, as well as a boolean indicating whether the two states are identical.
+In the present setting, the two new states are identical if the proposed states are identical and if they are both accepted.
+
+In our article (https://arxiv.org/abs/1708.03625) we discuss the above coupling as well as alternatives that are better suited to higher-dimensional targets. In particular, for random walk MH we would recommend using "reflection-maximal" couplings instead of naive maximal couplings.
+But in the present simple scenario and for illustration purposes, it does not really matter, thus we proceed.
+
+## Meeting times
+
+We can now run coupled chains. More precisely, we will run chains with a time lag. 
+That is, we construct pairs of chains as follows:
+
+* draw $X_0$ and $Y_0$ from the initial distribution $\pi_0$, independently,
+
+* draw $X_t|X_{t-1}\sim P(X_{t-1},\cdot)$ for $t=1,\ldots,L$, with a default lag of $L=1$,
+
+* draw $(X_{t},Y_{t-L})$ given $(X_{t-1},Y_{t-L-1})$ using the coupled kernel $\bar{P}$, for $t>L$.
+
+We can run the chains until they meet, i.e. until $X_t = Y_{t-L}$, and report the meeting time  $\tau = \inf\{t\geq L: X_t = Y_{t-L}\}$.
+The following code uses the function "sample_meetingtime" to do this.
+
+```{r testcoupledMH, tidy=TRUE, cache=TRUE}
+sample_meetingtime(MH_kernel, coupledMH_kernel, rinit, lag = 1)
+```
+
+We then sample $1000$ independent copies of meeting times, and plot a histogram of them
+```{r meetingtimes, tidy=TRUE, cache=TRUE, fig.width=7}
+nsamples <- 1000
+meetings_ <-  foreach(irep = 1:nsamples) %dorng% {
+  sample_meetingtime(MH_kernel, coupledMH_kernel, rinit, lag = 1)
+}
+meetingtime <- sapply(meetings_, function(x) x$meetingtime)
+hist(meetingtime, breaks = 1:max(meetingtime), prob = TRUE, main = "", xlab = "meeting times")
+```
+
+We see that the meetings tend to occur in the first 50 iterations or so. This is very much target-specific and algorithmic-specific.
+Meeting times can be shorter or longer than that. In order to obtain short meeting times we need both a fast mixing MCMC kernel for the target distribution at hand, and an effective coupling strategy.
+
+## Unbiased estimators of target expectations
+
+Following the heuristics given in the article, we define $k$ as a large quantile of the meeting times, and $m$ as
+a multiple of $k$, e.g. $5k$. We then run coupled chains until time $\max(\tau, m)$,
+and produce unbiased estimators $H_{k:m}$ out of them. Each has expectation equal to $\int h(x) \pi(dx)$,
+where $h$ represents a test function of interest (this is what "unbiasedness" means).
+To produce these estimators, we use the function 
+"sample_coupled_chains", which records the trajectories of the chains.
+We then feed the output to the function "H_bar", which computes for each pair of chain
+an unbiased estimator of a test function of interest $h$.
+Specifically, here we aim at approximating the mean of the target expectation 
+(which we know is equal to zero here), so the test function is $h:x\mapsto x$.
+Note that we specify $m$ to the function "sample_coupled_chains",
+and we specify $h$, $k$ and $m$ to the function "H_bar".
+
+```{r meantarget, tidy=TRUE, cache=TRUE, fig.width=7}
+k <- 50
+m <- 5*k
+nsamples <- 1000
+coupled_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
+  sample_coupled_chains(MH_kernel, coupledMH_kernel, rinit, m = m)
+}
+
+uestimators <- sapply(coupled_chains_, 
+                      function(chains) H_bar(chains, h = function(x) x, k = k, m = m))
+hist(uestimators, main = "unbiased estimators of the target expectation")
+CI_low <- mean(uestimators)  - 1.96 * sd(uestimators)/sqrt(nsamples)
+CI_high <- mean(uestimators) + 1.96 * sd(uestimators)/sqrt(nsamples)
+cat("Confidence interval for the target expectation: [", CI_low, ",", CI_high, "]\n")
+```
+
+Above we also reported a confidence interval at level $95\%$ for the estimand $\int x \pi(dx)=0$,
+obtained via a central limit theorem approximation.
+
+In the above code we could replace the test function $h$ in the call to "H_bar",
+by any other function. The function is applied to the entry "chain_state"
+of the Markov chain.
+However, if are interested only in one test function $h$,
+we can use the function "sample_unbiasedestimator" which computes the estimators on the fly,
+and thus does not require as much memory as "sample_coupled_chains".
+For instance, the following code estimates the second moment of $\pi$,
+which we know is equal to one here.
+
+```{r uestimators2ndmoment, tidy=TRUE, cache=TRUE}
+uestimators_ <-  foreach(irep = 1:nsamples) %dorng% {
+  sample_unbiasedestimator(MH_kernel, coupledMH_kernel, 
+                           rinit, h = function(x) x^2, k = k, m = m)
+}
+uestimators <- sapply(uestimators_, function(ue) ue$uestimator)
+CI_low <- mean(uestimators)  - 1.96 * sd(uestimators)/sqrt(nsamples)
+CI_high <- mean(uestimators) + 1.96 * sd(uestimators)/sqrt(nsamples)
+cat("Confidence interval for the target second moment: [", CI_low, ",", CI_high, "]\n")
+cat("Average cost:", mean(sapply(uestimators_, function(ue) ue$cost)))
+```
+
+The above code reports a confidence interval as well as the average compute cost, measured in numbers of calls to the Markov kernel 
+(counting twice for calls to the coupled kernel).
+
+## Histograms
+
+We might not be interested in specific test functions, but rather in approximation and visualization of marginal distributions.
+The package provides a function "histogram_c_chains" that takes a list of coupled chains, such as produced above with "sample_coupled_chains",
+and computes a histogram of the desired component. The following code illustrates this functionality.
+
+```{r histogram_firstcomponent, tidy=TRUE, cache=TRUE, fig.width=7}
+histogram <- histogram_c_chains(coupled_chains_, component = 1, k = k, m = m, nclass = 50)
+library(ggplot2)
+g <- plot_histogram(histogram, with_bar = T)
+g <- g + stat_function(fun = function(x) exp(logtarget(x)), colour = "red", alpha = 1)
+g
+```
+
+The above plot shows the estimated posterior masses in vertical black bars.
+The grey rectangles provide $95\%$ confidence intervals on each bar separately (not jointly).
+The red curve adds the target pdf onto this.
+
+The "histogram_c_chains" function takes a list of coupled chains, 
+a component index (here equal to $1$), the values of $k$ and $m$, 
+and a desired number of classes. Alternatively, one can
+specify the breaks of the histogram as a vector, with the argument 'breaks'.

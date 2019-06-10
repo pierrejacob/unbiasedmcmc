@@ -34,47 +34,54 @@ b <- 2
 # we store the parameters as (mu, A, theta_1, ..., theta_K) so the parameter space is of dimension 20
 # the initialization comes from Rosenthal (except the initialization of mu and A which is irrelevant)
 rinit <- function(){
-  return(c(0,1,rep(mean(Y), ndata)))
+  return(list(chain_state = c(0,1,rep(mean(Y), ndata))))
 }
 # here is the code for the Gibbs sampler
-single_kernel <- function(current_state, ...){
-  theta <- current_state[3:(ndata+2)]
-  theta_bar <- mean(current_state[3:(ndata+2)])
+single_kernel <- function(state){
+  theta <- state$chain_state[3:(ndata+2)]
+  theta_bar <- mean(theta)
   # update of A given rest
   A <- rinversegamma(1, a + 0.5 * (ndata-1), b + 0.5 * sum((theta - theta_bar)^2))
   # update of mu given rest
   mu <- rnorm(1, theta_bar, sqrt(A/ndata))
   # update of each theta_i
   theta <- rnorm(ndata, (mu * V + Y * A) / (V + A), sqrt(A * V / (V + A)))
-  return(c(mu, A, theta))
+  return(list(chain_state = c(mu, A, theta)))
 }
 
 # Now coupled kernel
-coupled_kernel <- function(current_state1, current_state2, ...){
-  theta1 <- current_state1[3:(ndata+2)]
+coupled_kernel <- function(state1, state2){
+  theta1 <- state1$chain_state[3:(ndata+2)]
   theta_bar1 <- mean(theta1)
-  theta2 <- current_state2[3:(ndata+2)]
+  theta2 <- state2$chain_state[3:(ndata+2)]
   theta_bar2 <- mean(theta2)
+  identical_components <- logical(length = ndata+2)
   # update of A given rest
   As <- rinversegamma_coupled(alpha1 = a + 0.5 * (ndata-1), alpha2 = a + 0.5 * (ndata-1),
                         beta1 = b + 0.5 * sum((theta1 - theta_bar1)^2),
                         beta2 = b + 0.5 * sum((theta2 - theta_bar2)^2))
-  A1 <- As[1]
-  A2 <- As[2]
+  A1 <- As$xy[1]
+  A2 <- As$xy[2]
+  identical_components[1] <- As$identical
   # update of mu given rest
   # mus <- gaussian_max_coupling(theta_bar1, theta_bar2, matrix(A1/ndata, 1, 1), matrix(A2/ndata, 1, 1))
   mus <- rnorm_max_coupling(theta_bar1, theta_bar2, sqrt(A1/ndata), sqrt(A2/ndata))
-  mu1 <- mus[1]
-  mu2 <- mus[2]
+  mu1 <- mus$xy[1]
+  mu2 <- mus$xy[2]
+  identical_components[2] <- mus$identical
   # # update of each theta_i
   thetas <- matrix(nrow = ndata, ncol = 2)
   for (idata in 1:ndata){
-    thetas[idata,] <- rnorm_max_coupling((mu1 * V + Y[idata] * A1) / (V + A1), (mu2 * V + Y[idata] * A2) / (V + A2),
-                                 sqrt(A1 * V / (V + A1)), sqrt(A2 * V / (V + A2)))
+    theta_coupled_ <- rnorm_max_coupling((mu1 * V + Y[idata] * A1) / (V + A1), (mu2 * V + Y[idata] * A2) / (V + A2),
+                       sqrt(A1 * V / (V + A1)), sqrt(A2 * V / (V + A2)))
+    thetas[idata,] <- theta_coupled_$xy
+    identical_components[2+idata] <- theta_coupled_$identical
+
   }
-  theta1 <- thetas[,1]
-  theta2 <- thetas[,2]
-  return(list(chain_state1 = c(mu1, A1, theta1), chain_state2 = c(mu2, A2, theta2)))
+  theta1 <- thetas[,1];  theta2 <- thetas[,2]
+  return(list(state1 = list(chain_state = c(mu1, A1, theta1)),
+              state2 = list(chain_state = c(mu2, A2, theta2)),
+              identical = all(identical_components)))
 }
 
 ## Modify nsamples to create results in the paper
@@ -82,9 +89,11 @@ nsamples <- 1000
 k <- 4
 m <- 10*k
 
+
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
+  sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
 }
+
 save(nsamples, k, m, c_chains_, file = "baseball.c_chain.RData")
 load(file = "baseball.c_chain.RData")
 

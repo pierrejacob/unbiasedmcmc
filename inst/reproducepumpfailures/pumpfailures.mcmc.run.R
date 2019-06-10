@@ -26,26 +26,29 @@ delta <- 1
 # lambda_k given rest: Gamma(alpha + s_k, beta + t_k)
 # beta given rest: Gamma(gamma + 10*alpha, delta + sum_{k=1}^10 lambda_k)
 
-single_kernel <- function(current_state){
-  lambda <- current_state[1:ndata]
-  beta <- current_state[ndata+1]
+single_kernel <- function(state){
+  lambda <- state$chain_state[1:ndata]
+  beta <- state$chain_state[ndata+1]
   for (k in 1:ndata){
     lambda[k] <- rgamma(1, shape = alpha + s[k], rate = beta + t[k])
   }
   beta <- rgamma(1, shape = gamma + 10*alpha, rate = delta + sum(lambda))
-  return(c(lambda, beta))
+  return(list(chain_state = c(lambda, beta)))
 }
 
 rinit <- function(){
-  return(rep(1, ndata+1))
+  return(list(chain_state = rep(1, ndata+1)))
 }
+
 
 niterations <- 5e5
 chain <- matrix(nrow = niterations, ncol = ndata+1)
-chain[1,] <- rinit()
+current <- rinit()
+chain[1,] <- current$chain_state
 for (iteration in 2:niterations){
-  chain[iteration,] <- single_kernel(chain[iteration-1,])
+  current <- single_kernel(current)
+  chain[iteration,] <- current$chain_state
 }
 save(niterations, chain, file = "pump.mcmc.RData")
-load("pump.mcmc.RData")
+# load("pump.mcmc.RData")
 # hist(chain[,ndata+1])

@@ -17,12 +17,12 @@ p <- ncol(X)
 mcmc_blasso <- function(nmcmc, burnin, lambda){
   pb <- get_blasso(Y, X, lambda)
   state <- pb$rinit()
-  states <- matrix(nrow = nmcmc, ncol = length(state))
+  chain <- matrix(nrow = nmcmc, ncol = length(state$chain_state))
   for (imcmc in 1:nmcmc){
     state <- pb$gibbs_kernel(state)
-    states[imcmc,] <- state
+    chain[imcmc,] <- state$chain_state
   }
-  return(states)
+  return(chain)
 }
 
 

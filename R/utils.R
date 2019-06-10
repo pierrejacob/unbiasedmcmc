@@ -1,36 +1,6 @@
 
-# This file consists of short utility functions for working with the MVN distribution,
+# This file consists of short utility functions for working with
 # propensity scores, as well as the ggplot2-related  setmytheme.
-
-# from util_dmvnorm -------------------------------------------------------
-#'@rdname fast_dmvnorm
-#'@title fast_dmvnorm
-#'@description fast_dmvnorm
-#'@export
-fast_dmvnorm <- function(x, mean, covariance){
-  return(dmvnorm(x, mean, covariance))
-}
-
-#'@export
-fast_dmvnorm_chol_inverse <- function(x, mean, chol_inverse){
-  return(dmvnorm_cholesky_inverse(x, mean, chol_inverse))
-}
-
-
-# from util_rmvnorm -------------------------------------------------------
-#'@rdname fast_rmvnorm
-#'@title fast_rmvnorm
-#'@description fast_rmvnorm
-#'@export
-fast_rmvnorm <- function(nparticles, mean, covariance){
-  return(rmvnorm(nparticles, mean, covariance))
-}
-
-#'@export
-fast_rmvnorm_chol <- function(nparticles, mean, chol){
-  return(rmvnorm_cholesky(nparticles, mean, chol))
-}
-
 
 # from util_expit ---------------------------------------------------------
 #'@rdname expit
@@ -38,8 +8,6 @@ fast_rmvnorm_chol <- function(nparticles, mean, chol){
 #'@description expit function
 #'@export
 expit <- function(z) 1 / (1 + exp(-z))
-
-
 
 
 # from propensity ---------------------------------------------------------

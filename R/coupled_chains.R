@@ -1,154 +1,88 @@
 # Run coupled chains until max(tau, m) where tau is the meeting time and m specified by user
-#'@rdname coupled_chains
-#'@title Coupled MCMC chains
-#'@description sample two MCMC chains, each following 'single_kernel' marginally,
+#'@rdname sample_coupled_chains
+#'@title Sample coupled Markov chains
+#'@description sample two Markov chains, each following 'single_kernel' marginally,
 #' and 'coupled_kernel' jointly, until min(max(tau, m), max_iterations), where tau
 #' is the first time the two chains meet. Or more precisely, they meet with a delay of one, i.e. X_t = Y_{t-1}.
 #'@export
-coupled_chains <- function(single_kernel, coupled_kernel, rinit, ..., m = 1, max_iterations = Inf, preallocate = 10){
-  chain_state1 <- rinit()
-  chain_state2 <- rinit()
-  dimstate <- length(chain_state1)
-  samples1 <- matrix(nrow = m+preallocate+1, ncol = dimstate)
-  samples2 <- matrix(nrow = m+preallocate, ncol = dimstate)
-  nrowsamples1 <- m+preallocate+1
-  samples1[1,] <- chain_state1
-  samples2[1,] <- chain_state2
-  current_nsamples1 <- 1
-  chain_state1 <- single_kernel(chain_state1, ...)
-  current_nsamples1 <- current_nsamples1 + 1
-  samples1[current_nsamples1,] <- chain_state1
-  iter <- 1
-  meet <- FALSE
-  finished <- FALSE
+sample_coupled_chains <- function(single_kernel, coupled_kernel, rinit, m = 1, lag = 1, max_iterations = Inf, preallocate = 10){
+  starttime <- Sys.time()
+  state1 <- rinit(); state2 <- rinit()
+  dimstate <- length(state1$chain_state)
+  nrowsamples1 <- m+preallocate+lag
+  samples1 <- matrix(nrow = nrowsamples1, ncol = dimstate)
+  samples2 <- matrix(nrow = nrowsamples1-lag, ncol = dimstate)
+  samples1[1,] <- state1$chain_state
+  samples2[1,] <- state2$chain_state
+  # current_nsamples1 <- 1
+  time <- 0
+  for (t in 1:lag){
+    time <- time + 1
+    state1 <- single_kernel(state1)
+    samples1[time+1,] <- state1$chain_state
+  }
+  # current_nsamples1 <- current_nsamples1 + 1
+  # iter <- 1
   meetingtime <- Inf
-  while (!finished && iter < max_iterations){
-    iter <- iter + 1
-    if (meet){
-      chain_state1 <- single_kernel(chain_state1, ...)
-      chain_state2 <- chain_state1
+  while ((time < max(meetingtime, m)) && (time < max_iterations)){
+    time <- time + 1 # time is lag+1,lag+2,...
+    if (is.finite(meetingtime)){
+      state1 <- single_kernel(state1)
+      state2 <- state1
     } else {
-      res_coupled_kernel <- coupled_kernel(chain_state1, chain_state2, ...)
-      chain_state1 <- res_coupled_kernel$chain_state1
-      chain_state2 <- res_coupled_kernel$chain_state2
-      if (all(chain_state1 == chain_state2) && !meet){
-        # recording meeting time tau
-        meet <- TRUE
-        meetingtime <- iter
+      res_coupled_kernel <- coupled_kernel(state1, state2)
+      state1 <- res_coupled_kernel$state1
+      state2 <- res_coupled_kernel$state2
+      if (res_coupled_kernel$identical){
+        meetingtime <- time
       }
     }
-    if ((current_nsamples1+1) > nrowsamples1){
-      # print('increase nrow')
-      new_rows <- nrowsamples1-1
+    if ((time+1) > nrowsamples1){
+      new_rows <- nrowsamples1
       nrowsamples1 <- nrowsamples1 + new_rows
       samples1 <- rbind(samples1, matrix(NA, nrow = new_rows, ncol = dimstate))
       samples2 <- rbind(samples2, matrix(NA, nrow = new_rows, ncol = dimstate))
     }
-    samples1[current_nsamples1+1,] <- chain_state1
-    samples2[current_nsamples1,] <- chain_state2
-    current_nsamples1 <- current_nsamples1 + 1
-    # stop after max(m, tau) steps
-    if (iter >= max(meetingtime, m)){
-      finished <- TRUE
-    }
+    samples1[time+1,] <- state1$chain_state
+    samples2[time-lag+1,] <-   state2$chain_state
   }
-  samples1 <- samples1[1:current_nsamples1,,drop=F]
-  samples2 <- samples2[1:(current_nsamples1-1),,drop=F]
+  samples1 <- samples1[1:(time+1),,drop=F]
+  samples2 <- samples2[1:(time-lag+1),,drop=F]
+  cost <- lag + 2*(meetingtime - lag) + max(0, time - meetingtime)
+  currentime <- Sys.time()
+  elapsedtime <- as.numeric(as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
   return(list(samples1 = samples1, samples2 = samples2,
-              meetingtime = meetingtime, iteration = iter, finished = finished))
+              meetingtime = meetingtime, iteration = time, elapsedtime = elapsedtime, cost = cost))
 }
 
-#'@export
-unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, ..., h = function(x) x, k = 0, m = 1, max_iterations = Inf){
-  chain_state1 <- rinit()
-  chain_state2 <- rinit()
-  # mcmcestimator computes the sum of h(X_t) for t=k,...,m
-  mcmcestimator <- h(chain_state1)
-  dimh <- length(mcmcestimator)
-  if (k > 0){
-    mcmcestimator <- rep(0, dimh)
-  }
-  # correction computes the sum of min(1, (t - k + 1) / (m - k + 1)) * (h(X_{t+1}) - h(X_t)) for t=k,...,max(m, tau - 1)
-  correction <- rep(0, dimh)
-  chain_state1 <- single_kernel(chain_state1, ...)
-  # chain_state1 <- sres1$state
-  if (k == 0){
-    correction <- correction + (min(1, (0 - k + 1)/(m - k + 1))) * (h(chain_state1) - h(chain_state2))
-  }
-  if (k <= 1 && m >= 1){
-    mcmcestimator <- mcmcestimator + h(chain_state1)
-  }
-  # current_nsamples1 <- current_nsamples1 + 1
-  # samples1[current_nsamples1,] <- chain_state1
-  iter <- 1
-  meet <- FALSE
-  finished <- FALSE
-  meetingtime <- Inf
-  # iter here is 1; at this point we have X_1,Y_0 and we are going to generate successively X_t,Y_{t-1} where iter = t
-  while (!finished && iter < max_iterations){
-    iter <- iter + 1
-    if (meet){
-      chain_state1 <- single_kernel(chain_state1, ...)
-      # chain_state1 <- sres1$state
-      chain_state2 <- chain_state1
-      if (k <= iter && iter <= m){
-        mcmcestimator <- mcmcestimator + h(chain_state1)
-      }
-    } else {
-      res_coupled_kernel <- coupled_kernel(chain_state1, chain_state2, ...)
-      chain_state1 <- res_coupled_kernel$chain_state1
-      chain_state2 <- res_coupled_kernel$chain_state2
-      if (all(chain_state1 == chain_state2) && !meet){
-        # recording meeting time tau
-        meet <- TRUE
-        meetingtime <- iter
-      }
-      if (k <= iter){
-        if (iter <= m){
-          mcmcestimator <- mcmcestimator + h(chain_state1)
-        }
-        correction <- correction + (min(1, (iter-1 - k + 1)/(m - k + 1))) * (h(chain_state1) - h(chain_state2))
-      }
-    }
-    # stop after max(m, tau) steps
-    if (iter >= max(meetingtime, m)){
-      finished <- TRUE
-    }
-  }
-  mcmcestimator <- mcmcestimator / (m - k + 1)
-  uestimator <- mcmcestimator + correction
-  return(list(mcmcestimator = mcmcestimator, correction = correction, uestimator = uestimator,
-              meetingtime = meetingtime, iteration = iter, finished = finished))
-}
-
-## function to continue coupled chains until step m
-## c_chain should be the output of coupled_chains
-## and m should be more than c_chain$iteration, otherwise returns c_chain
-#'@rdname continue_coupled_chains
-#'@title Continue coupled MCMC chains up to m steps
-#'@description ## function to continue coupled chains until step m
-#' c_chain should be the output of coupled_chains
-#' and m should be more than c_chain$iteration, otherwise returns c_chain
-#'@export
-continue_coupled_chains <- function(c_chain, single_kernel, m = 1, ...){
-  if (m <= c_chain$iteration){
-    ## nothing to do
-    return(c_chain)
-  } else {
-    niterations <- m - c_chain$iteration
-    chain_state1 <- c_chain$samples1[c_chain$iteration+1,]
-    dimstate <- length(chain_state1)
-    samples1 <- matrix(nrow = niterations, ncol = dimstate)
-    samples2 <- matrix(nrow = niterations, ncol = dimstate)
-    for (iteration in 1:niterations){
-      chain_state1 <- single_kernel(chain_state1, ...)
-      samples1[iteration,] <- chain_state1
-      samples2[iteration,] <- chain_state1
-    }
-    c_chain$samples1 <- rbind(c_chain$samples1, samples1)
-    c_chain$samples2 <- rbind(c_chain$samples2, samples2)
-    c_chain$iteration <- m
-    return(c_chain)
-  }
-}
+#' ## function to continue coupled chains until step m
+#' ## c_chain should be the output of coupled_chains
+#' ## and m should be more than c_chain$iteration, otherwise returns c_chain
+#' #'@rdname continue_coupled_chains
+#' #'@title Continue coupled MCMC chains up to m steps
+#' #'@description ## function to continue coupled chains until step m
+#' #' c_chain should be the output of coupled_chains
+#' #' and m should be more than c_chain$iteration, otherwise returns c_chain
+#' #'@export
+#' continue_coupled_chains <- function(c_chain, single_kernel, m = 1, ...){
+#'   if (m <= c_chain$iteration){
+#'     ## nothing to do
+#'     return(c_chain)
+#'   } else {
+#'     niterations <- m - c_chain$iteration
+#'     chain_state1 <- c_chain$samples1[c_chain$iteration+1,]
+#'     dimstate <- length(chain_state1)
+#'     samples1 <- matrix(nrow = niterations, ncol = dimstate)
+#'     samples2 <- matrix(nrow = niterations, ncol = dimstate)
+#'     for (iteration in 1:niterations){
+#'       chain_state1 <- single_kernel(chain_state1, ...)
+#'       samples1[iteration,] <- chain_state1
+#'       samples2[iteration,] <- chain_state1
+#'     }
+#'     c_chain$samples1 <- rbind(c_chain$samples1, samples1)
+#'     c_chain$samples2 <- rbind(c_chain$samples2, samples2)
+#'     c_chain$iteration <- m
+#'     return(c_chain)
+#'   }
+#' }
 

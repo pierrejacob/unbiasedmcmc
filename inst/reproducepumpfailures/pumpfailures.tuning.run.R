@@ -28,42 +28,48 @@ delta <- 1
 # lambda_k given rest: Gamma(alpha + s_k, beta + t_k)
 # beta given rest: Gamma(gamma + 10*alpha, delta + sum_{k=1}^10 lambda_k)
 
-single_kernel <- function(current_state, ...){
-  lambda <- current_state[1:ndata]
-  beta <- current_state[ndata+1]
+
+single_kernel <- function(state){
+  lambda <- state$chain_state[1:ndata]
+  beta <- state$chain_state[ndata+1]
   for (k in 1:ndata){
     lambda[k] <- rgamma(1, shape = alpha + s[k], rate = beta + t[k])
   }
   beta <- rgamma(1, shape = gamma + 10*alpha, rate = delta + sum(lambda))
-  return(c(lambda, beta))
+  return(list(chain_state = c(lambda, beta)))
 }
 
 rinit <- function(){
-  return(rep(1, ndata+1))
+  return(list(chain_state = rep(1, ndata+1)))
 }
 
-coupled_kernel <- function(current_state1, current_state2, ...){
-  lambda1 <- current_state1[1:ndata]
-  beta1 <- current_state1[ndata+1]
-  lambda2 <- current_state2[1:ndata]
-  beta2 <- current_state2[ndata+1]
+coupled_kernel <- function(state1, state2){
+  lambda1 <- state1$chain_state[1:ndata]
+  beta1 <- state1$chain_state[ndata+1]
+  lambda2 <- state2$chain_state[1:ndata]
+  beta2 <- state2$chain_state[ndata+1]
+  identical_components <- logical(length = ndata + 1)
   for (k in 1:ndata){
     x <- rgamma_coupled(alpha1 = alpha + s[k], alpha2 = alpha + s[k],
                         beta1 = beta1 + t[k], beta2 = beta2 + t[k])
-    lambda1[k] <- x[1]
-    lambda2[k] <- x[2]
+    lambda1[k] <- x$xy[1]
+    lambda2[k] <- x$xy[2]
+    identical_components[k] <- x$identical
   }
   x <- rgamma_coupled(alpha1 = gamma + 10*alpha, alpha2 = gamma + 10*alpha,
                       beta1 = delta + sum(lambda1), beta2 = delta + sum(lambda2))
-  beta1 <- x[1]
-  beta2 <- x[2]
-  return(list(chain_state1 = c(lambda1, beta1), chain_state2 = c(lambda2, beta2)))
+  beta1 <- x$xy[1]
+  beta2 <- x$xy[2]
+  identical_components[ndata+1] <- x$identical
+  chain_state1 = c(lambda1, beta1); chain_state2 = c(lambda2, beta2)
+  identical_ <- all(identical_components)
+  return(list(state1 = list(chain_state = chain_state1), state2 = list(chain_state = chain_state2), identical = identical_))
 }
 
 ### First, get a sample of i.i.d. meeting times
-nsamples <- 10000
+nsamples <- 1000
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(single_kernel, coupled_kernel, rinit)
+  sample_meetingtime(single_kernel, coupled_kernel, rinit)
 }
 meetingtime.list <- list(c_chains = c_chains_, nsamples = nsamples)
 save(meetingtime.list, file = "pump.tuning.RData")
@@ -74,7 +80,7 @@ table(meetingtime)
 # mean(meetingtime<7)
 # Maybe we can take k to be 7, 8 or 9?
 
-nsamples <- 10000
+nsamples <- 1000
 ks <- 0:10
 cost <- rep(0, length(ks))
 v <- rep(0, length(ks))
@@ -83,7 +89,7 @@ for (ik in 1:length(ks)){
   cat("k = ", k, "\n")
   m <- k
   c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-    coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
+    sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
   }
   estimators <-  foreach(irep = 1:nsamples) %dorng% {
     H_bar(c_chains_[[irep]], h = function(x) x[ndata + 1], k = k, m = m)
@@ -108,7 +114,7 @@ for (im in 1:length(ms)){
   m <- ms[im]
   cat("m = ", m, "\n")
   c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-    coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
+    sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = m)
   }
   estimators <-  foreach(irep = 1:nsamples) %dorng% {
     H_bar(c_chains_[[irep]], h = function(x) x[ndata+1], k = k, m = m)

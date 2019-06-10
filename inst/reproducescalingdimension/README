@@ -1,11 +1,22 @@
-These scripts produce the results of Section 4, on the scaling of the proposed couplings with respect to the dimension.
+TODO:
+- make a meeting time function that could handle MH, Gibbs and HMC
+At the moment it's done with different functions in every script!
+- remove all the commented lines, and remove unnecessary packages
 
-The target is multivariate Normal with mean 0 and variance defined as the inverse of a Wishart(d, I_d) distribution,
-where d is the dimension, and I_d is the identity matrix of dimension d. For the Gibbs sampler, another target with weak correlations
-is also considered.
+
+
+These scripts produce the results of Section 4,
+on the scaling of the proposed couplings with respect to the dimension.
+
+The target is multivariate Normal
+with mean 0 and variance defined as the inverse of a Wishart(d, I_d) distribution,
+where d is the dimension, and I_d is the identity matrix of dimension d.
+For the Gibbs sampler, another target with weak correlations is also considered.
 
 Each script corresponds to a different algorithm, and runs the simulation
 with chains started either at stationarity, or from a Normal(1_d, I_d), where 1_d is a vector of ones.
+
+
 
 Scripts:
 

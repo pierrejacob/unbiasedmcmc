@@ -35,44 +35,44 @@ df.mcmc <- data.frame()
 nmcmc <- 1e6
 burnin <- 1e5
 mcmcfilepath <- paste0("varselection.mcmc.differentkappas.n", n, ".p", p, ".RData")
-for (ikappa in seq_along(kappas)){
-# ikappa <- 1
-  print(ikappa)
-  kappa <- kappas[ikappa]
-  # load model
-  vs <- get_variableselection(Y,X,g,kappa,s0,proportion_singleflip)
-  prior <- vs$prior
-  marginal_likelihood <- vs$marginal_likelihood
-  rinit <- vs$rinit
-  single_kernel <- vs$single_kernel
-  df.mcmc_ <- foreach(irep = 1:10, .combine = rbind) %dorng% {
-    current_gamma <- rinit()
-    current_pdf <- marginal_likelihood(current_gamma) + prior(current_gamma)
-    # chain <- matrix(nrow = nmcmc, ncol = p)
-    pdfs <- rep(0, nmcmc)
-    sumchain <- rep(0, p)
-    # chain[1,] <- current_gamma
-    pdfs[1] <- current_pdf
-    for (imcmc in 2:nmcmc){
-      result <- single_kernel(current_gamma, current_pdf)
-      current_gamma <- result$state
-      current_pdf <- result$pdf
-      # chain[imcmc,] <- current_gamma
-      if (imcmc >= burnin){
-        sumchain <- sumchain + current_gamma
-      }
-      pdfs[imcmc] <- current_pdf
-    }
-    #
-    # postburnin <- chain[burnin:nmcmc,]
-    postmean <- sumchain/(nmcmc-burnin)
-    data.frame(ikappa = ikappa, kappa = kappa, irep = irep, postmean = t(postmean))
-  }
-  # sapply(1:20, function(i) coda::effectiveSize(chain[burnin:nmcmc,i]))
-  # sapply(1:20, function(i) coda::spectrum0(chain[burnin:nmcmc,i])$spec)
-  df.mcmc <- rbind(df.mcmc, df.mcmc_)
-  save(df.mcmc, file = mcmcfilepath)
-}
+# for (ikappa in seq_along(kappas)){
+# # ikappa <- 1
+#   print(ikappa)
+#   kappa <- kappas[ikappa]
+#   # load model
+#   vs <- get_variableselection(Y,X,g,kappa,s0,proportion_singleflip)
+#   prior <- vs$prior
+#   marginal_likelihood <- vs$marginal_likelihood
+#   rinit <- vs$rinit
+#   single_kernel <- vs$single_kernel
+#   df.mcmc_ <- foreach(irep = 1:10, .combine = rbind) %dorng% {
+#     current_gamma <- rinit()
+#     current_pdf <- marginal_likelihood(current_gamma) + prior(current_gamma)
+#     # chain <- matrix(nrow = nmcmc, ncol = p)
+#     pdfs <- rep(0, nmcmc)
+#     sumchain <- rep(0, p)
+#     # chain[1,] <- current_gamma
+#     pdfs[1] <- current_pdf
+#     for (imcmc in 2:nmcmc){
+#       result <- single_kernel(current_gamma, current_pdf)
+#       current_gamma <- result$state
+#       current_pdf <- result$pdf
+#       # chain[imcmc,] <- current_gamma
+#       if (imcmc >= burnin){
+#         sumchain <- sumchain + current_gamma
+#       }
+#       pdfs[imcmc] <- current_pdf
+#     }
+#     #
+#     # postburnin <- chain[burnin:nmcmc,]
+#     postmean <- sumchain/(nmcmc-burnin)
+#     data.frame(ikappa = ikappa, kappa = kappa, irep = irep, postmean = t(postmean))
+#   }
+#   # sapply(1:20, function(i) coda::effectiveSize(chain[burnin:nmcmc,i]))
+#   # sapply(1:20, function(i) coda::spectrum0(chain[burnin:nmcmc,i])$spec)
+#   df.mcmc <- rbind(df.mcmc, df.mcmc_)
+#   save(df.mcmc, file = mcmcfilepath)
+# }
 
 load(file = mcmcfilepath)
 

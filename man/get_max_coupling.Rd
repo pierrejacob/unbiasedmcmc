@@ -8,5 +8,8 @@ get_max_coupling(rp, dp, rq, dq)
 }
 \description{
 Takes two distributions (sampling function and pdf),
-and return a function to sample from a maximal coupling of these distributions
+and return a function to sample from a maximal coupling of these distributions.
+The function returns a list with
+"xy": the pair of samples (x,y)
+"identical": TRUE if x = y, FALSE otherwise
 }

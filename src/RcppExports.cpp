@@ -40,85 +40,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// logcosh
-double logcosh(double x);
-RcppExport SEXP _debiasedmcmc_logcosh(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(logcosh(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// gaussian_max_couplingC
-NumericMatrix gaussian_max_couplingC(const NumericVector& mu1, const NumericVector& mu2, const NumericMatrix& Sigma1, const NumericMatrix& Sigma2);
-RcppExport SEXP _debiasedmcmc_gaussian_max_couplingC(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma1SEXP, SEXP Sigma2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu1(mu1SEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu2(mu2SEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type Sigma1(Sigma1SEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type Sigma2(Sigma2SEXP);
-    rcpp_result_gen = Rcpp::wrap(gaussian_max_couplingC(mu1, mu2, Sigma1, Sigma2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// gaussian_max_coupling_cholesky
-NumericMatrix gaussian_max_coupling_cholesky(const NumericVector& mu1, const NumericVector& mu2, const Eigen::MatrixXd& Cholesky1, const Eigen::MatrixXd& Cholesky2, const Eigen::MatrixXd& Cholesky_inverse1, const Eigen::MatrixXd& Cholesky_inverse2);
-RcppExport SEXP _debiasedmcmc_gaussian_max_coupling_cholesky(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Cholesky1SEXP, SEXP Cholesky2SEXP, SEXP Cholesky_inverse1SEXP, SEXP Cholesky_inverse2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu1(mu1SEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu2(mu2SEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky1(Cholesky1SEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky2(Cholesky2SEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky_inverse1(Cholesky_inverse1SEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky_inverse2(Cholesky_inverse2SEXP);
-    rcpp_result_gen = Rcpp::wrap(gaussian_max_coupling_cholesky(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// xbeta_
-NumericVector xbeta_(const NumericMatrix& X, const NumericVector& beta);
-RcppExport SEXP _debiasedmcmc_xbeta_(SEXP XSEXP, SEXP betaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(xbeta_(X, beta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// w_rejsamplerC
-NumericMatrix w_rejsamplerC(const NumericVector& beta1, const NumericVector& beta2, const NumericMatrix& X);
-RcppExport SEXP _debiasedmcmc_w_rejsamplerC(SEXP beta1SEXP, SEXP beta2SEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type beta1(beta1SEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type beta2(beta2SEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(w_rejsamplerC(beta1, beta2, X));
-    return rcpp_result_gen;
-END_RCPP
-}
-// w_max_couplingC
-NumericMatrix w_max_couplingC(const NumericVector& beta1, const NumericVector& beta2, const NumericMatrix& X);
-RcppExport SEXP _debiasedmcmc_w_max_couplingC(SEXP beta1SEXP, SEXP beta2SEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type beta1(beta1SEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type beta2(beta2SEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(w_max_couplingC(beta1, beta2, X));
-    return rcpp_result_gen;
-END_RCPP
-}
 // estimator_bin
 double estimator_bin(List c_chains, int component, double lower, double upper, int k, int K);
 RcppExport SEXP _debiasedmcmc_estimator_bin(SEXP c_chainsSEXP, SEXP componentSEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP kSEXP, SEXP KSEXP) {
@@ -175,18 +96,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcouplbern2
-IntegerVector rcouplbern2(double p1, double p2);
-RcppExport SEXP _debiasedmcmc_rcouplbern2(SEXP p1SEXP, SEXP p2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type p1(p1SEXP);
-    Rcpp::traits::input_parameter< double >::type p2(p2SEXP);
-    rcpp_result_gen = Rcpp::wrap(rcouplbern2(p1, p2));
-    return rcpp_result_gen;
-END_RCPP
-}
 // ising_sum_
 int ising_sum_(const IntegerMatrix& state);
 RcppExport SEXP _debiasedmcmc_ising_sum_(SEXP stateSEXP) {
@@ -223,44 +132,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ising_two2one_
-int ising_two2one_(int ix, int iy, int size);
-RcppExport SEXP _debiasedmcmc_ising_two2one_(SEXP ixSEXP, SEXP iySEXP, SEXP sizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type ix(ixSEXP);
-    Rcpp::traits::input_parameter< int >::type iy(iySEXP);
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ising_two2one_(ix, iy, size));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ising_one2two_
-IntegerVector ising_one2two_(int location, int size);
-RcppExport SEXP _debiasedmcmc_ising_one2two_(SEXP locationSEXP, SEXP sizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type location(locationSEXP);
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ising_one2two_(location, size));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ising_locationneighbour_
-int ising_locationneighbour_(int location, int ineighbour, int size);
-RcppExport SEXP _debiasedmcmc_ising_locationneighbour_(SEXP locationSEXP, SEXP ineighbourSEXP, SEXP sizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type location(locationSEXP);
-    Rcpp::traits::input_parameter< int >::type ineighbour(ineighbourSEXP);
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(ising_locationneighbour_(location, ineighbour, size));
-    return rcpp_result_gen;
-END_RCPP
-}
 // sigma_
 NumericMatrix sigma_(const NumericMatrix& X, const NumericVector& w);
 RcppExport SEXP _debiasedmcmc_sigma_(SEXP XSEXP, SEXP wSEXP) {
@@ -287,55 +158,148 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rmvnorm
-NumericMatrix rmvnorm(int nsamples, const NumericVector& mean, const NumericMatrix& covariance);
-RcppExport SEXP _debiasedmcmc_rmvnorm(SEXP nsamplesSEXP, SEXP meanSEXP, SEXP covarianceSEXP) {
+// logcosh
+double logcosh(double x);
+RcppExport SEXP _debiasedmcmc_logcosh(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(logcosh(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// xbeta_
+NumericVector xbeta_(const NumericMatrix& X, const NumericVector& beta);
+RcppExport SEXP _debiasedmcmc_xbeta_(SEXP XSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(xbeta_(X, beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// w_rejsamplerC
+NumericMatrix w_rejsamplerC(const NumericVector& beta1, const NumericVector& beta2, const NumericMatrix& X);
+RcppExport SEXP _debiasedmcmc_w_rejsamplerC(SEXP beta1SEXP, SEXP beta2SEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta1(beta1SEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta2(beta2SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(w_rejsamplerC(beta1, beta2, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// w_max_couplingC
+NumericMatrix w_max_couplingC(const NumericVector& beta1, const NumericVector& beta2, const NumericMatrix& X);
+RcppExport SEXP _debiasedmcmc_w_max_couplingC(SEXP beta1SEXP, SEXP beta2SEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta1(beta1SEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta2(beta2SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(w_max_couplingC(beta1, beta2, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// fast_rmvnorm_
+NumericMatrix fast_rmvnorm_(int nsamples, const NumericVector& mean, const NumericMatrix& covariance);
+RcppExport SEXP _debiasedmcmc_fast_rmvnorm_(SEXP nsamplesSEXP, SEXP meanSEXP, SEXP covarianceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nsamples(nsamplesSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type covariance(covarianceSEXP);
-    rcpp_result_gen = Rcpp::wrap(rmvnorm(nsamples, mean, covariance));
+    rcpp_result_gen = Rcpp::wrap(fast_rmvnorm_(nsamples, mean, covariance));
     return rcpp_result_gen;
 END_RCPP
 }
-// rmvnorm_cholesky
-NumericMatrix rmvnorm_cholesky(int nsamples, const NumericVector& mean, const Eigen::MatrixXd& cholesky);
-RcppExport SEXP _debiasedmcmc_rmvnorm_cholesky(SEXP nsamplesSEXP, SEXP meanSEXP, SEXP choleskySEXP) {
+// fast_rmvnorm_cholesky_
+NumericMatrix fast_rmvnorm_cholesky_(int nsamples, const NumericVector& mean, const Eigen::MatrixXd& cholesky);
+RcppExport SEXP _debiasedmcmc_fast_rmvnorm_cholesky_(SEXP nsamplesSEXP, SEXP meanSEXP, SEXP choleskySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type nsamples(nsamplesSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type cholesky(choleskySEXP);
-    rcpp_result_gen = Rcpp::wrap(rmvnorm_cholesky(nsamples, mean, cholesky));
+    rcpp_result_gen = Rcpp::wrap(fast_rmvnorm_cholesky_(nsamples, mean, cholesky));
     return rcpp_result_gen;
 END_RCPP
 }
-// dmvnorm
-NumericVector dmvnorm(const NumericMatrix& x, const NumericVector& mean, const NumericMatrix& covariance);
-RcppExport SEXP _debiasedmcmc_dmvnorm(SEXP xSEXP, SEXP meanSEXP, SEXP covarianceSEXP) {
+// fast_dmvnorm_
+NumericVector fast_dmvnorm_(const NumericMatrix& x, const NumericVector& mean, const NumericMatrix& covariance);
+RcppExport SEXP _debiasedmcmc_fast_dmvnorm_(SEXP xSEXP, SEXP meanSEXP, SEXP covarianceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type covariance(covarianceSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm(x, mean, covariance));
+    rcpp_result_gen = Rcpp::wrap(fast_dmvnorm_(x, mean, covariance));
     return rcpp_result_gen;
 END_RCPP
 }
-// dmvnorm_cholesky_inverse
-NumericVector dmvnorm_cholesky_inverse(const NumericMatrix& x, const NumericVector& mean, const Eigen::MatrixXd& cholesky_inverse);
-RcppExport SEXP _debiasedmcmc_dmvnorm_cholesky_inverse(SEXP xSEXP, SEXP meanSEXP, SEXP cholesky_inverseSEXP) {
+// fast_dmvnorm_cholesky_inverse_
+NumericVector fast_dmvnorm_cholesky_inverse_(const NumericMatrix& x, const NumericVector& mean, const Eigen::MatrixXd& cholesky_inverse);
+RcppExport SEXP _debiasedmcmc_fast_dmvnorm_cholesky_inverse_(SEXP xSEXP, SEXP meanSEXP, SEXP cholesky_inverseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type cholesky_inverse(cholesky_inverseSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmvnorm_cholesky_inverse(x, mean, cholesky_inverse));
+    rcpp_result_gen = Rcpp::wrap(fast_dmvnorm_cholesky_inverse_(x, mean, cholesky_inverse));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rmvnorm_max_coupling_
+Rcpp::List rmvnorm_max_coupling_(const NumericVector& mu1, const NumericVector& mu2, const NumericMatrix& Sigma1, const NumericMatrix& Sigma2);
+RcppExport SEXP _debiasedmcmc_rmvnorm_max_coupling_(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma1SEXP, SEXP Sigma2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu1(mu1SEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu2(mu2SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type Sigma1(Sigma1SEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type Sigma2(Sigma2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rmvnorm_max_coupling_(mu1, mu2, Sigma1, Sigma2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rmvnorm_max_coupling_cholesky
+Rcpp::List rmvnorm_max_coupling_cholesky(const NumericVector& mu1, const NumericVector& mu2, const Eigen::MatrixXd& Cholesky1, const Eigen::MatrixXd& Cholesky2, const Eigen::MatrixXd& Cholesky_inverse1, const Eigen::MatrixXd& Cholesky_inverse2);
+RcppExport SEXP _debiasedmcmc_rmvnorm_max_coupling_cholesky(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Cholesky1SEXP, SEXP Cholesky2SEXP, SEXP Cholesky_inverse1SEXP, SEXP Cholesky_inverse2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu1(mu1SEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu2(mu2SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky1(Cholesky1SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky2(Cholesky2SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky_inverse1(Cholesky_inverse1SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Cholesky_inverse2(Cholesky_inverse2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rmvnorm_max_coupling_cholesky(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rmvnorm_reflection_max_coupling_
+Rcpp::List rmvnorm_reflection_max_coupling_(const Eigen::VectorXd& mu1, const Eigen::VectorXd& mu2, const Eigen::MatrixXd& Sigma_chol, const Eigen::MatrixXd& inv_Sigma_chol);
+RcppExport SEXP _debiasedmcmc_rmvnorm_reflection_max_coupling_(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma_cholSEXP, SEXP inv_Sigma_cholSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu1(mu1SEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu2(mu2SEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Sigma_chol(Sigma_cholSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type inv_Sigma_chol(inv_Sigma_cholSEXP);
+    rcpp_result_gen = Rcpp::wrap(rmvnorm_reflection_max_coupling_(mu1, mu2, Sigma_chol, inv_Sigma_chol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -388,20 +352,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rnorm_reflectionmax_
-Rcpp::List rnorm_reflectionmax_(const Eigen::VectorXd& mu1, const Eigen::VectorXd& mu2, const Eigen::MatrixXd& Sigma_chol, const Eigen::MatrixXd& inv_Sigma_chol);
-RcppExport SEXP _debiasedmcmc_rnorm_reflectionmax_(SEXP mu1SEXP, SEXP mu2SEXP, SEXP Sigma_cholSEXP, SEXP inv_Sigma_cholSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu1(mu1SEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mu2(mu2SEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type Sigma_chol(Sigma_cholSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type inv_Sigma_chol(inv_Sigma_cholSEXP);
-    rcpp_result_gen = Rcpp::wrap(rnorm_reflectionmax_(mu1, mu2, Sigma_chol, inv_Sigma_chol));
-    return rcpp_result_gen;
-END_RCPP
-}
 // sample_pair01
 IntegerVector sample_pair01(const NumericVector& selection);
 RcppExport SEXP _debiasedmcmc_sample_pair01(SEXP selectionSEXP) {
@@ -432,34 +382,30 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_blassoconditional", (DL_FUNC) &_debiasedmcmc_blassoconditional, 6},
     {"_debiasedmcmc_blassoconditional_coupled", (DL_FUNC) &_debiasedmcmc_blassoconditional_coupled, 8},
-    {"_debiasedmcmc_logcosh", (DL_FUNC) &_debiasedmcmc_logcosh, 1},
-    {"_debiasedmcmc_gaussian_max_couplingC", (DL_FUNC) &_debiasedmcmc_gaussian_max_couplingC, 4},
-    {"_debiasedmcmc_gaussian_max_coupling_cholesky", (DL_FUNC) &_debiasedmcmc_gaussian_max_coupling_cholesky, 6},
-    {"_debiasedmcmc_xbeta_", (DL_FUNC) &_debiasedmcmc_xbeta_, 2},
-    {"_debiasedmcmc_w_rejsamplerC", (DL_FUNC) &_debiasedmcmc_w_rejsamplerC, 3},
-    {"_debiasedmcmc_w_max_couplingC", (DL_FUNC) &_debiasedmcmc_w_max_couplingC, 3},
     {"_debiasedmcmc_estimator_bin", (DL_FUNC) &_debiasedmcmc_estimator_bin, 6},
     {"_debiasedmcmc_get_measure_", (DL_FUNC) &_debiasedmcmc_get_measure_, 3},
     {"_debiasedmcmc_rinvgaussian_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_c, 3},
     {"_debiasedmcmc_rinvgaussian_coupled_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_coupled_c, 4},
-    {"_debiasedmcmc_rcouplbern2", (DL_FUNC) &_debiasedmcmc_rcouplbern2, 2},
     {"_debiasedmcmc_ising_sum_", (DL_FUNC) &_debiasedmcmc_ising_sum_, 1},
     {"_debiasedmcmc_ising_gibbs_sweep_", (DL_FUNC) &_debiasedmcmc_ising_gibbs_sweep_, 2},
     {"_debiasedmcmc_ising_coupled_gibbs_sweep_", (DL_FUNC) &_debiasedmcmc_ising_coupled_gibbs_sweep_, 3},
-    {"_debiasedmcmc_ising_two2one_", (DL_FUNC) &_debiasedmcmc_ising_two2one_, 3},
-    {"_debiasedmcmc_ising_one2two_", (DL_FUNC) &_debiasedmcmc_ising_one2two_, 2},
-    {"_debiasedmcmc_ising_locationneighbour_", (DL_FUNC) &_debiasedmcmc_ising_locationneighbour_, 3},
     {"_debiasedmcmc_sigma_", (DL_FUNC) &_debiasedmcmc_sigma_, 2},
     {"_debiasedmcmc_m_sigma_function_", (DL_FUNC) &_debiasedmcmc_m_sigma_function_, 4},
-    {"_debiasedmcmc_rmvnorm", (DL_FUNC) &_debiasedmcmc_rmvnorm, 3},
-    {"_debiasedmcmc_rmvnorm_cholesky", (DL_FUNC) &_debiasedmcmc_rmvnorm_cholesky, 3},
-    {"_debiasedmcmc_dmvnorm", (DL_FUNC) &_debiasedmcmc_dmvnorm, 3},
-    {"_debiasedmcmc_dmvnorm_cholesky_inverse", (DL_FUNC) &_debiasedmcmc_dmvnorm_cholesky_inverse, 3},
+    {"_debiasedmcmc_logcosh", (DL_FUNC) &_debiasedmcmc_logcosh, 1},
+    {"_debiasedmcmc_xbeta_", (DL_FUNC) &_debiasedmcmc_xbeta_, 2},
+    {"_debiasedmcmc_w_rejsamplerC", (DL_FUNC) &_debiasedmcmc_w_rejsamplerC, 3},
+    {"_debiasedmcmc_w_max_couplingC", (DL_FUNC) &_debiasedmcmc_w_max_couplingC, 3},
+    {"_debiasedmcmc_fast_rmvnorm_", (DL_FUNC) &_debiasedmcmc_fast_rmvnorm_, 3},
+    {"_debiasedmcmc_fast_rmvnorm_cholesky_", (DL_FUNC) &_debiasedmcmc_fast_rmvnorm_cholesky_, 3},
+    {"_debiasedmcmc_fast_dmvnorm_", (DL_FUNC) &_debiasedmcmc_fast_dmvnorm_, 3},
+    {"_debiasedmcmc_fast_dmvnorm_cholesky_inverse_", (DL_FUNC) &_debiasedmcmc_fast_dmvnorm_cholesky_inverse_, 3},
+    {"_debiasedmcmc_rmvnorm_max_coupling_", (DL_FUNC) &_debiasedmcmc_rmvnorm_max_coupling_, 4},
+    {"_debiasedmcmc_rmvnorm_max_coupling_cholesky", (DL_FUNC) &_debiasedmcmc_rmvnorm_max_coupling_cholesky, 6},
+    {"_debiasedmcmc_rmvnorm_reflection_max_coupling_", (DL_FUNC) &_debiasedmcmc_rmvnorm_reflection_max_coupling_, 4},
     {"_debiasedmcmc_beta2e_", (DL_FUNC) &_debiasedmcmc_beta2e_, 2},
     {"_debiasedmcmc_cut_in_fifth_", (DL_FUNC) &_debiasedmcmc_cut_in_fifth_, 1},
     {"_debiasedmcmc_propensity_module2_loglik2_", (DL_FUNC) &_debiasedmcmc_propensity_module2_loglik2_, 5},
     {"_debiasedmcmc_prune_", (DL_FUNC) &_debiasedmcmc_prune_, 1},
-    {"_debiasedmcmc_rnorm_reflectionmax_", (DL_FUNC) &_debiasedmcmc_rnorm_reflectionmax_, 4},
     {"_debiasedmcmc_sample_pair01", (DL_FUNC) &_debiasedmcmc_sample_pair01, 1},
     {"_debiasedmcmc_marginal_likelihood_c_2", (DL_FUNC) &_debiasedmcmc_marginal_likelihood_c_2, 5},
     {NULL, NULL, 0}

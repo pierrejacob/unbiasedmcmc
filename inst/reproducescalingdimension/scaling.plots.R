@@ -1,8 +1,6 @@
 # load packages
 library(debiasedmcmc)
 library(dplyr)
-library(tidyr)
-library(ggthemes)
 setmytheme()
 rm(list = ls())
 set.seed(21)
@@ -22,26 +20,6 @@ g <- g + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "
 g <- g + xlab("dimension") + scale_linetype("initialization:")
 g
 ggsave(filename = "scalingdimension.rwmh.reflmaxcoupling.pdf", plot = g, width = 8, height = 6)
-
-
-# g <- ggplot(df %>% filter(target_type == "dense", init_type == "offset"), aes(x = d, y = mean_time, group = init_type)) + geom_line() + ylab("average meeting time")
-# g <- g + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "dense"))$d)))
-# g <- g + xlab("dimension")
-# g
-# ggsave(filename = "scalingdimension.rwmh.reflmaxcoupling.offsetinit.pdf", plot = g, width = 5, height = 5)
-#
-# g <- ggplot(df %>% filter(target_type == "dense", init_type == "target"), aes(x = d, y = mean_time, group = init_type)) + geom_line() + ylab("average meeting time")
-# g <- g + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "dense"))$d)))
-# g <- g + xlab("dimension")
-# g
-# ggsave(filename = "scalingdimension.rwmh.reflmaxcoupling.targetinit.pdf", plot = g, width = 5, height = 5)
-
-# g <- ggplot(df %>% filter(target_type == "dense"), aes(x = d, y = mean_time, group = init_type, linetype = factor(init_type))) + geom_line() + ylab("average meeting time")
-# g <- g +  scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique((df %>% filter(target_type == "dense"))$d)))
-# g <- g + xlab("dimension")
-# g
-# ggsave(filename = "scalingdimension.rwmh.reflmaxcoupling.pdf", plot = g, width = 8, height = 6)
-
 
 load(file = "scalingdimension.gibbs.sparse.RData")
 df.sparse <- df
@@ -65,4 +43,5 @@ g <- ggplot(df.summary, aes(x = dimension, y = mean_time, group = init_type, lin
 g <- g + scale_linetype("initialization:") + scale_x_continuous(breaks = sort(unique(df.summary$dimension))) + xlab("dimension") + ylim(0, 60)
 g
 
-# ggsave(filename = "scalingdimension.hmc.dense.pdf", plot = g, width = 8, height = 6)
+ggsave(filename = "scalingdimension.hmc.dense.pdf", plot = g, width = 8, height = 6)
+
