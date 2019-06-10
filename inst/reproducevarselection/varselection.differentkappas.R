@@ -16,7 +16,7 @@ p <- 1000
 SNR <- 1
 #
 # load data
-load(paste0("varselection.dataSNR", SNR, ".RData"))
+load(paste0("../varselection.dataSNR", SNR, ".RData"))
 # subset data to desired size
 Y <- Y[1:n]
 X <- X[1:n,1:p]
@@ -34,6 +34,45 @@ df.mcmc <- data.frame()
 nmcmc <- 1e6
 burnin <- 1e5
 mcmcfilepath <- paste0("varselection.mcmc.differentkappas.n", n, ".p", p, ".RData")
+for (ikappa in seq_along(kappas)){
+# ikappa <- 1
+  print(ikappa)
+  kappa <- kappas[ikappa]
+  # load model
+  vs <- get_variableselection(Y,X,g,kappa,s0,proportion_singleflip)
+  prior <- vs$prior
+  marginal_likelihood <- vs$marginal_likelihood
+  rinit <- vs$rinit
+  single_kernel <- vs$single_kernel
+  df.mcmc_ <- foreach(irep = 1:10, .combine = rbind) %dorng% {
+    current_gamma <- rinit()
+    current_pdf <- marginal_likelihood(current_gamma) + prior(current_gamma)
+    # chain <- matrix(nrow = nmcmc, ncol = p)
+    pdfs <- rep(0, nmcmc)
+    sumchain <- rep(0, p)
+    # chain[1,] <- current_gamma
+    pdfs[1] <- current_pdf
+    for (imcmc in 2:nmcmc){
+      result <- single_kernel(current_gamma, current_pdf)
+      current_gamma <- result$state
+      current_pdf <- result$pdf
+      # chain[imcmc,] <- current_gamma
+      if (imcmc >= burnin){
+        sumchain <- sumchain + current_gamma
+      }
+      pdfs[imcmc] <- current_pdf
+    }
+    #
+    # postburnin <- chain[burnin:nmcmc,]
+    postmean <- sumchain/(nmcmc-burnin)
+    data.frame(ikappa = ikappa, kappa = kappa, irep = irep, postmean = t(postmean))
+  }
+  # sapply(1:20, function(i) coda::effectiveSize(chain[burnin:nmcmc,i]))
+  # sapply(1:20, function(i) coda::spectrum0(chain[burnin:nmcmc,i])$spec)
+  df.mcmc <- rbind(df.mcmc, df.mcmc_)
+  save(df.mcmc, file = mcmcfilepath)
+}
+
 load(file = mcmcfilepath)
 
 #
@@ -50,6 +89,7 @@ gmcmc <- ggplot(dfsub.mcmc, aes(x = numcomponent, y = postmean, colour = factor(
 gmcmc
 
 ## load results from the cluster
+
 datafiles <- list.files(path = "output/", pattern = "varselection")
 datafiles[1]
 df_full <- data.frame()
@@ -175,10 +215,23 @@ gumcmc
 
 
 gumcmc2 <- gumcmc + geom_line(data = dfsub.mcmc %>% filter(kappa %in% c(0.1, 1, 2)) %>% select(-component) %>% setNames(c("ikappa", "kappa", "irep", "mcmcestimate", "ivariable")),
-                              aes(y = mcmcestimate, group = interaction(kappa, irep)), linetype = 1, alpha = 0.25)
+                               aes(y = mcmcestimate, group = interaction(kappa, irep)), linetype = 1, alpha = 0.25)
 gumcmc2
 ggsave(filename = "varselection.estimates.differentkappa.pdf", plot = gumcmc2, width = 8, height = 6)
 
+# gumcmc <- aes(x = numcomponent, y = mean, colour = factor(kappa), group = factor(kappa), shape = factor(kappa)))
+# gumcmc <- gumcmc + geom_point(size = 2) + geom_line() +
+#   scale_color_viridis(name = "kappa: ", discrete = TRUE) + xlab("variable") + ylab("inclusion probability") + scale_shape(name = "kappa: ")
+# gumcmc <- gumcmc + geom_errorbar(aes(ymin = mean - 2 * sd / sqrt(nrep), ymax = mean + 2 * sd / sqrt(nrep)))
+# gumcmc <- gumcmc + scale_x_continuous(breaks = c(1,10,20))
+# gumcmc
+#
+# meanduration <- mean(df_summary$meanduration)
+# averagesquare <- as.numeric(colMeans(df %>% group_by(rep) %>% summarise_at(.vars = names(.)[7:22], .funs = function(x) mean(x^2)))[2:17])
+# sigma2hat <- mean_durations * (averagesquare - estimators^2)
+# so compute width of estimators as
+# max(df$endtime)
+# shat <- sqrt(sigma2hat) / sqrt(500 * max(df$endtime))
 
 
 

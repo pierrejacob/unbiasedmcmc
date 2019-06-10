@@ -1,5 +1,5 @@
 library(debiasedmcmc)
-setmytheme()
+# setmytheme()
 rm(list = ls())
 set.seed(1)
 

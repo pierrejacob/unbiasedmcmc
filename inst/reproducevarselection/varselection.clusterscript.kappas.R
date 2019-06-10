@@ -1,6 +1,5 @@
 # time allocated to this
 TIME <- 2*60*60
-# TIME <- 12
 
 library(debiasedmcmc)
 
@@ -126,13 +125,6 @@ unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = function
   return(list(mcmcestimator = mcmcestimator, correction = correction, uestimator = uestimator,
               meetingtime = meetingtime, iteration = iter, finished = finished))
 }
-
-
-# Unbiased MCMC
-# res <- try(unbiasedestimator(single_kernel, coupled_kernel, rinit, h = function(x) x, k = k, m = m))
-# if (inherits(res, "try-error")){
-#   res <- list(meeting = Inf, uestimator = rep(0, p))
-# }
 
 
 ptm_irep <- proc.time()

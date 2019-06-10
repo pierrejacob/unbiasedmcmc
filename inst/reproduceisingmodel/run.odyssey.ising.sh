@@ -46,7 +46,7 @@ srun R CMD BATCH --no-save "--args $SLURM_ARRAY_TASK_ID" $input out/$input.$SLUR
 ### Make sure path names are OK in run.odyssey.ising.sh.
 ### choose partition, size of array (e.g. 1-500 for 500 jobs), runtime
 ### To start the jobs:
-# sbatch run.odyssey.ising.sh.
+# sbatch run.odyssey.ising.sh
 
 ### To monitor jobs,
 # sacct -j JOBID
