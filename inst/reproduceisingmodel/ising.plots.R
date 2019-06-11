@@ -38,7 +38,6 @@ g
 ggsave(filename = "ising.parallel.meetings.pdf", plot = g, width = 8, height = 6)
 
 ### load results from cluster
-# datafiles <- list.files(path = "output/", pattern = "5000")
 datafiles <- list.files(path = "output/", pattern = "1e+")
 nchains <- 16
 betas <- seq(from = 0.3, to = 0.55, length.out = nchains)

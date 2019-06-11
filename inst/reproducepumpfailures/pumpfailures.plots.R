@@ -15,7 +15,7 @@ load("pump.tuning.RData")
 nsamples <- meetingtime.list$nsamples
 meetingtimes <- sapply(X = meetingtime.list$c_chains, FUN = function(x) x$meetingtime)
 table(meetingtimes)
-
+quantile(meetingtimes, probs = 0.99)
 # So we can pick k = 7, and it seems like most of the time the meeting time would occur before k
 
 # Is it a good choice?

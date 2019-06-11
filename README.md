@@ -1,5 +1,5 @@
 
-## debiasedmcmc
+## unbiasedmcmc
 
 This package contains scripts to reproduce the results of the arXiv
 report “Unbiased Markov chain Monte Carlo with couplings”, by Pierre E.

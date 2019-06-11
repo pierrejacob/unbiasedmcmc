@@ -35,6 +35,7 @@ nmcmc <- 1e6
 burnin <- 1e5
 mcmcfilepath <- paste0("varselection.mcmc.differentkappas.n", n, ".p", p, ".RData")
 load(file = mcmcfilepath)
+tail(df.mcmc[,1:4])
 
 #
 getcomponent <- function(x) as.numeric(strsplit(x, "[.]")[[1]][2])
@@ -167,17 +168,18 @@ for (ik in 1:3){
   }
 }
 df.plot %>% head
-
-gumcmc <- ggplot(df.plot, aes(x = ivariable, y = estimate, colour = factor(kappa), shape = factor(kappa))) + geom_point(size = 2)
-gumcmc <- gumcmc + scale_color_viridis(name = "kappa: ", discrete = TRUE) + xlab("variable") + ylab("inclusion probability") + scale_shape(name = "kappa: ")
+library(latex2exp)
+gumcmc <- ggplot(df.plot, aes(x = ivariable, y = estimate, colour = factor(kappa), shape = factor(kappa))) + geom_point(size = 3)
+gumcmc <- gumcmc +  xlab("variable") + ylab("inclusion probability") + scale_shape(name = TeX("$\\kappa$: "))
 gumcmc <- gumcmc + geom_errorbar(aes(ymin = estimate - 2 * sderror.eq34, ymax = estimate + 2 * sderror.eq34))
-gumcmc
-
-
-gumcmc2 <- gumcmc + geom_line(data = dfsub.mcmc %>% filter(kappa %in% c(0.1, 1, 2)) %>% select(-component) %>% setNames(c("ikappa", "kappa", "irep", "mcmcestimate", "ivariable")),
+# scale_color_viridis(name = TeX("$\\kappa$: "), discrete = TRUE) +
+gumcmc <- gumcmc + geom_line(data = dfsub.mcmc %>% filter(kappa %in% c(0.1, 1, 2)) %>% select(-component) %>% setNames(c("ikappa", "kappa", "irep", "mcmcestimate", "ivariable")),
                               aes(y = mcmcestimate, group = interaction(kappa, irep)), linetype = 1, alpha = 0.25)
-gumcmc2
-ggsave(filename = "varselection.estimates.differentkappa.pdf", plot = gumcmc2, width = 8, height = 6)
+
+gumcmc <- gumcmc + scale_color_manual(name = TeX("$\\kappa$: "), values = c("black", "cornflowerblue", "orange"))
+gumcmc <- gumcmc + theme(legend.key.size = unit(4,"line"))
+gumcmc
+ggsave(filename = "varselection.estimates.differentkappa.pdf", plot = gumcmc, width = 8, height = 6)
 
 
 
