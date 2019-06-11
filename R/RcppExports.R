@@ -9,8 +9,8 @@ blassoconditional_coupled <- function(Y, X, XtY, XtX, tau21, tau22, sigma21, sig
     .Call('_debiasedmcmc_blassoconditional_coupled', PACKAGE = 'debiasedmcmc', Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
 }
 
-estimator_bin <- function(c_chains, component, lower, upper, k, K) {
-    .Call('_debiasedmcmc_estimator_bin', PACKAGE = 'debiasedmcmc', c_chains, component, lower, upper, k, K)
+estimator_bin_ <- function(c_chains, component, lower, upper, k, m, lag) {
+    .Call('_debiasedmcmc_estimator_bin_', PACKAGE = 'debiasedmcmc', c_chains, component, lower, upper, k, m, lag)
 }
 
 get_measure_ <- function(c_chains, k, m) {

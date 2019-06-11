@@ -5,8 +5,23 @@
 \title{histogram_c_chains}
 \usage{
 histogram_c_chains(c_chains, component, k, m, breaks = NULL,
-  nclass = 30)
+  nclass = 30, dopar = FALSE)
+}
+\arguments{
+\item{c_chains}{A list of coupled chains, each as produced by \code{\link{sample_coupled_chains}}}
+
+\item{component}{An integer specifying which marginal to approximate}
+
+\item{k}{An integer (see \code{\link{H_bar}})}
+
+\item{m}{Another integer (see \code{\link{H_bar}})}
+
+\item{breaks}{A vector indicating how to bin the space (optional)}
+
+\item{nclass}{An integer specifying the number of bins to aim for, if "breaks" is not specified}
+
+\item{dopar}{A boolean indicating whether to parallelize the computation (requires doParallel and having registed parallel cores)}
 }
 \description{
-Compute histograms based on coupled Markov chains
+Compute histogram approximations of marginal distributions based on coupled Markov chains
 }

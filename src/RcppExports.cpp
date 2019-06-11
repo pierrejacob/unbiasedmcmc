@@ -40,9 +40,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// estimator_bin
-double estimator_bin(List c_chains, int component, double lower, double upper, int k, int K);
-RcppExport SEXP _debiasedmcmc_estimator_bin(SEXP c_chainsSEXP, SEXP componentSEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP kSEXP, SEXP KSEXP) {
+// estimator_bin_
+double estimator_bin_(List c_chains, int component, double lower, double upper, int k, int m, int lag);
+RcppExport SEXP _debiasedmcmc_estimator_bin_(SEXP c_chainsSEXP, SEXP componentSEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP kSEXP, SEXP mSEXP, SEXP lagSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,8 +51,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type lower(lowerSEXP);
     Rcpp::traits::input_parameter< double >::type upper(upperSEXP);
     Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    rcpp_result_gen = Rcpp::wrap(estimator_bin(c_chains, component, lower, upper, k, K));
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< int >::type lag(lagSEXP);
+    rcpp_result_gen = Rcpp::wrap(estimator_bin_(c_chains, component, lower, upper, k, m, lag));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -382,7 +383,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_debiasedmcmc_blassoconditional", (DL_FUNC) &_debiasedmcmc_blassoconditional, 6},
     {"_debiasedmcmc_blassoconditional_coupled", (DL_FUNC) &_debiasedmcmc_blassoconditional_coupled, 8},
-    {"_debiasedmcmc_estimator_bin", (DL_FUNC) &_debiasedmcmc_estimator_bin, 6},
+    {"_debiasedmcmc_estimator_bin_", (DL_FUNC) &_debiasedmcmc_estimator_bin_, 7},
     {"_debiasedmcmc_get_measure_", (DL_FUNC) &_debiasedmcmc_get_measure_, 3},
     {"_debiasedmcmc_rinvgaussian_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_c, 3},
     {"_debiasedmcmc_rinvgaussian_coupled_c", (DL_FUNC) &_debiasedmcmc_rinvgaussian_coupled_c, 4},
