@@ -12,6 +12,9 @@
 #' \code{single_kernel}, \code{coupled_kernel}.
 #'@export
 get_mh_kernels <- function(target, Sigma_proposal){
+  if (is.null(dim(Sigma_proposal))){
+    Sigma_proposal <- matrix(Sigma_proposal)
+  }
   dimension <- dim(Sigma_proposal)[1]
   Sigma_proposal_chol <- chol(Sigma_proposal)
   Sigma_proposal_chol_inv <- solve(chol(Sigma_proposal))

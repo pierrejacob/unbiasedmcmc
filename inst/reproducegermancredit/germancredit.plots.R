@@ -67,7 +67,7 @@ idx2 <- which('Duration.in.Current.address' == colnames(X))
 idx <- idx1
 
 nclass <- 27 #27 for idx1, 24 for idx2
-rng <- range(find_breaks(c_chains_, idx, nclass, k))
+rng <- range(find_breaks(c_chains_, idx, nclass, k, m, lag = 1))
 breaks = seq(rng[1],rng[2],length=nclass)
 
 histogram1 <- histogram_c_chains(c_chains_, idx, k, m, nclass = nclass)
@@ -100,6 +100,3 @@ inef <- c * v
 inef / mcmcvar
 #
 
-# mean(unlist(estimators))
-# mean(chain[1000:nrow(chain), idx1])
-# plot(estimators, taus)
