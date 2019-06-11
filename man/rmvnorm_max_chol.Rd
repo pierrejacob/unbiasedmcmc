@@ -7,8 +7,40 @@
 rmvnorm_max_chol(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1,
   Cholesky_inverse2)
 }
+\arguments{
+\item{mu1}{First mean}
+
+\item{mu2}{First mean}
+
+\item{Cholesky1}{First Cholesky factor, e.g. obtained with \code{\link[base]{chol}}}
+
+\item{Cholesky2}{Second Cholesky factor}
+
+\item{Cholesky_inverse1}{First inverse of Cholesky factor, e.g. obtained with \code{solve(chol(Sigma))}}
+
+\item{Cholesky_inverse2}{Second inverse of Cholesky factor}
+}
+\value{
+A list containing 'xy', a matrix with 2 columns (one for each draw),
+and a boolean indicator 'identical' indicating whether the two draws
+are identical.
+}
 \description{
-sample from maximal coupling of two multivariate Normal distributions,
+Sample from maximal coupling of two multivariate Normal distributions,
 specified through their means, the Cholesky factors of their covariance matrices,
-and the Cholesky factors of the inverse covariance matrices (i.e. the precision matrices)
+and the inverse of the Cholesky factors of the covariance matrices.
+}
+\examples{
+p <- 3
+mu1 <- rep(0, p)
+mu2 <- rep(1, p)
+Sigma1 <- diag(0.4, p, p)
+Sigma1[1,2] <- Sigma1[2,1] <- 0.2
+Sigma2 <- diag(1.4, p, p)
+Sigma2[1,2] <- Sigma2[2,1] <- -0.5
+Sigma1_chol <- chol(Sigma1)
+Sigma2_chol <- chol(Sigma2)
+Sigma1_chol_inv <- solve(Sigma1_chol)
+Sigma2_chol_inv <- solve(Sigma2_chol)
+rmvnorm_max_chol(mu1, mu2, Sigma1_chol, Sigma2_chol, Sigma1_chol_inv, Sigma2_chol_inv)
 }

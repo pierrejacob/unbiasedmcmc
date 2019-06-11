@@ -15,6 +15,6 @@ Pierre E. Jacob, John O'Leary, Yves F Atchade, available on arXiv at
 https://arxiv.org/abs/1708.03625
 }
 \author{
-Pierre E. Jacob <pierre.jacob.work@gmail.com>, John O'Leary
+Pierre E. Jacob <pierre.jacob.work@gmail.com>, John O'Leary, Yves F. Atchade
 }
 \keyword{package}

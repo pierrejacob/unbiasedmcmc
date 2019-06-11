@@ -2,7 +2,7 @@
 
 This package contains scripts to reproduce the results of the arXiv report "Unbiased Markov chain Monte Carlo with couplings", by Pierre E. Jacob, John O'Leary and Yves F Atchade.
 
-This is not a general-purpose statistical software, but a collection of scripts intended to reproduce figures and tables. Use at your own risk!
+This is not a general-purpose statistical software, but a collection of scripts intended to reproduce figures and tables. Use at your own risk!!
 
 The Polya-Gamma sampler is taken from the package BayesLogit of Nick Polson, James Scott, and Jesse Windle:
 

@@ -85,7 +85,7 @@ get_problem <- function(dimension,
       chain_state2 <- proposal2
       urrent_pdf2 <- proposal_pdf2
     }
-    identical_ <- ((proposal_value$identical) && (accept1) && (accept2))
+    identical_ <- proposal_value$identical && accept1 && accept2
     return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
                 state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
                 identical = identical_))

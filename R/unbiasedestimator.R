@@ -1,4 +1,44 @@
-
+#'@rdname sample_unbiasedestimator
+#'@title Unbiased MCMC estimators
+#'@description Sample two Markov chains, each following 'single_kernel' marginally,
+#' and 'coupled_kernel' jointly, until min(max(tau, m), max_iterations), where tau
+#' is the first time the two chains meet (the "meeting time"). An unbiased estimator
+#' of the expectation of a test function h is computed on the fly, between step k and step m, and returned.
+#'
+#' Allows for an arbitrary lag, i.e. X_t = Y_{t-lag}, and lag is one by default.
+#'
+#' Compared to \code{\link{sample_coupled_chains}} this function requires specifying
+#' the test function, but does not record the trajectories, and thus is memory-light.
+#'
+#' If you're only interested in sampling meeting times, see \code{\link{sample_meetingtime}}.
+#'
+#'@param single_kernel A list taking a state and returning a state, performing one step of a Markov kernel
+#'@param coupled_kernel A list taking two states and returning two states, performing one step of a coupled Markov kernel;
+#'it also returns a boolean "identical" indicating whether the two states are identical.
+#'@param rinit A list representing the initial state of the chain, that can be given to 'single_kernel'
+#'@param h A test function of interest, which should take a chain state ("chain_state" entry of the output of "rinit", for instance)
+#'and return a numeric vector
+#'@param k An integer at which to start computing the unbiased estimator
+#'@param m A time horizon: the chains are sampled until the maximum between m and the meeting time
+#'@param lag A time lag, equal to one by default
+#'@param max_iterations A maximum number of iterations, at which to interrup the while loop; Inf by default
+#'@return A list with
+#'\itemize{
+#'
+#'\item mcmcestimator: an MCMC estimator computed on the first chain, from step k to m
+#'
+#'\item correction: the bias correction term
+#'
+#'\item uestimator: unbiased estimator, equal to the sum of mcmcestimator and correction
+#'
+#'\item meetingtime: the meeting time; equal to Inf if while loop was interrupted
+#'
+#'\item iteration: final iteration; could be equal to m, to meetingtime, or to max_iterations
+#'
+#'\item elapsedtime: elapsed wall-clock time, in seconds
+#'
+#'\item cost: computing cost in terms of calls to Markov kernels (counting coupled kernel as twice the cost)
+#'}
 #'@export
 sample_unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = function(x) x, k = 0, m = 1, lag = 1, max_iterations = Inf){
   if (k > m){

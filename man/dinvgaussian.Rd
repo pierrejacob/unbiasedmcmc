@@ -2,11 +2,14 @@
 % Please edit documentation in R/invgaussian_couplings.R
 \name{dinvgaussian}
 \alias{dinvgaussian}
-\title{compute log-density of inverse Gaussian}
+\title{Log-density of inverse Gaussian}
 \usage{
 dinvgaussian(x, mu, lambda)
 }
+\value{
+A vector of n log-pdf values, one for each element in the first argument 'x'.
+}
 \description{
-at x > 0 and with given parameters mu, lambda, given by
- 0.5 * log(lambda/(2*pi)) - 1.5 * log(x) - lambda * (x-mu)^2 / (2 * mu^2 * x)
+Computes log-pdf at x > 0 of inverse Gaussian with given parameters mu, lambda, given by
+ \deqn{0.5 * log(\lambda/(2*\pi)) - 1.5 * log(x) - \lambda * (x-\mu)^2 / (2 * \mu^2 * x)}
 }

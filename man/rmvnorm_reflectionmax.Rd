@@ -6,8 +6,32 @@
 \usage{
 rmvnorm_reflectionmax(mu1, mu2, Cholesky, Cholesky_inverse)
 }
+\arguments{
+\item{mu1}{First mean}
+
+\item{mu2}{First mean}
+
+\item{Cholesky}{Cholesky factor, e.g. obtained with \code{\link[base]{chol}}}
+
+\item{Cholesky_inverse}{Inverse of Cholesky factor, e.g. obtained with \code{solve(chol(Sigma))}}
+}
+\value{
+A list containing 'xy', a matrix with 2 columns (one for each draw),
+and a boolean indicator 'identical' indicating whether the two draws
+are identical.
+}
 \description{
-sample from reflection-maximal coupling of two multivariate Normal distributions,
-specified through their means, with the same covariance matrix specified
-through its Cholesky factor and Cholesky factor of its inverse.
+Sample from reflection-maximal coupling of two multivariate Normal distributions,
+specified through their means, with the same covariance matrix, specified
+through its Cholesky factor and inverse of Cholesky factor.
+}
+\examples{
+p <- 3
+mu1 <- rep(0, p)
+mu2 <- rep(1, p)
+Sigma <- diag(0.4, p, p)
+Sigma[1,2] <- Sigma[2,1] <- 0.2
+Sigma_chol <- chol(Sigma)
+Sigma_chol_inv <- solve(Sigma_chol)
+rmvnorm_reflectionmax(mu1, mu2, Sigma_chol, Sigma_chol_inv)
 }

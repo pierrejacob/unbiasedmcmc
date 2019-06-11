@@ -6,7 +6,34 @@
 \usage{
 rmvnorm_max(mu1, mu2, Sigma1, Sigma2)
 }
+\arguments{
+\item{mu1}{First mean}
+
+\item{mu2}{First mean}
+
+\item{Sigma1}{First covariance matrix}
+
+\item{Sigma2}{Second covariance matrix}
+}
+\value{
+A list containing 'xy', a matrix with 2 columns (one for each draw),
+and a boolean indicator 'identical' indicating whether the two draws
+are identical.
+}
 \description{
-sample from maximal coupling of two multivariate Normal distributions,
-specified through their means and covariance matrices
+Sample from maximal coupling of two multivariate Normal distributions,
+specified through their means and covariance matrices. See \code{\link{rmvnorm_max_chol}}
+for a version using Cholesky factors and their inverses.
+See \code{\link{rmvnorm_reflectionmax}}
+for a reflection-maximal coupling, in the case Sigma1=Sigma2.
+}
+\examples{
+p <- 3
+mu1 <- rep(0, p)
+mu2 <- rep(1, p)
+Sigma1 <- diag(0.4, p, p)
+Sigma1[1,2] <- Sigma1[2,1] <- 0.2
+Sigma2 <- diag(1.4, p, p)
+Sigma2[1,2] <- Sigma2[2,1] <- -0.5
+rmvnorm_max(mu1, mu2, Sigma1, Sigma2)
 }

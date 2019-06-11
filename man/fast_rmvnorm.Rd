@@ -4,8 +4,22 @@
 \alias{fast_rmvnorm}
 \title{fast_rmvnorm}
 \usage{
-fast_rmvnorm(nparticles, mean, covariance)
+fast_rmvnorm(n, mean, covariance)
+}
+\arguments{
+\item{n}{An integer >= 1 specifying the desired number of draws}
+
+\item{mean}{A vector of size d specifying the mean vector of the multivariate Normal}
+
+\item{covariance}{A matrix of size d x d specifying the covariance matrix of the multivariate Normal}
+}
+\value{
+A matrix of size n x d containing n d-dimensional multivariate Normal draws (one per row)
 }
 \description{
-fast_rmvnorm
+Generate multivariate Normal draws. The function does not check
+the arguments, use at your own risk.
+}
+\examples{
+ fast_rmvnorm(2, rep(0, 5), diag(1, 5, 5))
 }

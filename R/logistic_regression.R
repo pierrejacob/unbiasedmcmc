@@ -2,7 +2,6 @@
 # This file consists of functions related estimating logistic regression models using the original
 # PGG algorithm and our unbiased estimator
 
-# from util_logisticregression --------------------------------------------
 #'@export
 logisticregression_xbeta <- function(X, beta){
   return(xbeta_(X, beta))
@@ -84,21 +83,6 @@ pg_gibbs <- function(niterations, logistic_setting){
   }
   return(betas)
 }
-
-# from sample_w -----------------------------------------------------------
-# w_indep <- function(beta1,beta2,X){
-#   n <- nrow(X)
-#   w1 <- rep(0., n)
-#   w2 <- rep(0., n)
-#   z1s <- abs(xbeta(X, beta1))
-#   z2s <- abs(xbeta(X, beta2))
-#
-#   for (i in 1:n){
-#     w1[[i]] <- rpg(num=1, h=1, z=z1s[i])
-#     w2[[i]] <- rpg(num=1, h=1, z=z2s[i])
-#   }
-#   return(list(w1=w1, w2=w2))
-# }
 
 #'@export
 w_rejsampler_caller <- function(beta1,beta2,X){

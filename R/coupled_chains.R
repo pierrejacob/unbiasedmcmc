@@ -1,9 +1,40 @@
-# Run coupled chains until max(tau, m) where tau is the meeting time and m specified by user
 #'@rdname sample_coupled_chains
 #'@title Sample coupled Markov chains
-#'@description sample two Markov chains, each following 'single_kernel' marginally,
+#'@description Sample two Markov chains, each following 'single_kernel' marginally,
 #' and 'coupled_kernel' jointly, until min(max(tau, m), max_iterations), where tau
-#' is the first time the two chains meet. Or more precisely, they meet with a delay of one, i.e. X_t = Y_{t-1}.
+#' is the first time the two chains meet (the "meeting time").
+#'
+#' Or more precisely, they meet with a delay of lag, i.e. X_t = Y_{t-lag}, and lag is one by default.
+#'
+#' Once the coupled chains are obtained, unbiased estimators can be computed for arbitrary test
+#' functions via the function \code{\link{H_bar}}.
+#'
+#' If you're only interested in sampling meeting times, see \code{\link{sample_meetingtime}}.
+#'
+#'
+#'@param single_kernel A list taking a state and returning a state, performing one step of a Markov kernel
+#'@param coupled_kernel A list taking two states and returning two states, performing one step of a coupled Markov kernel;
+#'it also returns a boolean "identical" indicating whether the two states are identical.
+#'@param rinit A list representing the initial state of the chain, that can be given to 'single_kernel'
+#'@param m A time horizon: the chains are sampled until the maximum between m and the meeting time
+#'@param lag A time lag, equal to one by default
+#'@param max_iterations A maximum number of iterations, at which to interrup the while loop; Inf by default
+#'@param preallocate A number of anticipated iterations, used to pre-allocate memory; 10 by default
+#'@return A list with
+#'\itemize{
+#'
+#'\item samples1: the first chain, of length max(m, tau)
+#'
+#'\item samples2: the second chain, of length max(m, tau) - lag
+#'
+#'\item meetingtime: the meeting time; equal to Inf if while loop was interrupted
+#'
+#'\item iteration: final iteration; could be equal to m, to meetingtime, or to max_iterations
+#'
+#'\item elapsedtime: elapsed wall-clock time, in seconds
+#'
+#'\item cost: computing cost in terms of calls to Markov kernels (counting coupled kernel as twice the cost)
+#'}
 #'@export
 sample_coupled_chains <- function(single_kernel, coupled_kernel, rinit, m = 1, lag = 1, max_iterations = Inf, preallocate = 10){
   starttime <- Sys.time()
@@ -54,35 +85,4 @@ sample_coupled_chains <- function(single_kernel, coupled_kernel, rinit, m = 1, l
   return(list(samples1 = samples1, samples2 = samples2,
               meetingtime = meetingtime, iteration = time, elapsedtime = elapsedtime, cost = cost))
 }
-
-#' ## function to continue coupled chains until step m
-#' ## c_chain should be the output of coupled_chains
-#' ## and m should be more than c_chain$iteration, otherwise returns c_chain
-#' #'@rdname continue_coupled_chains
-#' #'@title Continue coupled MCMC chains up to m steps
-#' #'@description ## function to continue coupled chains until step m
-#' #' c_chain should be the output of coupled_chains
-#' #' and m should be more than c_chain$iteration, otherwise returns c_chain
-#' #'@export
-#' continue_coupled_chains <- function(c_chain, single_kernel, m = 1, ...){
-#'   if (m <= c_chain$iteration){
-#'     ## nothing to do
-#'     return(c_chain)
-#'   } else {
-#'     niterations <- m - c_chain$iteration
-#'     chain_state1 <- c_chain$samples1[c_chain$iteration+1,]
-#'     dimstate <- length(chain_state1)
-#'     samples1 <- matrix(nrow = niterations, ncol = dimstate)
-#'     samples2 <- matrix(nrow = niterations, ncol = dimstate)
-#'     for (iteration in 1:niterations){
-#'       chain_state1 <- single_kernel(chain_state1, ...)
-#'       samples1[iteration,] <- chain_state1
-#'       samples2[iteration,] <- chain_state1
-#'     }
-#'     c_chain$samples1 <- rbind(c_chain$samples1, samples1)
-#'     c_chain$samples2 <- rbind(c_chain$samples2, samples2)
-#'     c_chain$iteration <- m
-#'     return(c_chain)
-#'   }
-#' }
 

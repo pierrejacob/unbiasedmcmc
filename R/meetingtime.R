@@ -1,12 +1,25 @@
-## sample meeting time
-## arguments:
-# single_kernel takes an object and returns an object
-# coupled_kernel takes two objects and returns two objects "state1" and "state2", as well as an indicator "identical" (=0 or 1) indicating whether the two states are identical
-# rinit takes no argument and returns an object, to be used as an input for "single_kernel" or "coupled_kernel"
-# lag specifies the desired lag between the two chains
-# max_iterations specifies when to stop the while loop
-## returns:
-# the meeting time (time at which the two chains coincide) and the elapsed wall-clock time in seconds
+#'@rdname sample_meetingtime
+#'@title Sample coupled Markov chains until meeting
+#'@description Sample two Markov chains, each following 'single_kernel' marginally,
+#'until they meet, and report the meeting time, as well as the elapsed wall-clock time in seconds.
+#'
+#' This function does not record the trajectories of the chains, with the goal of being memory-light.
+#' To record these trajectories, see \code{\link{sample_coupled_chains}}. To directly
+#' compute unbiased estimators on the fly, see  \code{\link{sample_unbiasedestimator}}.
+#'
+#'@param single_kernel A list taking a state and returning a state, performing one step of a Markov kernel
+#'@param coupled_kernel A list taking two states and returning two states, performing one step of a coupled Markov kernel;
+#'it also returns a boolean "identical" indicating whether the two states are identical.
+#'@param rinit A list representing the initial state of the chain, that can be given to 'single_kernel'
+#'@param lag A time lag, equal to one by default
+#'@param max_iterations A maximum number of iterations, at which to interrup the while loop; Inf by default
+#'@return A list with
+#'\itemize{
+#'
+#'\item meetingtime: the meeting time; equal to Inf if while loop was interrupted
+#'
+#'\item elapsedtime: elapsed wall-clock time, in seconds
+#'}
 #'@export
 sample_meetingtime <- function(single_kernel, coupled_kernel, rinit, lag = 1, max_iterations = Inf){
   starttime <- Sys.time()

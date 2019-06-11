@@ -4,23 +4,22 @@
 \alias{get_mh_kernels}
 \title{Get random walk Metropolis-Hastings kernels}
 \usage{
-get_mh_kernels(logtarget, Sigma_proposal, dimension)
+get_mh_kernels(logtarget, Sigma_proposal)
 }
 \arguments{
-\item{logtarget}{function to compute target log-density}
+\item{logtarget}{function taking a vector as input and returning target log-density evaluation}
 
-\item{Sigma_proposal}{variance of the Normal random walk for the proposals}
-
-\item{dimension}{dimension of the target distribution}
+\item{Sigma_proposal}{covariance of the Normal random walk proposal}
 }
 \value{
 A list containing the keys
 \code{single_kernel}, \code{coupled_kernel}.
 }
 \description{
-This function takes descriptions of the target
-and tuning parameters, and returns a list containing the keys
+This function takes a target (specified through its log-pdf)
+and a covariance matrix for a Normal random walk proposal, and returns a list containing the keys
 \code{single_kernel}, \code{coupled_kernel} corresponding to marginal
-and coupled MH kernels, with Normal random walks.
-These kernels can then be used in the function \code{\link{coupled_chains}}.
+and coupled MH kernels.
+These kernels can then be used in the functions \code{\link{sample_meetingtime}} or
+\code{\link{sample_coupled_chains}} or \code{\link{sample_unbiasedestimator}}
 }

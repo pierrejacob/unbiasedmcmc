@@ -72,9 +72,15 @@ get_problem <- function(dimension,
     accept1 <- FALSE; accept2 <- FALSE
     if (is.finite(proposal_pdf1)) accept1 <- (logu < (proposal_pdf1 - current_pdf1))
     if (is.finite(proposal_pdf2)) accept2 <- (logu < (proposal_pdf2 - current_pdf2))
-    if (accept1)                  chain_state1 <- proposal1; current_pdf1 <- proposal_pdf1
-    if (accept2)                  chain_state2 <- proposal2; current_pdf2 <- proposal_pdf2
-    identical_ <- ((proposal_value$identical) && (accept1) && (accept2))
+    if (accept1){
+      chain_state1 <- proposal1
+      current_pdf1 <- proposal_pdf1
+      }
+    if (accept2){
+      chain_state2 <- proposal2
+      current_pdf2 <- proposal_pdf2
+    }
+    identical_ <- proposal_value$identical && accept1 && accept2
     return(list(state1 = list(chain_state = chain_state1, current_pdf = current_pdf1),
                 state2 = list(chain_state = chain_state2, current_pdf = current_pdf2),
                 identical = identical_))

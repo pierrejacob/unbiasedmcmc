@@ -6,6 +6,21 @@
 \usage{
 fast_dmvnorm(x, mean, covariance)
 }
+\arguments{
+\item{x}{A matrix of size n times d}
+
+\item{mean}{A vector of size d specifying the mean vector of the multivariate Normal}
+
+\item{covariance}{A matrix of size d x d specifying the covariance matrix of the multivariate Normal}
+}
+\value{
+A vector of n evaluations of the multivariate Normal log-pdf, one for each row of \code{x}
+}
 \description{
-fast_dmvnorm
+Compute multivariate Normal density (log-value) evaluated at each row of a given matrix. The function does not check
+the arguments, use at your own risk.
+}
+\examples{
+x <- fast_rmvnorm(2, rep(0, 5), diag(1,5,5))
+fast_dmvnorm(x, rep(0, 5), diag(1,5,5))
 }

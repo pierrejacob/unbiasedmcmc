@@ -51,7 +51,7 @@ Sigma_[1:5,1:5]
 # Sigma_[11:15,11:15]
 # modify niterations
 
-niterations <- 10000
+niterations <- 100000
 
 chain <- matrix(nrow = niterations, ncol = p)
 chain[1,] <- rinit()
