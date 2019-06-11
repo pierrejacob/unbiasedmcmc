@@ -1,4 +1,4 @@
-library(debiasedmcmc)
+library(unbiasedmcmc)
 # setmytheme()
 library(dplyr)
 library(tidyr)

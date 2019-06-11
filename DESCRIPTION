@@ -1,6 +1,6 @@
-Package: debiasedmcmc
+Package: unbiasedmcmc
 Type: Package
-Title: Debiasing MCMC with couplings
+Title: Unbiased MCMC with couplings
 Version: 0.3.0
 Author: Pierre E Jacob, John O'Leary, Yves F Atchade
 Maintainer: Pierre E Jacob <pjacob@fas.harvard.edu>

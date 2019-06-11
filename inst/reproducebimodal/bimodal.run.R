@@ -1,5 +1,5 @@
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 library(doParallel)

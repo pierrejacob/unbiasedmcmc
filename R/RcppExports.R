@@ -2,114 +2,114 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 blassoconditional <- function(Y, X, XtY, XtX, tau2, sigma2) {
-    .Call('_debiasedmcmc_blassoconditional', PACKAGE = 'debiasedmcmc', Y, X, XtY, XtX, tau2, sigma2)
+    .Call('_unbiasedmcmc_blassoconditional', PACKAGE = 'unbiasedmcmc', Y, X, XtY, XtX, tau2, sigma2)
 }
 
 blassoconditional_coupled <- function(Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22) {
-    .Call('_debiasedmcmc_blassoconditional_coupled', PACKAGE = 'debiasedmcmc', Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
+    .Call('_unbiasedmcmc_blassoconditional_coupled', PACKAGE = 'unbiasedmcmc', Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
 }
 
 estimator_bin_ <- function(c_chains, component, lower, upper, k, m, lag) {
-    .Call('_debiasedmcmc_estimator_bin_', PACKAGE = 'debiasedmcmc', c_chains, component, lower, upper, k, m, lag)
+    .Call('_unbiasedmcmc_estimator_bin_', PACKAGE = 'unbiasedmcmc', c_chains, component, lower, upper, k, m, lag)
 }
 
 get_measure_ <- function(c_chains, k, m) {
-    .Call('_debiasedmcmc_get_measure_', PACKAGE = 'debiasedmcmc', c_chains, k, m)
+    .Call('_unbiasedmcmc_get_measure_', PACKAGE = 'unbiasedmcmc', c_chains, k, m)
 }
 
 rinvgaussian_c <- function(n, mu, lambda) {
-    .Call('_debiasedmcmc_rinvgaussian_c', PACKAGE = 'debiasedmcmc', n, mu, lambda)
+    .Call('_unbiasedmcmc_rinvgaussian_c', PACKAGE = 'unbiasedmcmc', n, mu, lambda)
 }
 
 rinvgaussian_coupled_c <- function(mu1, mu2, lambda1, lambda2) {
-    .Call('_debiasedmcmc_rinvgaussian_coupled_c', PACKAGE = 'debiasedmcmc', mu1, mu2, lambda1, lambda2)
+    .Call('_unbiasedmcmc_rinvgaussian_coupled_c', PACKAGE = 'unbiasedmcmc', mu1, mu2, lambda1, lambda2)
 }
 
 ising_sum_ <- function(state) {
-    .Call('_debiasedmcmc_ising_sum_', PACKAGE = 'debiasedmcmc', state)
+    .Call('_unbiasedmcmc_ising_sum_', PACKAGE = 'unbiasedmcmc', state)
 }
 
 ising_gibbs_sweep_ <- function(state, proba_beta) {
-    .Call('_debiasedmcmc_ising_gibbs_sweep_', PACKAGE = 'debiasedmcmc', state, proba_beta)
+    .Call('_unbiasedmcmc_ising_gibbs_sweep_', PACKAGE = 'unbiasedmcmc', state, proba_beta)
 }
 
 ising_coupled_gibbs_sweep_ <- function(state1, state2, proba_beta) {
-    .Call('_debiasedmcmc_ising_coupled_gibbs_sweep_', PACKAGE = 'debiasedmcmc', state1, state2, proba_beta)
+    .Call('_unbiasedmcmc_ising_coupled_gibbs_sweep_', PACKAGE = 'unbiasedmcmc', state1, state2, proba_beta)
 }
 
 sigma_ <- function(X, w) {
-    .Call('_debiasedmcmc_sigma_', PACKAGE = 'debiasedmcmc', X, w)
+    .Call('_unbiasedmcmc_sigma_', PACKAGE = 'unbiasedmcmc', X, w)
 }
 
 m_sigma_function_ <- function(omega, X, invB, KTkappaplusinvBtimesb) {
-    .Call('_debiasedmcmc_m_sigma_function_', PACKAGE = 'debiasedmcmc', omega, X, invB, KTkappaplusinvBtimesb)
+    .Call('_unbiasedmcmc_m_sigma_function_', PACKAGE = 'unbiasedmcmc', omega, X, invB, KTkappaplusinvBtimesb)
 }
 
 logcosh <- function(x) {
-    .Call('_debiasedmcmc_logcosh', PACKAGE = 'debiasedmcmc', x)
+    .Call('_unbiasedmcmc_logcosh', PACKAGE = 'unbiasedmcmc', x)
 }
 
 xbeta_ <- function(X, beta) {
-    .Call('_debiasedmcmc_xbeta_', PACKAGE = 'debiasedmcmc', X, beta)
+    .Call('_unbiasedmcmc_xbeta_', PACKAGE = 'unbiasedmcmc', X, beta)
 }
 
 w_rejsamplerC <- function(beta1, beta2, X) {
-    .Call('_debiasedmcmc_w_rejsamplerC', PACKAGE = 'debiasedmcmc', beta1, beta2, X)
+    .Call('_unbiasedmcmc_w_rejsamplerC', PACKAGE = 'unbiasedmcmc', beta1, beta2, X)
 }
 
 w_max_couplingC <- function(beta1, beta2, X) {
-    .Call('_debiasedmcmc_w_max_couplingC', PACKAGE = 'debiasedmcmc', beta1, beta2, X)
+    .Call('_unbiasedmcmc_w_max_couplingC', PACKAGE = 'unbiasedmcmc', beta1, beta2, X)
 }
 
 fast_rmvnorm_ <- function(nsamples, mean, covariance) {
-    .Call('_debiasedmcmc_fast_rmvnorm_', PACKAGE = 'debiasedmcmc', nsamples, mean, covariance)
+    .Call('_unbiasedmcmc_fast_rmvnorm_', PACKAGE = 'unbiasedmcmc', nsamples, mean, covariance)
 }
 
 fast_rmvnorm_cholesky_ <- function(nsamples, mean, cholesky) {
-    .Call('_debiasedmcmc_fast_rmvnorm_cholesky_', PACKAGE = 'debiasedmcmc', nsamples, mean, cholesky)
+    .Call('_unbiasedmcmc_fast_rmvnorm_cholesky_', PACKAGE = 'unbiasedmcmc', nsamples, mean, cholesky)
 }
 
 fast_dmvnorm_ <- function(x, mean, covariance) {
-    .Call('_debiasedmcmc_fast_dmvnorm_', PACKAGE = 'debiasedmcmc', x, mean, covariance)
+    .Call('_unbiasedmcmc_fast_dmvnorm_', PACKAGE = 'unbiasedmcmc', x, mean, covariance)
 }
 
 fast_dmvnorm_cholesky_inverse_ <- function(x, mean, cholesky_inverse) {
-    .Call('_debiasedmcmc_fast_dmvnorm_cholesky_inverse_', PACKAGE = 'debiasedmcmc', x, mean, cholesky_inverse)
+    .Call('_unbiasedmcmc_fast_dmvnorm_cholesky_inverse_', PACKAGE = 'unbiasedmcmc', x, mean, cholesky_inverse)
 }
 
 rmvnorm_max_coupling_ <- function(mu1, mu2, Sigma1, Sigma2) {
-    .Call('_debiasedmcmc_rmvnorm_max_coupling_', PACKAGE = 'debiasedmcmc', mu1, mu2, Sigma1, Sigma2)
+    .Call('_unbiasedmcmc_rmvnorm_max_coupling_', PACKAGE = 'unbiasedmcmc', mu1, mu2, Sigma1, Sigma2)
 }
 
 rmvnorm_max_coupling_cholesky <- function(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2) {
-    .Call('_debiasedmcmc_rmvnorm_max_coupling_cholesky', PACKAGE = 'debiasedmcmc', mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2)
+    .Call('_unbiasedmcmc_rmvnorm_max_coupling_cholesky', PACKAGE = 'unbiasedmcmc', mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, Cholesky_inverse2)
 }
 
 rmvnorm_reflection_max_coupling_ <- function(mu1, mu2, Sigma_chol, inv_Sigma_chol) {
-    .Call('_debiasedmcmc_rmvnorm_reflection_max_coupling_', PACKAGE = 'debiasedmcmc', mu1, mu2, Sigma_chol, inv_Sigma_chol)
+    .Call('_unbiasedmcmc_rmvnorm_reflection_max_coupling_', PACKAGE = 'unbiasedmcmc', mu1, mu2, Sigma_chol, inv_Sigma_chol)
 }
 
 beta2e_ <- function(beta, C) {
-    .Call('_debiasedmcmc_beta2e_', PACKAGE = 'debiasedmcmc', beta, C)
+    .Call('_unbiasedmcmc_beta2e_', PACKAGE = 'unbiasedmcmc', beta, C)
 }
 
 cut_in_fifth_ <- function(x) {
-    .Call('_debiasedmcmc_cut_in_fifth_', PACKAGE = 'debiasedmcmc', x)
+    .Call('_unbiasedmcmc_cut_in_fifth_', PACKAGE = 'unbiasedmcmc', x)
 }
 
 propensity_module2_loglik2_ <- function(theta1s, theta2s, X, C, Y) {
-    .Call('_debiasedmcmc_propensity_module2_loglik2_', PACKAGE = 'debiasedmcmc', theta1s, theta2s, X, C, Y)
+    .Call('_unbiasedmcmc_propensity_module2_loglik2_', PACKAGE = 'unbiasedmcmc', theta1s, theta2s, X, C, Y)
 }
 
 prune_ <- function(df) {
-    .Call('_debiasedmcmc_prune_', PACKAGE = 'debiasedmcmc', df)
+    .Call('_unbiasedmcmc_prune_', PACKAGE = 'unbiasedmcmc', df)
 }
 
 sample_pair01 <- function(selection) {
-    .Call('_debiasedmcmc_sample_pair01', PACKAGE = 'debiasedmcmc', selection)
+    .Call('_unbiasedmcmc_sample_pair01', PACKAGE = 'unbiasedmcmc', selection)
 }
 
 marginal_likelihood_c_2 <- function(selection, X, Y, Y2, g) {
-    .Call('_debiasedmcmc_marginal_likelihood_c_2', PACKAGE = 'debiasedmcmc', selection, X, Y, Y2, g)
+    .Call('_unbiasedmcmc_marginal_likelihood_c_2', PACKAGE = 'unbiasedmcmc', selection, X, Y, Y2, g)
 }
 

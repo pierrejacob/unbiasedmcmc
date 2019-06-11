@@ -1,4 +1,4 @@
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(1)
 # registerDoParallel(cores = detectCores())

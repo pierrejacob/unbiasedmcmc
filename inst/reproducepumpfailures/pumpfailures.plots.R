@@ -1,6 +1,6 @@
 
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(doParallel)
 library(doRNG)
 registerDoParallel(cores = detectCores()-2)

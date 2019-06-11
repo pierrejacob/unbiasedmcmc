@@ -1,5 +1,5 @@
 ### This script creates plots
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(viridis)
 library(dplyr)
 rm(list = ls())

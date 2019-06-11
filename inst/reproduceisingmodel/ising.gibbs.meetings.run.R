@@ -1,6 +1,6 @@
 ### This script plays with a coupled Gibbs sampler (i.e. single site updates)
 ### for a basic Ising model, with different values of the temperatures
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 #
@@ -25,16 +25,16 @@ ss_ <- c(-4,-2,0,2,4)
 # niterations <- 1000
 # # store history of sum of states
 # sumstates1 <- rep(0, niterations)
-# sumstates1[1] <- debiasedmcmc:::ising_sum_(chain_state1)
+# sumstates1[1] <- unbiasedmcmc:::ising_sum_(chain_state1)
 # sumstates2 <- rep(0, niterations)
-# sumstates2[1] <- debiasedmcmc:::ising_sum_(chain_state2)
+# sumstates2[1] <- unbiasedmcmc:::ising_sum_(chain_state2)
 #
 # for (iter in 2:niterations){
 #   res_ <- ising_coupled_kernel(chain_state1, chain_state2, proba_)
 #   chain_state1 <- res_$chain_state1
 #   chain_state2 <- res_$chain_state2
-#   sumstates1[iter] <- debiasedmcmc:::ising_sum_(chain_state1)
-#   sumstates2[iter] <- debiasedmcmc:::ising_sum_(chain_state2)
+#   sumstates1[iter] <- unbiasedmcmc:::ising_sum_(chain_state1)
+#   sumstates2[iter] <- unbiasedmcmc:::ising_sum_(chain_state2)
 # }
 
 # matplot(cbind(sumstates1, sumstates2), type = "l")

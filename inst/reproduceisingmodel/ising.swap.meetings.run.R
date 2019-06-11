@@ -1,7 +1,7 @@
 ### This script plays with coupled parallel tempering
 ### for a basic Ising model, with different values of the temperatures
 ### i.e. coupled Gibbs sampler at each temperature and coupled swap moves between chains
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 #
@@ -21,8 +21,8 @@ ising_pt_coupled_chains <- function(betas, proba_swapmove, m = 1, max_iterations
   # initialization
   chain_states1 <- ising_pt_rinit(nchains)
   chain_states2 <- ising_pt_rinit(nchains)
-  sumstates1 <- unlist(lapply(chain_states1, debiasedmcmc:::ising_sum_))
-  sumstates2 <- unlist(lapply(chain_states2, debiasedmcmc:::ising_sum_))
+  sumstates1 <- unlist(lapply(chain_states1, unbiasedmcmc:::ising_sum_))
+  sumstates2 <- unlist(lapply(chain_states2, unbiasedmcmc:::ising_sum_))
   history_sumstates1 <- matrix(0, ncol = nchains, nrow = m+preallocate+1)
   history_sumstates2 <- matrix(0, ncol = nchains, nrow = m+preallocate)
   nrowsamples1 <- m+preallocate+1

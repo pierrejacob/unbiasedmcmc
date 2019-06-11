@@ -24,7 +24,7 @@ srun R CMD BATCH --no-save "--args $SLURM_ARRAY_TASK_ID" $input out/$input.$SLUR
 # ssh username@odyssey.rc.fas.harvard.edu
 
 ###
-# First, install debiasedmcmc package on the cluster (e.g. upload zip file and R CMD INSTALL).
+# First, install the 'unbiasedmcmc' package on the cluster (e.g. upload zip file and R CMD INSTALL).
 # Do this in an interactive session, e.g.
 ####
 # srun --pty -p test -t 20 --mem 3000 /bin/bash

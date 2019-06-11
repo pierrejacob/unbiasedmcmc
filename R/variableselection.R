@@ -4,7 +4,7 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
   # n <- dim(X)[1]
   p <- dim(X)[2]
   Y2 <- (t(Y) %*% Y)[1,1]
-  marginal_likelihood <- function(selection) debiasedmcmc:::marginal_likelihood_c_2(selection, X, Y, Y2, g)
+  marginal_likelihood <- function(selection) unbiasedmcmc:::marginal_likelihood_c_2(selection, X, Y, Y2, g)
   prior <- function(selection){
     sumones <- sum(selection)
     ifelse(sumones > s0, -Inf, -kappa * sumones * log(p))
@@ -34,7 +34,7 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
       sumones <- sum(current_state)
       # test if there are ones and zeros to swap
       if (sumones > 0 && sumones < p){
-        indices <- debiasedmcmc:::sample_pair01(current_state)
+        indices <- unbiasedmcmc:::sample_pair01(current_state)
         proposed_state <- current_state
         proposed_state[indices[1]] <- 1
         proposed_state[indices[2]] <- 0
@@ -113,7 +113,7 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
         # at least one of the two chain states has no ones or no zeros
         # maybe first chain state has ones and zeros to swap
         if (sumones1 > 0 && sumones1 < p){
-          indices <- debiasedmcmc:::sample_pair01(current_state1)
+          indices <- unbiasedmcmc:::sample_pair01(current_state1)
           proposed_state <- current_state1
           proposed_state[indices[1]] <- 1
           proposed_state[indices[2]] <- 0
@@ -128,7 +128,7 @@ get_variableselection <- function(Y, X, g, kappa, s0, proportion_singleflip){
         }
         # or maybe the second chain has ones and zeros to swap
         if (sumones2 > 0 && sumones2 < p){
-          indices <- debiasedmcmc:::sample_pair01(current_state2)
+          indices <- unbiasedmcmc:::sample_pair01(current_state2)
           proposed_state <- current_state2
           proposed_state[indices[1]] <- 1
           proposed_state[indices[2]] <- 0

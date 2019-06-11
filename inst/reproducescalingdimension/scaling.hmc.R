@@ -1,4 +1,4 @@
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(doParallel)
 library(doRNG)
 # setmytheme()

@@ -30,7 +30,7 @@ how to use the package's main functions.
 
 ```{r install, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("pierrejacob/debiasedmcmc")
+devtools::install_github("pierrejacob/unbiasedmcmc")
 ```
 
 Additionally you might want to install other packages, to help with parallel computation:
@@ -60,7 +60,7 @@ and a coupled Markov kernel "coupled_kernel", defined through their sampling mec
 and use them to produce an approximation of the target distribution.
 
 ```{r usage, tidy = T, cache = TRUE, warning=FALSE, message=FALSE, fig.width=7}
-library(debiasedmcmc)
+library(unbiasedmcmc)
 set.seed(1)
 # target distribution
 target <- function(x){

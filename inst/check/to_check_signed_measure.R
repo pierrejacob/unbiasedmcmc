@@ -2,7 +2,7 @@
 # using signed measure representations
 # -- remains very experimental at this point
 
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(1)
 logtarget <- function(x) fast_dmvnorm(matrix(x, nrow = 1), mean = c(0,0.5), covariance = diag(c(0.5, 0.2)))
@@ -28,7 +28,7 @@ sapply(c_chains_, function(x) x$meetingtime) %>% hist
 cx <- coupled_chains(kernels$kernel, kernels$coupled_kernel, rinit = rinit)
 cx$samples1 %>% head
 
-measure <- debiasedmcmc:::get_measure_(cx, 0, 0)
+measure <- unbiasedmcmc:::get_measure_(cx, 0, 0)
 sum(measure$weights * measure$atoms[,1])
 sum(measure$weights * measure$atoms[,2])
 
@@ -56,7 +56,7 @@ sum(approximation$rep %>% unique)
 nsamples * (nsamples + 1) / 2
 #
 # approximation <-  foreach(irep = 1:nsamples, .combine = rbind) %dorng% {
-#   measure <- debiasedmcmc:::get_measure_(c_chains_[[irep]], k, m)
+#   measure <- unbiasedmcmc:::get_measure_(c_chains_[[irep]], k, m)
 #   data.frame(rep = rep(irep, length(measure$weights)), weights = measure$weights, atoms = measure$atoms)
 # }
 # approximation$weights <- approximation$weights / nsamples

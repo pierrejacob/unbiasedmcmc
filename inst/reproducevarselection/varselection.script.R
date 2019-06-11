@@ -27,7 +27,7 @@ resultpath <- paste0("varselection.design", design, ".SNR", SNR, ".n", n, ".p", 
 setwd(workingdirectory)
 # load packages
 library(rlecuyer)
-library(debiasedmcmc)
+library(unbiasedmcmc)
 setmytheme()
 # initial seed
 .lec.SetPackageSeed(c(42, 66, 101, 123454, 7, 54321))

@@ -43,7 +43,7 @@
 # time allocated to this script, in seconds
 TIME <- 3600
 
-library(debiasedmcmc)
+library(unbiasedmcmc)
 
 ising_unbiased_estimator <- function(betas, proba_swapmove, k = 0, m = 1, max_iterations = Inf, totalduration = Inf){
   ptm <- proc.time()
@@ -53,8 +53,8 @@ ising_unbiased_estimator <- function(betas, proba_swapmove, k = 0, m = 1, max_it
   # initialize
   chain_states1 <- ising_pt_rinit(nchains)
   chain_states2 <- ising_pt_rinit(nchains)
-  sumstates1 <- unlist(lapply(chain_states1, debiasedmcmc:::ising_sum_))
-  sumstates2 <- unlist(lapply(chain_states2, debiasedmcmc:::ising_sum_))
+  sumstates1 <- unlist(lapply(chain_states1, unbiasedmcmc:::ising_sum_))
+  sumstates2 <- unlist(lapply(chain_states2, unbiasedmcmc:::ising_sum_))
   # mcmcestimator computes the natural statistic for each chain
   mcmcestimator <- sumstates1
   if (k > 0){

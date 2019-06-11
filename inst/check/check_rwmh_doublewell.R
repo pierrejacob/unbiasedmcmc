@@ -1,4 +1,4 @@
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 # double well potential log-pdf
 target <- function(x) -0.1 * ( ((x[1]-1)^2-x[2]^2 )^2 + 10*(x[1]^2-5)^2+ (x[1]+x[2])^4 + (x[1]-x[2])^4)

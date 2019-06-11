@@ -2,7 +2,7 @@
 ### for a basic Ising model, with different values of the temperatures
 ### i.e. coupled Gibbs sampler at each temperature and coupled swap moves between chains
 ### Note: it takes a while to run, around 10 minutes on a 2015 laptop on 6 cores.
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 setmytheme()
@@ -17,8 +17,8 @@ ising_unbiased_estimator <- function(betas, proba_swapmove, k = 0, m = 1, max_it
   # initialize
   chain_states1 <- ising_pt_rinit(nchains)
   chain_states2 <- ising_pt_rinit(nchains)
-  sumstates1 <- unlist(lapply(chain_states1, debiasedmcmc:::ising_sum_))
-  sumstates2 <- unlist(lapply(chain_states2, debiasedmcmc:::ising_sum_))
+  sumstates1 <- unlist(lapply(chain_states1, unbiasedmcmc:::ising_sum_))
+  sumstates2 <- unlist(lapply(chain_states2, unbiasedmcmc:::ising_sum_))
   # mcmcestimator computes the natural statistic for each chain
   mcmcestimator <- sumstates1
   if (k > 0){
@@ -126,7 +126,7 @@ ss_ <- c(-4,-2,0,2,4)
 probas_ <-  sapply(betas, function(beta) exp(ss_*beta) / (exp(ss_*beta) + exp(-ss_*beta)))
 # initialization
 current_states <- ising_pt_rinit(nchains)
-sumstates <- unlist(lapply(current_states, debiasedmcmc:::ising_sum_))
+sumstates <- unlist(lapply(current_states, unbiasedmcmc:::ising_sum_))
 history_sumstates[1,] <- sumstates
 nswap_attempts <- 0
 nswap_accepts <- rep(0, nchains-1)

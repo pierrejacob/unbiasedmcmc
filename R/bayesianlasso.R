@@ -16,7 +16,7 @@ get_blasso <- function(Y, X, lambda){
     beta <- state$chain_state[1:p]
     tau2 <- state$chain_state[(p+1):(2*p)]
     sigma2 <- state$chain_state[2*p+1]
-    res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau2, sigma2)
+    res_ <- unbiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau2, sigma2)
     beta <- res_$beta
     norm <- res_$norm
     betaDbeta <- res_$betaDbeta
@@ -38,7 +38,7 @@ get_blasso <- function(Y, X, lambda){
     sigma22 <- state2$chain_state[2*p+1]
     #
     if (all(tau21 == tau22) && all(sigma21 == sigma22)){
-      res_ <- debiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau21, sigma21)
+      res_ <- unbiasedmcmc:::blassoconditional(Y, X, XtY, XtX, tau21, sigma21)
       beta1 <- res_$beta
       norm1 <- res_$norm
       betaDbeta1 <- res_$betaDbeta
@@ -46,7 +46,7 @@ get_blasso <- function(Y, X, lambda){
       norm2 <- norm1
       betaDbeta2 <- betaDbeta1
     } else {
-      res_ <- debiasedmcmc:::blassoconditional_coupled(Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
+      res_ <- unbiasedmcmc:::blassoconditional_coupled(Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
       beta1 <- res_$beta1
       norm1 <- res_$norm1
       betaDbeta1 <- res_$betaDbeta1

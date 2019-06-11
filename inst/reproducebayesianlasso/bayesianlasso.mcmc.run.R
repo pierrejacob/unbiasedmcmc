@@ -1,5 +1,5 @@
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(coda)
 #
 rm(list = ls())

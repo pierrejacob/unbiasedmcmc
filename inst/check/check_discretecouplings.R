@@ -1,6 +1,6 @@
 # This script plays with coupling of distributions defined on discrete spaces
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 library(doParallel)
@@ -12,12 +12,12 @@ s <- 20
 selection <- rep(0, p)
 selection[sample(1:p, s, replace = F)] <- (runif(s) < 0.5)
 selection
-debiasedmcmc:::sample_pair01(selection)
+unbiasedmcmc:::sample_pair01(selection)
 # this is meant to sample one zero and one one uniformly
 nrep <- 10000
 
 test <- foreach(irep = 1:nrep, .combine = rbind) %dorng% {
-  debiasedmcmc:::sample_pair01(selection)
+  unbiasedmcmc:::sample_pair01(selection)
 }
 #
 table(test[,1])  / nrep

@@ -1,6 +1,6 @@
 
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(dplyr)
 setmytheme()
 rm(list = ls())

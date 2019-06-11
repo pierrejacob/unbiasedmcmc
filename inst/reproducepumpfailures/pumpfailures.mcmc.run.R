@@ -1,6 +1,6 @@
 
 # load packages
-library(debiasedmcmc)
+library(unbiasedmcmc)
 setmytheme()
 rm(list = ls())
 set.seed(21)

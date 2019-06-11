@@ -1,5 +1,5 @@
 ---
-title: "Introduction to the debiasedmcmc package: unbiased MCMC on a univariate Normal target"
+title: "Introduction to the unbiasedmcmc package: unbiased MCMC on a univariate Normal target"
 author: "Pierre E. Jacob"
 date: "`r Sys.Date()`"
 output: 
@@ -40,7 +40,7 @@ We begin by loading the package, as well as extra packages for parallel calculat
 registering multiple cores and setting the random number generator.
 
 ```{r setup,message=FALSE,warning=FALSE}
-library(debiasedmcmc)
+library(unbiasedmcmc)
 library(doParallel)
 library(doRNG)
 # register parallel cores

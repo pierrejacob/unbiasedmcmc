@@ -1,4 +1,4 @@
-# The files of the debiasedmcmc/inst/reproduce*
+# The files of the unbiasedmcmc/inst/reproduce*
 # contain the scripts to reproduce the figures, model by model.
 
 # Each folder has a "run.all.R" script that can be run to execute each script in the correct order

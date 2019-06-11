@@ -1,7 +1,7 @@
 # time allocated to this
 TIME <- 2*60*60
 
-library(debiasedmcmc)
+library(unbiasedmcmc)
 
 library(parallel)
 # parallel RNG using L'Ecuyer et al (2002)

@@ -1,7 +1,7 @@
 ### This script plays with parallel tempering
 ### for a basic Ising model, with different values of the temperatures
 ### i.e. Gibbs sampler at each temperature and swap moves between chains
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(21)
 #
@@ -27,7 +27,7 @@ betas <- seq(from = 0.3, to = 0.55, length.out = nchains)
 probas_ <-  sapply(betas, function(beta) exp(ss_*beta) / (exp(ss_*beta) + exp(-ss_*beta)))
 # initialization
 current_states <- ising_pt_rinit(nchains)
-sumstates <- unlist(lapply(current_states, debiasedmcmc:::ising_sum_))
+sumstates <- unlist(lapply(current_states, unbiasedmcmc:::ising_sum_))
 history_sumstates[1,] <- sumstates
 nswap_attempts <- 0
 nswap_accepts <- rep(0, nchains-1)

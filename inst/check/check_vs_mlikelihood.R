@@ -1,6 +1,6 @@
 # This script attempts at optimizing the code that computes the marginal likelihood
 # in the variable selection example, and compares different implementations
-library(debiasedmcmc)
+library(unbiasedmcmc)
 rm(list = ls())
 set.seed(1)
 #
