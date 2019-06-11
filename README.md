@@ -1,5 +1,5 @@
 
-## debiasedmcmc
+## unbiasedmcmc
 
 This package contains scripts to reproduce the results of the arXiv
 report “Unbiased Markov chain Monte Carlo with couplings”, by Pierre E.
@@ -40,7 +40,7 @@ functions.
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("pierrejacob/debiasedmcmc")
+devtools::install_github("pierrejacob/unbiasedmcmc")
 ```
 
 Additionally you might want to install other packages, to help with
@@ -79,7 +79,7 @@ The following code
 <!-- end list -->
 
 ``` r
-library(debiasedmcmc)
+library(unbiasedmcmc)
 set.seed(1)
 # target distribution
 target <- function(x) {
