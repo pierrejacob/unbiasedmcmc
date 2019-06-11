@@ -11,25 +11,6 @@ scripts intended to reproduce figures and tables. Use at your own
 risk\!\! We hope these scripts will be useful for people interested to
 learn how the method works.
 
-The Polya-Gamma sampler is taken from the package BayesLogit of Nick
-Polson, James Scott, and Jesse Windle:
-
-<https://cran.r-project.org/src/contrib/Archive/BayesLogit/>
-
-That package can be downloaded and installed with “R CMD INSTALL”. Or in
-R
-via
-
-``` r
-packageurl <- "https://cran.r-project.org/src/contrib/Archive/BayesLogit/BayesLogit_0.6.tar.gz"
-
-install.packages(packageurl, repos=NULL, type="source")
-```
-
-Note that the above requires gfortran to compile. For instance on Mac OS
-X gfortran can be found on
-<https://github.com/fxcoudert/gfortran-for-macOS/releases>.
-
 The folder inst/reproduce/ contains the scripts to reproduce the
 figures. Each sub-folder has a “run all” script to run all the scripts
 in the correct order. The folder inst/check/ contains internal checks,
@@ -38,9 +19,18 @@ functions.
 
 ### Installation
 
+The package can be installed from R via:
+
 ``` r
 # install.packages("devtools")
 devtools::install_github("pierrejacob/unbiasedmcmc")
+```
+
+It depends on the packages Rcpp, RcppEigen, lubridate, which can be
+installed via:
+
+``` r
+install.packages(c("Rcpp", "RcppEigen", "lubridate"))
 ```
 
 Additionally you might want to install other packages, to help with
@@ -56,11 +46,30 @@ and to help with manipulating results and plotting:
 install.packages(c("dplyr", "tidyr", "ggplot2", "viridis"))
 ```
 
+although these packages are not strictly required (see below for an
+example that does not require these packages).
+
+The Polya-Gamma sampler is taken from the package BayesLogit of Nick
+Polson, James Scott, and Jesse Windle
+(<https://cran.r-project.org/src/contrib/Archive/BayesLogit/>). That
+package can be downloaded and installed with “R CMD INSTALL”. Or in R
+via
+
+``` r
+packageurl <- "https://cran.r-project.org/src/contrib/Archive/BayesLogit/BayesLogit_0.6.tar.gz"
+
+install.packages(packageurl, repos=NULL, type="source")
+```
+
+Note that the above requires gfortran to compile. For instance on Mac OS
+X gfortran can be found on
+<https://github.com/fxcoudert/gfortran-for-macOS/releases>. In any case,
+the package does not require BayesLogit to be installed; only the
+scripts dealing with the Polya-Gamma sampler do.
+
 ### Usage
 
 The following code
-
-  - loads the package,
 
   - defines a target distribution as a mixture of univariate Normal
     distributions, via its probability density function, returning
@@ -142,7 +151,7 @@ From the coupled chains, we can obtain unbiased estimators of
 expectations with respect to the target distribution. For instance, with
 the function “identity”, we can estimate unbiasedly the mean of the
 target. The following code plots these estimators obtained for each
-chain, and the resulting confidence interval, based on a central limit
+chain, and construct a 95% confidence interval, based on a central limit
 theorem as the number of independent estimators goes to
 infinity.
 
@@ -154,10 +163,10 @@ hist(estimators, xlab = "unbiased estimators of the mean", main = "")
 ![](README_files/figure-gfm/estimators-1.png)<!-- -->
 
 ``` r
-cat("confidence interval for the mean:", mean(estimators), "+/-", 1.96 * sd(estimators)/sqrt(length(estimators)), "\n")
+cat("95% confidence interval for the mean:", mean(estimators), "+/-", 1.96 * sd(estimators)/sqrt(length(estimators)), "\n")
 ```
 
-    ## confidence interval for the mean: 0.03452407 +/- 0.1422636
+    ## 95% confidence interval for the mean: 0.03452407 +/- 0.1422636
 
 Compared to usual MCMC estimators justified as the number of iterations
 goes to infinity, the proposed estimators are unbiased, and thus their
