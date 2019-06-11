@@ -178,6 +178,9 @@ Rcpp::List rmvnorm_max_coupling_cholesky(const NumericVector & mu1,
 // As described in "Coupling and Convergence for Hamiltonian Monte Carlo" by Bou-Rabee et al, arXiv:1805.00452v1
 // arguments Sigma_chol and inv_Sigma_chol can be obtained e.g. in R as
 // chol(Sigma) and solve(chol(Sigma))
+
+// Note that in its current implementation the function does not work for univariate Normals.
+
 // [[Rcpp::export]]
 Rcpp::List rmvnorm_reflection_max_coupling_(const Eigen::VectorXd & mu1, const Eigen::VectorXd & mu2,
                                             const Eigen::MatrixXd & Sigma_chol, const Eigen::MatrixXd & inv_Sigma_chol){
@@ -186,7 +189,7 @@ Rcpp::List rmvnorm_reflection_max_coupling_(const Eigen::VectorXd & mu1, const E
   bool identical_ = false;
   // RNGScope scope;
   Eigen::VectorXd scaled_diff = (mu2-mu1).transpose() * inv_Sigma_chol;
-  // generate xi and eta, two standard multivariate Normal draws
+  // generate xi and eta, two standard Normal draws
   GetRNGstate();
   Eigen::VectorXd xi = as<Eigen::VectorXd>(rnorm(d, 0., 1.));
   PutRNGstate();
@@ -194,26 +197,39 @@ Rcpp::List rmvnorm_reflection_max_coupling_(const Eigen::VectorXd & mu1, const E
   // define z and e
   Eigen::VectorXd z = - scaled_diff;
   double normz = z.norm();
-  Eigen::ArrayXd e = z.array() / normz;
-  GetRNGstate();
-  NumericVector utilde = runif(1);
-  PutRNGstate();
-  double edotxi = (e * xi.array()).sum();
-  if (log(utilde(0)) < (-0.5 * (edotxi + normz) * (edotxi + normz) + 0.5 * edotxi * edotxi)){
-    eta = (xi.array() + z.array()).matrix();
+  if (normz < 1e-15){
+    // if normz is very small, most likely the user has supplied identical
+    // arguments to mu1 and mu2, which would cause trouble in the forthcoming division by normz
+    // thankfully if the user sticks to the function sample_meetingtime, sample_coupled_chains etc
+    // then this should never happen.
     identical_ = true;
-  } else {
-    eta = (xi.array() - 2. * edotxi * e).matrix();
-  }
-  // construct x ~ Normal(mu1, Sigma) and y ~ Normal(mu2, Sigma) from xi and eta
-  xi = mu1 + (xi.transpose() * Sigma_chol).transpose();
-  eta = mu2 + (eta.transpose() * Sigma_chol).transpose();
-  for(int i=0; i<d; i++){
-    xy(i,0) = xi(i);
-    if (identical_){
+    xi = mu1 + (xi.transpose() * Sigma_chol).transpose();
+    for(int i=0; i<d; i++){
+      xy(i,0) = xi(i);
       xy(i,1) = xi(i);
+    }
+  } else {
+    Eigen::ArrayXd e = z.array() / normz;
+    GetRNGstate();
+    NumericVector utilde = runif(1);
+    PutRNGstate();
+    double edotxi = (e * xi.array()).sum();
+    if (log(utilde(0)) < (-0.5 * (edotxi + normz) * (edotxi + normz) + 0.5 * edotxi * edotxi)){
+      eta = (xi.array() + z.array()).matrix();
+      identical_ = true;
     } else {
-      xy(i,1) = eta(i);
+      eta = (xi.array() - 2. * edotxi * e).matrix();
+    }
+    // construct x ~ Normal(mu1, Sigma) and y ~ Normal(mu2, Sigma) from xi and eta
+    xi = mu1 + (xi.transpose() * Sigma_chol).transpose();
+    eta = mu2 + (eta.transpose() * Sigma_chol).transpose();
+    for(int i=0; i<d; i++){
+      xy(i,0) = xi(i);
+      if (identical_){
+        xy(i,1) = xi(i);
+      } else {
+        xy(i,1) = eta(i);
+      }
     }
   }
   return Rcpp::List::create(Named("xy") = xy, Named("identical") = identical_);

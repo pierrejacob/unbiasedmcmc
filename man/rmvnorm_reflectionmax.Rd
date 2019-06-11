@@ -24,6 +24,12 @@ are identical.
 Sample from reflection-maximal coupling of two multivariate Normal distributions,
 specified through their means, with the same covariance matrix, specified
 through its Cholesky factor and inverse of Cholesky factor.
+
+The idea is that a multivariate Normal is drawn around the first mean (mu1),
+and then reflected with respect to a hyperplane orthogonal to the direction between mu1 and mu2.
+
+Warning: this coupling is not defined for univariate Normal distributions.
+For a simple coupling of univariate Normals, see \code{\link{rnorm_max_coupling}}.
 }
 \examples{
 p <- 3

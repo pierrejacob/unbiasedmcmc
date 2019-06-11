@@ -68,6 +68,13 @@ rmvnorm_max_chol <- function(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, 
 #'@description Sample from reflection-maximal coupling of two multivariate Normal distributions,
 #'specified through their means, with the same covariance matrix, specified
 #'through its Cholesky factor and inverse of Cholesky factor.
+#'
+#'The idea is that a multivariate Normal is drawn around the first mean (mu1),
+#'and then reflected with respect to a hyperplane orthogonal to the direction between mu1 and mu2.
+#'
+#'Warning: this coupling is not defined for univariate Normal distributions.
+#'For a simple coupling of univariate Normals, see \code{\link{rnorm_max_coupling}}.
+#'
 #'@param mu1 First mean
 #'@param mu2 First mean
 #'@param Cholesky Cholesky factor, e.g. obtained with \code{\link[base]{chol}}

@@ -4,10 +4,10 @@
 \alias{get_mh_kernels}
 \title{Get random walk Metropolis-Hastings kernels}
 \usage{
-get_mh_kernels(logtarget, Sigma_proposal)
+get_mh_kernels(target, Sigma_proposal)
 }
 \arguments{
-\item{logtarget}{function taking a vector as input and returning target log-density evaluation}
+\item{target}{function taking a vector as input and returning target log-density evaluation}
 
 \item{Sigma_proposal}{covariance of the Normal random walk proposal}
 }
