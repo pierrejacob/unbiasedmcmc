@@ -34,7 +34,7 @@ That bias can be removed using couplings of Markov chains, as per
 * *Exact estimation for Markov chain equilibrium expectations* by Peter W. Glynn and Chang-Han Rhee, https://projecteuclid.org/euclid.jap/1417528487
 
 Our work builds upon the above article to remove the bias of generic MCMC algorithms.
-One the bias is removed, various tasks are made easier, such as parallelizing MCMC computations.
+Once the bias is removed, various tasks are made easier, such as parallelizing MCMC computations.
 
 We begin by loading the package, as well as extra packages for parallel calculations,
 registering multiple cores and setting the random number generator.

@@ -81,8 +81,6 @@ get_kernels <- function(theta1, Sigma_proposal, init_mean, init_Sigma){
     chain_state2 <- state2$chain_state
     current_pdf1 <- state1$current_pdf
     current_pdf2 <- state2$current_pdf
-    # distance_ <- mean((chain_state1 - chain_state2)^2)
-    # proposal_value <- rmvnorm_max(chain_state1, chain_state2, Sigma_proposal, Sigma_proposal)
     proposal_value <- rmvnorm_reflectionmax(chain_state1, chain_state2, Sigma_proposal_chol, Sigma_proposal_chol_inv)
     proposal1 <- proposal_value$xy[,1]
     proposal2 <- proposal_value$xy[,2]
@@ -163,7 +161,7 @@ Sigma_proposal <- init_Sigma
 # the chain seems to mix OK
 
 ## Now let theta1 vary too and see how
-## meeting times behave with the tuning selected as above (under a fixed theta1 = theta1hat)
+## meeting times behave with the tuning selected as above
 theta1s <- sample_module1(nsamples)
 meetingtimes_1 <-  foreach(irep = 1:nsamples) %dorng% {
   pb <- get_kernels(theta1s[irep,], Sigma_proposal, init_mean, init_Sigma)
@@ -205,7 +203,9 @@ post_cross <- mean(sapply(cross_estimator, function(x) x)) - prod(post_mean)
 Sigma_proposal <- diag(post_var)
 Sigma_proposal[1,2] <- Sigma_proposal[2,1] <- post_cross
 init_Sigma <- Sigma_proposal
-
+## we could check that the estimated covariance is positive semi-definite, e.g. by running
+solve(Sigma_proposal)
+## with the above tuning parameters, we are now ready to produce the final results
 
 filename <- "plummer.results.RData"
 ## Using the new covariance matrix estimate we draw new meeting times
@@ -222,10 +222,6 @@ load(filename)
 meetingtime <- sapply(meetingtimes_2, function(x) x$meetingtime)
 summary(meetingtime)
 hist(meetingtime)
-
-# g <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("proportion")
-# g
-# ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 5, height = 5)
 
 k <- 100
 m <- 10*k
