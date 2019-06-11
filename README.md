@@ -3,11 +3,13 @@
 
 This package contains scripts to reproduce the results of the arXiv
 report “Unbiased Markov chain Monte Carlo with couplings”, by Pierre E.
-Jacob, John O’Leary and Yves F Atchade.
+Jacob, John O’Leary and Yves F Atchade, available at
+<https://arxiv.org/abs/1708.03625>.
 
 This is not a general-purpose statistical software, but a collection of
 scripts intended to reproduce figures and tables. Use at your own
-risk\!\!
+risk\!\! We hope these scripts will be useful for people interested to
+learn how the method works.
 
 The Polya-Gamma sampler is taken from the package BayesLogit of Nick
 Polson, James Scott, and Jesse Windle:
@@ -55,3 +57,107 @@ install.packages(c("dplyr", "tidyr", "ggplot2", "viridis"))
 ```
 
 ### Usage
+
+The following code
+
+  - loads the package,
+
+  - defines a target distribution as a mixture of univariate Normal
+    distributions, via its probability density function, returning
+    log-values,
+
+  - defines an initial distribution “rinit”, a Markov kernel
+    “single\_kernel”, and a coupled Markov kernel “coupled\_kernel”,
+    defined through their sampling mechanisms,
+
+  - draws meeting times and shows a histogram of them,
+
+  - draws more coupled chains, with a certain “lag” and time horizon
+    “m”, and use them to produce an approximation of the target
+    distribution.
+
+<!-- end list -->
+
+``` r
+library(debiasedmcmc)
+set.seed(1)
+# target distribution
+target <- function(x) {
+    evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
+    return(max(evals) + log(sum(exp(evals - max(evals)))))
+}
+# get MH kernels with proposal variance equal to 4
+kernels <- get_mh_kernels(target, 4)
+# Markov kernel of the chain
+single_kernel <- kernels$single_kernel
+# Markov kernel of the coupled chain
+coupled_kernel <- kernels$coupled_kernel
+# initial distribution, towards the right-most mode of the target
+rinit <- function() {
+    chain_state <- rnorm(1, mean = 3, sd = 2)
+    current_pdf <- target(chain_state)
+    return(list(chain_state = chain_state, current_pdf = current_pdf))
+}
+# draw meeting times
+nrep <- 500
+meetingtimes <- rep(0, nrep)
+for (irep in 1:nrep) {
+    meetingtimes[irep] <- sample_meetingtime(single_kernel, coupled_kernel, 
+        rinit)$meetingtime
+}
+# plot histogram of meeting times
+hist(meetingtimes, xlab = "meeting time", main = "")
+```
+
+![](README_files/figure-gfm/usage-1.png)<!-- -->
+
+``` r
+# now run coupled chain, with lag of 500, time horizon m = 2000
+coupledchains <- list()
+for (irep in 1:nrep) {
+    coupledchains[[irep]] <- sample_coupled_chains(single_kernel, coupled_kernel, 
+        rinit, m = 2000, lag = 500)
+}
+
+# approximate target via histogram, with k = 500, m = 2000
+hist1 <- histogram_c_chains(coupledchains, 1, k = 500, m = 2000, nclass = 100)
+# plot approximation in black segments
+plot(x = hist1$mids, y = hist1$proportions/hist1$width, type = "l", xlab = "x", 
+    ylab = "density")
+segments(x0 = hist1$mids, x1 = hist1$mids, y0 = rep(0, length(hist1$proportions)), 
+    y1 = hist1$proportions/hist1$width)
+curve(sapply(x, function(v) exp(target(v))), add = TRUE, col = "orange", lty = 1, 
+    lwd = 2)
+```
+
+![](README_files/figure-gfm/usage-2.png)<!-- -->
+
+``` r
+# average cost per estimator, in units of 'calls to Markov kernels'
+mean(sapply(coupledchains, function(x) x$cost))
+```
+
+    ## [1] 2062.668
+
+We can also obtain unbiased estimators of expectations with respect to
+the target distribution. For instance, with the function “identity”, we
+can estimate unbiasedly the mean of the target. The following code plots
+these estimators obtained for each chain, and the resulting confidence
+interval, based on a central limit theorem as the number of independent
+estimators goes to
+infinity.
+
+``` r
+estimators <- sapply(coupledchains, function(c) H_bar(c, h = function(x) x, 
+    k = 500, m = 2000))
+hist(estimators, xlab = "unbiased estimators of the mean", main = "")
+```
+
+![](README_files/figure-gfm/estimators-1.png)<!-- -->
+
+``` r
+cat("confidence interval for the mean:", mean(estimators), "+/-", 1.96 * sd(estimators)/sqrt(length(estimators)), 
+    "\n")
+```
+
+    ## confidence interval for the mean: 0.03452407 +/- 0.1422636
