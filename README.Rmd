@@ -2,7 +2,7 @@
 output: rmarkdown::github_document
 ---
 
-## debiasedmcmc
+## unbiasedmcmc
 
 This package contains scripts to reproduce the results of the arXiv report "Unbiased Markov chain Monte Carlo with couplings", by Pierre E. Jacob, John O'Leary and Yves F Atchade, available at https://arxiv.org/abs/1708.03625.
 

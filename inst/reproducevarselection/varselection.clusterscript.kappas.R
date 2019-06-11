@@ -35,8 +35,8 @@ kappas <- c(0.1, 1, 2)
 ikappa <- 1 + (igrid-1) %% nkappas
 kappa <- kappas[ikappa]
 
-k <- 5e4
-m <- 1e5
+k <- 75000
+m <- 150000
 
 print(ikappa)
 
