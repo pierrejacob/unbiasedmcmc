@@ -98,6 +98,7 @@ rinit <- function() {
     current_pdf <- target(chain_state)
     return(list(chain_state = chain_state, current_pdf = current_pdf))
 }
+
 # draw meeting times
 nrep <- 500
 meetingtimes <- rep(0, nrep)
