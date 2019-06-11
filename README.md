@@ -98,6 +98,7 @@ rinit <- function() {
     current_pdf <- target(chain_state)
     return(list(chain_state = chain_state, current_pdf = current_pdf))
 }
+
 # draw meeting times
 nrep <- 500
 meetingtimes <- rep(0, nrep)
@@ -139,12 +140,15 @@ mean(sapply(coupledchains, function(x) x$cost))
 
     ## [1] 2062.668
 
-We can also obtain unbiased estimators of expectations with respect to
-the target distribution. For instance, with the function “identity”, we
-can estimate unbiasedly the mean of the target. The following code plots
-these estimators obtained for each chain, and the resulting confidence
-interval, based on a central limit theorem as the number of independent
-estimators goes to
+We can see that in average, the cost of each estimator is not much more
+than if we had just run the MCMC algorithm for “m” steps.
+
+From the coupled chains, we can obtain unbiased estimators of
+expectations with respect to the target distribution. For instance, with
+the function “identity”, we can estimate unbiasedly the mean of the
+target. The following code plots these estimators obtained for each
+chain, and the resulting confidence interval, based on a central limit
+theorem as the number of independent estimators goes to
 infinity.
 
 ``` r
@@ -161,3 +165,8 @@ cat("confidence interval for the mean:", mean(estimators), "+/-", 1.96 * sd(esti
 ```
 
     ## confidence interval for the mean: 0.03452407 +/- 0.1422636
+
+Compared to usual MCMC estimators justified as the number of iterations
+goes to infinity, the proposed estimators are unbiased, and thus their
+averages are consistent when the number of independent replicates goes
+to infinity.
