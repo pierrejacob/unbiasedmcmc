@@ -22,7 +22,7 @@ xtest <- kernels$single_kernel(xtest)
 xtest2 <- rinit()
 kernels$coupled_kernel(xtest, xtest2)
 
-nsamples <- 1000
+nsamples <- 100
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
   sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit)
 }
@@ -32,6 +32,11 @@ cx <- sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit
 cx$samples1 %>% head
 
 measure <- unbiasedmcmc:::get_measure_(cx, 0, 0)
+names(measure)
+## get_measure_ yields a list with keys "atoms", and "weights"
+head(measure$atoms)
+head(measure$weights)
+
 sum(measure$weights * measure$atoms[,1])
 sum(measure$weights * measure$atoms[,2])
 H_bar(cx, h = function(x) x, 0, 0)

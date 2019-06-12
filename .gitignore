@@ -24,3 +24,5 @@ vignettes/*cache*
 vignettes/*cache*/*html*
 *.out
 inst/reproducepropensityscores
+doc
+Meta

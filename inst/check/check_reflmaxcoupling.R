@@ -75,6 +75,8 @@ curve(dnorm(x, mu1, Sigma_chol[1]), add = T)
 hist(sapply(xy, function(x) x$xy[2]), prob = TRUE, nclass = 100)
 curve(dnorm(x, mu2, Sigma_chol[1]), add = T)
 
+rmvnorm_reflectionmax(mu1, mu2, Sigma_chol, Sigma_chol_inv)
+
 mean(sapply(xy, function(xy) xy$identical))
 
 xymax <- foreach(i = 1:nsamples) %dorng% {

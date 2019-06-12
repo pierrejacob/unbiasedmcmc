@@ -92,6 +92,10 @@ rmvnorm_max_chol <- function(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, 
 #' rmvnorm_reflectionmax(mu1, mu2, Sigma_chol, Sigma_chol_inv)
 #'@export
 rmvnorm_reflectionmax <- function(mu1, mu2, Cholesky, Cholesky_inverse){
+  d_ <- dim(Cholesky)
+  if (is.null(d_) || (d_[1] == 1)){
+    stop("function 'rmvnorm_reflectionmax' is meant for multivariate Normals; for univariate Normals, use 'rnorm_reflectionmax'")
+  }
   return(rmvnorm_reflection_max_coupling_(mu1, mu2, Cholesky, Cholesky_inverse))
 }
 
