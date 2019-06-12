@@ -60,7 +60,6 @@ hist(sample2[,2], prob = TRUE, nclass = 100)
 curve(dnorm(x, mu2[2], sqrt(Sigma[2,2])), add = TRUE, col = "red")
 
 
-
 mu1 <- 1
 mu2 <- 2
 Sigma_proposal <- diag(2, 1, 1)
@@ -68,10 +67,18 @@ Sigma_chol <- chol(Sigma_proposal)
 Sigma_chol_inv <- solve(Sigma_chol)
 nsamples <- 5e4
 xy <- foreach(i = 1:nsamples) %dorng% {
-  rmvnorm_reflectionmax(mu1, mu2, Sigma_chol, Sigma_inv_chol)
+  rnorm_reflectionmax(mu1, mu2, Sigma_chol[1,1])
 }
-hist(sapply(xy, function(x) x$xy[,1]), prob = TRUE, nclass = 100)
+hist(sapply(xy, function(x) x$xy[1]), prob = TRUE, nclass = 100)
 curve(dnorm(x, mu1, Sigma_chol[1]), add = T)
 
-hist(sapply(xy, function(x) x$xy[,2]), prob = TRUE, nclass = 100)
+hist(sapply(xy, function(x) x$xy[2]), prob = TRUE, nclass = 100)
 curve(dnorm(x, mu2, Sigma_chol[1]), add = T)
+
+mean(sapply(xy, function(xy) xy$identical))
+
+xymax <- foreach(i = 1:nsamples) %dorng% {
+  rnorm_max_coupling(mu1, mu2, Sigma_chol[1,1], Sigma_chol[1,1])
+}
+mean(sapply(xymax, function(xy) xy$identical))
+

@@ -20,6 +20,11 @@ This function takes a target (specified through its log-pdf)
 and a covariance matrix for a Normal random walk proposal, and returns a list containing the keys
 \code{single_kernel}, \code{coupled_kernel} corresponding to marginal
 and coupled MH kernels.
-These kernels can then be used in the functions \code{\link{sample_meetingtime}} or
-\code{\link{sample_coupled_chains}} or \code{\link{sample_unbiasedestimator}}
+
+The coupling is done by reflection-maximal coupling of the proposals,
+and common uniform variable for the accept/reject step. For reflection-maximal
+couplings, see \code{\link{rnorm_reflectionmax}} and \code{\link{rmvnorm_reflectionmax}}.
+
+The returned kernels can then be used in the functions \code{\link{sample_meetingtime}} or
+\code{\link{sample_coupled_chains}} or \code{\link{sample_unbiasedestimator}}.
 }

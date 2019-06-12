@@ -129,7 +129,6 @@ mean(sapply(xmax_chol, function(v) v$identical))
 
 
 ### reflection-maximal coupling between two Normals with same covariance matrix
-
 xreflect <- foreach(i = 1:1e4) %dorng% {
   rmvnorm_reflectionmax(mu1, mu2, Sigma1_chol, Sigma1_chol_inv)
 }

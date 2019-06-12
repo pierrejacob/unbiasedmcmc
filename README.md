@@ -91,28 +91,29 @@ The following code
 library(unbiasedmcmc)
 set.seed(1)
 # target distribution
-target <- function(x){
-  evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
-  return(max(evals) + log(sum(exp(evals - max(evals)))))
+target <- function(x) {
+    evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
+    return(max(evals) + log(sum(exp(evals - max(evals)))))
 }
-# get MH kernels with proposal variance equal to 4 
+# get MH kernels with proposal variance equal to 4
 kernels <- get_mh_kernels(target, 4)
 # Markov kernel of the chain
 single_kernel <- kernels$single_kernel
 # Markov kernel of the coupled chain
 coupled_kernel <- kernels$coupled_kernel
 # initial distribution, towards the right-most mode of the target
-rinit <- function(){
-  chain_state <- rnorm(1, mean = 3, sd = 2)
-  current_pdf <- target(chain_state)
-  return(list(chain_state = chain_state, current_pdf = current_pdf))
+rinit <- function() {
+    chain_state <- rnorm(1, mean = 3, sd = 2)
+    current_pdf <- target(chain_state)
+    return(list(chain_state = chain_state, current_pdf = current_pdf))
 }
 
 # draw meeting times
 nrep <- 500
 meetingtimes <- rep(0, nrep)
-for (irep in 1:nrep){
-  meetingtimes[irep] <- sample_meetingtime(single_kernel, coupled_kernel, rinit)$meetingtime
+for (irep in 1:nrep) {
+    meetingtimes[irep] <- sample_meetingtime(single_kernel, coupled_kernel, 
+        rinit)$meetingtime
 }
 # plot histogram of meeting times
 hist(meetingtimes, xlab = "meeting time", main = "")
@@ -123,26 +124,30 @@ hist(meetingtimes, xlab = "meeting time", main = "")
 ``` r
 # now run coupled chain, with lag of 500, time horizon m = 2000
 coupledchains <- list()
-for (irep in 1:nrep){
-  coupledchains[[irep]] <- sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = 2000, lag = 500)
+for (irep in 1:nrep) {
+    coupledchains[[irep]] <- sample_coupled_chains(single_kernel, coupled_kernel, 
+        rinit, m = 2000, lag = 500)
 }
 
 # approximate target via histogram, with k = 500, m = 2000
 hist1 <- histogram_c_chains(coupledchains, 1, k = 500, m = 2000, nclass = 100)
 # plot approximation in black segments
-plot(x = hist1$mids, y = hist1$proportions / hist1$width, type = "l", xlab = "x", ylab = "density")
-segments(x0 = hist1$mids, x1 = hist1$mids, y0 = rep(0, length(hist1$proportions)), y1 = hist1$proportions / hist1$width)
-curve(sapply(x, function(v) exp(target(v))), add = TRUE, col = "orange", lty = 1, lwd = 2)
+plot(x = hist1$mids, y = hist1$proportions/hist1$width, type = "l", xlab = "x", 
+    ylab = "density")
+segments(x0 = hist1$mids, x1 = hist1$mids, y0 = rep(0, length(hist1$proportions)), 
+    y1 = hist1$proportions/hist1$width)
+curve(sapply(x, function(v) exp(target(v))), add = TRUE, col = "orange", lty = 1, 
+    lwd = 2)
 ```
 
 ![](README_files/figure-gfm/usage-2.png)<!-- -->
 
 ``` r
-# average cost per estimator, in units of "calls to Markov kernels"
+# average cost per estimator, in units of 'calls to Markov kernels'
 mean(sapply(coupledchains, function(x) x$cost))
 ```
 
-    ## [1] 2062.668
+    ## [1] 2072.788
 
 We can see that in average, the cost of each estimator is not much more
 than if we had just run the MCMC algorithm for “m” steps.
@@ -156,17 +161,19 @@ theorem as the number of independent estimators goes to
 infinity.
 
 ``` r
-estimators <- sapply(coupledchains, function(c) H_bar(c, h = function(x) x, k = 500, m = 2000))
+estimators <- sapply(coupledchains, function(c) H_bar(c, h = function(x) x, 
+    k = 500, m = 2000))
 hist(estimators, xlab = "unbiased estimators of the mean", main = "")
 ```
 
 ![](README_files/figure-gfm/estimators-1.png)<!-- -->
 
 ``` r
-cat("95% confidence interval for the mean:", mean(estimators), "+/-", 1.96 * sd(estimators)/sqrt(length(estimators)), "\n")
+cat("95% confidence interval for the mean:", mean(estimators), "+/-", 1.96 * 
+    sd(estimators)/sqrt(length(estimators)), "\n")
 ```
 
-    ## 95% confidence interval for the mean: 0.03452407 +/- 0.1422636
+    ## 95% confidence interval for the mean: 5.494271e-05 +/- 0.1466475
 
 Compared to usual MCMC estimators justified as the number of iterations
 goes to infinity, the proposed estimators are unbiased, and thus their

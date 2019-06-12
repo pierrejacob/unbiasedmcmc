@@ -4,8 +4,14 @@
 #' and a covariance matrix for a Normal random walk proposal, and returns a list containing the keys
 #' \code{single_kernel}, \code{coupled_kernel} corresponding to marginal
 #' and coupled MH kernels.
-#' These kernels can then be used in the functions \code{\link{sample_meetingtime}} or
-#' \code{\link{sample_coupled_chains}} or \code{\link{sample_unbiasedestimator}}
+#'
+#' The coupling is done by reflection-maximal coupling of the proposals,
+#' and common uniform variable for the accept/reject step. For reflection-maximal
+#' couplings, see \code{\link{rnorm_reflectionmax}} and \code{\link{rmvnorm_reflectionmax}}.
+#'
+#' The returned kernels can then be used in the functions \code{\link{sample_meetingtime}} or
+#' \code{\link{sample_coupled_chains}} or \code{\link{sample_unbiasedestimator}}.
+#'
 #'@param target function taking a vector as input and returning target log-density evaluation
 #'@param Sigma_proposal covariance of the Normal random walk proposal
 #'@return A list containing the keys
@@ -37,10 +43,9 @@ get_mh_kernels <- function(target, Sigma_proposal){
     chain_state1 <- state1$chain_state; current_pdf1 <- state1$current_pdf
     chain_state2 <- state2$chain_state; current_pdf2 <- state2$current_pdf
     if (dimension == 1){
-      proposal_value <- rnorm_max_coupling(chain_state1, chain_state2, Sigma_proposal_chol[1,1], Sigma_proposal_chol[1,1])
+      proposal_value <- rnorm_reflectionmax(chain_state1, chain_state2, Sigma_proposal_chol[1,1])
       proposal_value$xy <- matrix(proposal_value$xy, nrow = 1)
     } else {
-      # the reflection-maximal coupling is only defined in dimension >= 1
       proposal_value <- rmvnorm_reflectionmax(chain_state1, chain_state2, Sigma_proposal_chol, Sigma_proposal_chol_inv)
     }
     proposal1 <- proposal_value$xy[,1]; proposal_pdf1 <- target(proposal1)

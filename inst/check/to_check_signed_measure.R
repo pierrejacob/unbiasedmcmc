@@ -3,42 +3,44 @@
 # -- remains very experimental at this point
 
 library(unbiasedmcmc)
+library(doParallel)
+library(doRNG)
+library(dplyr)
+registerDoParallel(cores = detectCores()-2)
 rm(list = ls())
 set.seed(1)
-logtarget <- function(x) fast_dmvnorm(matrix(x, nrow = 1), mean = c(0,0.5), covariance = diag(c(0.5, 0.2)))
+target <- function(x) fast_dmvnorm(matrix(x, nrow = 1), mean = c(0,0.5), covariance = diag(c(0.5, 0.2)))
 Sigma_proposal <- diag(c(1, 1))
-rinit <- function() fast_rmvnorm(1, c(10, 5), diag(c(3,3)))
-kernels <- get_mh_kernels(logtarget, Sigma_proposal, dimension = 2)
+rinit <- function(){
+  x <- fast_rmvnorm(1, c(10, 5), diag(c(3,3)))
+  return(list(chain_state = x, current_pdf = target(x)))
+}
+kernels <- get_mh_kernels(target, Sigma_proposal)
 
 xtest <- rinit()
-xtest <- kernels$kernel(xtest)
+xtest <- kernels$single_kernel(xtest)
 xtest2 <- rinit()
 kernels$coupled_kernel(xtest, xtest2)
 
-library(doParallel)
-library(doRNG)
-registerDoParallel(cores = detectCores()-2)
 nsamples <- 1000
 c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(kernels$kernel, kernels$coupled_kernel, rinit = rinit)
+  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit)
 }
-library(dplyr)
 sapply(c_chains_, function(x) x$meetingtime) %>% hist
 
-cx <- coupled_chains(kernels$kernel, kernels$coupled_kernel, rinit = rinit)
+cx <- sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit)
 cx$samples1 %>% head
 
 measure <- unbiasedmcmc:::get_measure_(cx, 0, 0)
 sum(measure$weights * measure$atoms[,1])
 sum(measure$weights * measure$atoms[,2])
-
 H_bar(cx, h = function(x) x, 0, 0)
 
 ## now with k,m larger
 k <- floor(as.numeric(quantile(sapply(c_chains_, function(x) x$meetingtime), probs = 0.95)))
 m <- 5 * k
 c_chains_ <- foreach(irep = 1:nsamples) %dorng% {
-  coupled_chains(kernels$kernel, kernels$coupled_kernel, rinit = rinit, m = m)
+  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = m)
 }
 approximation <- c_chains_to_dataframe(c_chains_, k, m)
 

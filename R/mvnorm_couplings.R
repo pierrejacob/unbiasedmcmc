@@ -72,8 +72,7 @@ rmvnorm_max_chol <- function(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1, 
 #'The idea is that a multivariate Normal is drawn around the first mean (mu1),
 #'and then reflected with respect to a hyperplane orthogonal to the direction between mu1 and mu2.
 #'
-#'Warning: this coupling is not defined for univariate Normal distributions.
-#'For a simple coupling of univariate Normals, see \code{\link{rnorm_max_coupling}}.
+#'For univariate Normal distribution, see \code{\link{rnorm_reflectionmax}}.
 #'
 #'@param mu1 First mean
 #'@param mu2 First mean

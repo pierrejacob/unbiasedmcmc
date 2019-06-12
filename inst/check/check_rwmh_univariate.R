@@ -42,7 +42,7 @@ curve(sapply(x, function(y) exp(target(y))), add = T)
 mean(chain > 1)
 
 # Markov kernel of the coupled chain
-niterations <- 25000
+niterations <- 50000
 state1 <- rinit()
 state2 <- rinit()
 chain1 <- matrix(ncol=1, nrow=niterations)
@@ -81,8 +81,7 @@ qplot(x = 0:res$iteration, y = res$samples1[,1], geom = "line") +
 ### distribution of meeting times
 nsamples <- 500
 meetingtime <- foreach(irep = 1:nsamples, .combine = c) %dorng% {
-  c_chains <- sample_meetingtime(single_kernel, coupled_kernel, rinit)
-  c_chains$meetingtime
+  sample_meetingtime(single_kernel, coupled_kernel, rinit)$meetingtime
 }
 summary(meetingtime)
 hist(meetingtime)
