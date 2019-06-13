@@ -19,7 +19,7 @@
 #'@param dopar Boolean (default to FALSE) indicating whether to perform calculation using registered parallel cores
 #'@return A data frame
 #'@export
-c_chains_to_dataframe <- function(c_chains, k, m, dopar = FALSE){
+c_chains_to_dataframe <- function(c_chains, k, m, dopar = FALSE, prune = TRUE){
   if ("meetingtime" %in% names(c_chains)){
     # the user supplied a coupled chain, rather than a list of coupled chain
     c_chains <- list(c_chains)
@@ -44,8 +44,10 @@ c_chains_to_dataframe <- function(c_chains, k, m, dopar = FALSE){
   # normalize the weights
   approximation$weight <- approximation$weight / nsamples
   # prune identical atoms
-  res_ <- data.frame(unbiasedmcmc:::prune_measure_(as.matrix(approximation[do.call(order, as.list(approximation[,c(1,2,4:ncol(approximation)),drop=F])),])))
-  names(res_) <- c("rep", "MCMC", "weight", paste0("atom.", 1:(ncol(res_)-3)))
-  res_ <- res_[do.call(order, as.list(res_[,1:2])),]
-  return(res_)
+  if (prune){
+    approximation <- data.frame(prune_measure_(as.matrix(approximation[do.call(order, as.list(approximation[,c(1,2,4:ncol(approximation)),drop=F])),])))
+  }
+  names(approximation) <- c("rep", "MCMC", "weight", paste0("atom.", 1:(ncol(approximation)-3)))
+  approximation <- approximation[do.call(order, as.list(approximation[,1:2])),]
+  return(approximation)
 }

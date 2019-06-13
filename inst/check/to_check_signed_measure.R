@@ -86,24 +86,28 @@ rinit <- function(){
 }
 kernels <- get_mh_kernels(target, Sigma_proposal)
 
-nrepeats <- 10000
+nrepeats <- 100
 m <- 200
 coupledchains_ <- foreach(rep = 1:nrepeats) %dorng% {
   sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = m, lag = 50)
 }
 summary(sapply(coupledchains_, function(l) l$meetingtime))
 k <- 20
-df_ <- c_chains_to_dataframe(coupledchains_, k, m, dopar = T)
-head(df_)
+df_unpruned <- c_chains_to_dataframe(coupledchains_, k, m, dopar = F, prune = FALSE)
+df_pruned <- c_chains_to_dataframe(coupledchains_, k, m, dopar = F, prune = TRUE)
+head(df_pruned)
+dim(df_pruned)
+dim(df_unpruned)
 
-sum(df_$weight * df_$atom.1)
-colSums(df_$weight * df_[,4:ncol(df_),drop=F])
+
+sum(df_pruned$weight * df_pruned$atom.1)
+colSums(df_pruned$weight * df_pruned[,4:ncol(df_pruned),drop=F])
 mean(sapply(X = coupledchains_, FUN = function(x) H_bar(x, h = function(v) v, k = k, m = m)))
 
-df_ %>% summarise(mean1 = sum(weight * atom.1))
-df_ %>% group_by(MCMC) %>% summarise(mean1 = sum(weight * atom.1), sumweight = sum(weight)) %>% ungroup() %>% as.data.frame
-mean(df_$MCMC==1)
-MCMC_traj <- sapply(coupledchains_, function(x) x$samples1[k:m,])
+df_pruned %>% summarise(mean1 = sum(weight * atom.1))
+df_pruned %>% group_by(MCMC) %>% summarise(mean1 = sum(weight * atom.1), sumweight = sum(weight), len = n(), lenuniqueweight = length(unique(weight))) %>% ungroup() %>% as.data.frame
+MCMC_traj <- sapply(coupledchains_, function(x) x$samples1[(k+1):(m+1),])
+length(as.numeric(MCMC_traj))
 mean(MCMC_traj)
 
 
@@ -111,8 +115,3 @@ hist1 <- histogram_c_chains(coupledchains_, component = 1, k = 150, m = m)
 setmytheme()
 plot_histogram(hist1)
 
-
-
-dim(MCMC_traj)
-
-matplot(t(MCMC_traj[,1:100]), type = "l")
