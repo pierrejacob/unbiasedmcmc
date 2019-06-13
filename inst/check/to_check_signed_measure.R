@@ -1,6 +1,5 @@
 # This script plays with the computation of estimators
 # using signed measure representations
-# -- remains very experimental at this point
 
 library(unbiasedmcmc)
 library(doParallel)
@@ -9,119 +8,111 @@ library(dplyr)
 registerDoParallel(cores = detectCores()-2)
 rm(list = ls())
 set.seed(1)
+
+#### Bivariate target
 target <- function(x) fast_dmvnorm(matrix(x, nrow = 1), mean = c(0,0.5), covariance = diag(c(0.5, 0.2)))
-Sigma_proposal <- diag(c(1, 1))
+Sigma_proposal <- diag(1, 2)
 rinit <- function(){
-  x <- fast_rmvnorm(1, c(10, 5), diag(c(3,3)))
+  x <- fast_rmvnorm(1, c(10, 5), diag(3, 2, 2))
   return(list(chain_state = x, current_pdf = target(x)))
 }
 kernels <- get_mh_kernels(target, Sigma_proposal)
 
-xtest <- rinit()
-xtest <- kernels$single_kernel(xtest)
-xtest2 <- rinit()
-kernels$coupled_kernel(xtest, xtest2)
-
-nsamples <- 100
-c_chains_ <-  foreach(irep = 1:nsamples) %dorng% {
-  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit)
-}
-sapply(c_chains_, function(x) x$meetingtime) %>% hist
-
 cx <- sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit)
 cx$samples1 %>% head
+cx$meetingtime
+dim(cx$samples1)[1]
+dim(cx$samples1)[2]
 
-measure <- unbiasedmcmc:::get_measure_(cx, 0, 0)
-names(measure)
-## get_measure_ yields a list with keys "atoms", and "weights"
-head(measure$atoms)
-head(measure$weights)
+ms <- c_chains_to_measure_as_list(cx, 0, 0)
+tail(ms$atoms)
+cat(sum(ms$weights * ms$atoms[,1]), sum(ms$weights * ms$atoms[,ncol(ms$atoms)]), "\n")
+H_bar(cx, h = function(x) x, k = 0, m = 0)
 
-sum(measure$weights * measure$atoms[,1])
-sum(measure$weights * measure$atoms[,2])
-H_bar(cx, h = function(x) x, 0, 0)
+ms$MCMC
+sum(ms$weights[ms$MCMC==1])
+sum(ms$weights[ms$MCMC==0])
 
-## now with k,m larger
-k <- floor(as.numeric(quantile(sapply(c_chains_, function(x) x$meetingtime), probs = 0.95)))
-m <- 5 * k
-c_chains_ <- foreach(irep = 1:nsamples) %dorng% {
-  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = m)
+cx <- sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = 100)
+cx$meetingtime
+ms <- c_chains_to_measure_as_list(cx, 30, 100)
+tail(ms$atoms)
+cat(sum(ms$weights * ms$atoms[,1]), sum(ms$weights * ms$atoms[,ncol(ms$atoms)]), "\n")
+H_bar(cx, h = function(x) x, k = 30, m = 100)
+ms$MCMC
+sum(ms$weights[ms$MCMC])
+sum(ms$weights[!ms$MCMC])
+
+cx <- sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = 100, lag = 5)
+cx$meetingtime
+ms <- c_chains_to_measure_as_list(cx, 3, 100)
+ms$MCMC
+sum(ms$weights[ms$MCMC])
+sum(ms$weights[!ms$MCMC])
+
+cat(sum(ms$weights * ms$atoms[,1]), sum(ms$weights * ms$atoms[,ncol(ms$atoms)]), "\n")
+H_bar(cx, h = function(x) x, k = 3, m = 100)
+
+c_chains_to_dataframe(cx, k = 3, m = 100)
+
+nrepeats <- 10
+coupledchains_ <- foreach(rep = 1:nrepeats) %dorng% {
+  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = 100, lag = 1)
 }
-approximation <- c_chains_to_dataframe(c_chains_, k, m)
+summary(sapply(coupledchains_, function(l) l$meetingtime))
 
-# sum(approximation$weights * approximation$atoms)
-# mean(sapply(X = c_chains_, FUN = function(x) H_bar(x, h = function(v) v[1], k, m)))
+k <- 20
+m <- 100
+df_ <- c_chains_to_dataframe(coupledchains_, k, m, dopar = T)
+head(df_)
+colSums(df_$weight * df_[,4:ncol(df_)])
+rowMeans(sapply(X = coupledchains_, FUN = function(x) H_bar(x, h = function(v) v, k = k, m = m)))
 
-sum(approximation$weights * approximation$atoms.1)
-mean(sapply(X = c_chains_, FUN = function(x) H_bar(x, h = function(v) v[1], k, m)))
+cat(sum(df_$weight * df_$atom.1 * cos(df_$atom.2)), "\n")
+mean(sapply(X = coupledchains_, FUN = function(x) H_bar(x, h = function(v) v[1] * cos(v[2]), k = k, m = m)))
 
-sum(approximation$weights * approximation$atoms.2)
-mean(sapply(X = c_chains_, FUN = function(x) H_bar(x, h = function(v) v[2], k, m)))
 
-approximation %>% group_by(rep) %>% summarise(sumw = sum(weights)) %>% summary
-sum(approximation$rep %>% unique)
-nsamples * (nsamples + 1) / 2
-#
-# approximation <-  foreach(irep = 1:nsamples, .combine = rbind) %dorng% {
-#   measure <- unbiasedmcmc:::get_measure_(c_chains_[[irep]], k, m)
-#   data.frame(rep = rep(irep, length(measure$weights)), weights = measure$weights, atoms = measure$atoms)
-# }
-# approximation$weights <- approximation$weights / nsamples
-# approximation %>% tail
-#
-# mean(approximation$weights < 0)
-# sum(approximation$weights)
-#
-# # note: we can remove duplicates if we want a smaller data.frame
-# cppFunction('DataFrame prune_(const DataFrame & df){
-#   NumericVector atoms1 = df["atoms.1"];
-#   NumericVector atoms2 = df["atoms.2"];
-#   NumericVector weights = df["weights"];
-#   NumericVector rep = df["rep"];
-#   for (int i=1; i < df.rows(); i++){
-#     if (rep(i) == rep(i-1)){
-#       if (std::abs(atoms1(i) - atoms1(i-1)) < 1e-30 && std::abs(atoms2(i) - atoms2(i-1)) < 1e-30){
-#         weights(i)  += weights(i-1);
-#         weights(i-1) = 0;
-#       }
-#     }
-#   }
-#   return DataFrame::create(Named("rep") = rep, Named("atoms.1") = atoms1,
-#                            Named("atoms.2") = atoms2, Named("weights") = weights);
-#   }')
-#
-# cppFunction('NumericMatrix prune_2(const NumericMatrix & df){
-# NumericMatrix copieddf = clone(df);
-# double s = 0;
-# for (int i=1; i < copieddf.rows(); i++){
-#   if (copieddf(i,0) == copieddf(i-1,0)){
-#     s = 0;
-#     for (int j = 2; j < copieddf.cols(); j++){
-#       s += std::abs(copieddf(i,j) - copieddf(i-1,j));
-#     }
-#     if (s < 1e-20){
-#       copieddf(i, 1)  += copieddf(i-1, 1);
-#       copieddf(i-1, 1) = 0.;
-#     }
-#   }
-# }
-# return copieddf;
-#             }')
-#
-# # test_(as.matrix(approximation %>% arrange(atoms.1)))
-# approximation.df2 <- data.frame(prune_2(as.matrix(approximation  %>% arrange(atoms.1))))
-# approximation.df2 <- approximation.df2[approximation.df2$weights != 0,]
-# approximation.df2 %>% head
-#
-# prune <- function(approximation.df){
-#   sorted.df <- approximation.df %>% arrange(atoms.1, atoms.2)
-#   sorted.df <- prune_(sorted.df)
-#   return(sorted.df[sorted.df$weights != 0,])
-# }
-#
-# approximation.pruned <- prune(approximation)
-#
-# sum(approximation.pruned$weights * approximation.pruned$atoms.2)
-# sum(approximation.df2$weights * approximation.df2$atoms.2)
-# mean(sapply(X = c_chains_, FUN = function(x) H_bar(x, h = function(v) v[2], k, m)))
 
+
+##### Univariate target
+target <- function(x){
+  evals <- log(0.5) + dnorm(x, mean = c(-2, 2), sd = 0.5, log = TRUE)
+  return(max(evals) + log(sum(exp(evals - max(evals)))))
+}
+Sigma_proposal <- diag(2, 1, 1)
+rinit <- function(){
+  x <- rnorm(1, 5, 5)
+  return(list(chain_state = x, current_pdf = target(x)))
+}
+kernels <- get_mh_kernels(target, Sigma_proposal)
+
+nrepeats <- 10000
+m <- 200
+coupledchains_ <- foreach(rep = 1:nrepeats) %dorng% {
+  sample_coupled_chains(kernels$single_kernel, kernels$coupled_kernel, rinit, m = m, lag = 50)
+}
+summary(sapply(coupledchains_, function(l) l$meetingtime))
+k <- 20
+df_ <- c_chains_to_dataframe(coupledchains_, k, m, dopar = T)
+head(df_)
+
+sum(df_$weight * df_$atom.1)
+colSums(df_$weight * df_[,4:ncol(df_),drop=F])
+mean(sapply(X = coupledchains_, FUN = function(x) H_bar(x, h = function(v) v, k = k, m = m)))
+
+df_ %>% summarise(mean1 = sum(weight * atom.1))
+df_ %>% group_by(MCMC) %>% summarise(mean1 = sum(weight * atom.1), sumweight = sum(weight)) %>% ungroup() %>% as.data.frame
+mean(df_$MCMC==1)
+MCMC_traj <- sapply(coupledchains_, function(x) x$samples1[k:m,])
+mean(MCMC_traj)
+
+
+hist1 <- histogram_c_chains(coupledchains_, component = 1, k = 150, m = m)
+setmytheme()
+plot_histogram(hist1)
+
+
+
+dim(MCMC_traj)
+
+matplot(t(MCMC_traj[,1:100]), type = "l")

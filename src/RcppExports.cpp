@@ -40,6 +40,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_chains_to_measure_as_list_
+List c_chains_to_measure_as_list_(const List& c_chains, int k, int m);
+RcppExport SEXP _unbiasedmcmc_c_chains_to_measure_as_list_(SEXP c_chainsSEXP, SEXP kSEXP, SEXP mSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const List& >::type c_chains(c_chainsSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_chains_to_measure_as_list_(c_chains, k, m));
+    return rcpp_result_gen;
+END_RCPP
+}
 // estimator_bin_
 double estimator_bin_(List c_chains, int component, double lower, double upper, int k, int m, int lag);
 RcppExport SEXP _unbiasedmcmc_estimator_bin_(SEXP c_chainsSEXP, SEXP componentSEXP, SEXP lowerSEXP, SEXP upperSEXP, SEXP kSEXP, SEXP mSEXP, SEXP lagSEXP) {
@@ -54,19 +67,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
     Rcpp::traits::input_parameter< int >::type lag(lagSEXP);
     rcpp_result_gen = Rcpp::wrap(estimator_bin_(c_chains, component, lower, upper, k, m, lag));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_measure_
-List get_measure_(const List& c_chains, int k, int m);
-RcppExport SEXP _unbiasedmcmc_get_measure_(SEXP c_chainsSEXP, SEXP kSEXP, SEXP mSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List& >::type c_chains(c_chainsSEXP);
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_measure_(c_chains, k, m));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -342,14 +342,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// prune_
-NumericMatrix prune_(const NumericMatrix& df);
-RcppExport SEXP _unbiasedmcmc_prune_(SEXP dfSEXP) {
+// prune_measure_
+NumericMatrix prune_measure_(const NumericMatrix& df);
+RcppExport SEXP _unbiasedmcmc_prune_measure_(SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type df(dfSEXP);
-    rcpp_result_gen = Rcpp::wrap(prune_(df));
+    rcpp_result_gen = Rcpp::wrap(prune_measure_(df));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -383,8 +383,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_unbiasedmcmc_blassoconditional", (DL_FUNC) &_unbiasedmcmc_blassoconditional, 6},
     {"_unbiasedmcmc_blassoconditional_coupled", (DL_FUNC) &_unbiasedmcmc_blassoconditional_coupled, 8},
+    {"_unbiasedmcmc_c_chains_to_measure_as_list_", (DL_FUNC) &_unbiasedmcmc_c_chains_to_measure_as_list_, 3},
     {"_unbiasedmcmc_estimator_bin_", (DL_FUNC) &_unbiasedmcmc_estimator_bin_, 7},
-    {"_unbiasedmcmc_get_measure_", (DL_FUNC) &_unbiasedmcmc_get_measure_, 3},
     {"_unbiasedmcmc_rinvgaussian_c", (DL_FUNC) &_unbiasedmcmc_rinvgaussian_c, 3},
     {"_unbiasedmcmc_rinvgaussian_coupled_c", (DL_FUNC) &_unbiasedmcmc_rinvgaussian_coupled_c, 4},
     {"_unbiasedmcmc_ising_sum_", (DL_FUNC) &_unbiasedmcmc_ising_sum_, 1},
@@ -406,7 +406,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_unbiasedmcmc_beta2e_", (DL_FUNC) &_unbiasedmcmc_beta2e_, 2},
     {"_unbiasedmcmc_cut_in_fifth_", (DL_FUNC) &_unbiasedmcmc_cut_in_fifth_, 1},
     {"_unbiasedmcmc_propensity_module2_loglik2_", (DL_FUNC) &_unbiasedmcmc_propensity_module2_loglik2_, 5},
-    {"_unbiasedmcmc_prune_", (DL_FUNC) &_unbiasedmcmc_prune_, 1},
+    {"_unbiasedmcmc_prune_measure_", (DL_FUNC) &_unbiasedmcmc_prune_measure_, 1},
     {"_unbiasedmcmc_sample_pair01", (DL_FUNC) &_unbiasedmcmc_sample_pair01, 1},
     {"_unbiasedmcmc_marginal_likelihood_c_2", (DL_FUNC) &_unbiasedmcmc_marginal_likelihood_c_2, 5},
     {NULL, NULL, 0}

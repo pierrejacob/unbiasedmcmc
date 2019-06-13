@@ -3,6 +3,7 @@
 export(H_bar)
 export(beta2e)
 export(c_chains_to_dataframe)
+export(c_chains_to_measure_as_list)
 export(coupled_pairs01)
 export(create_mids)
 export(cut_in_fifth)

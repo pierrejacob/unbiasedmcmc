@@ -9,7 +9,6 @@ using namespace std;
 // [[Rcpp::export]]
 double estimator_bin_(List c_chains, int component, double lower, double upper, int k, int m, int lag){
   int meetingtime = c_chains["meetingtime"];
-  // int iteration = c_chains["iteration"];
   NumericMatrix samples1 = c_chains["samples1"];
   NumericMatrix samples2 = c_chains["samples2"];
   double estimator = 0;

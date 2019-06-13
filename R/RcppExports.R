@@ -9,12 +9,12 @@ blassoconditional_coupled <- function(Y, X, XtY, XtX, tau21, tau22, sigma21, sig
     .Call('_unbiasedmcmc_blassoconditional_coupled', PACKAGE = 'unbiasedmcmc', Y, X, XtY, XtX, tau21, tau22, sigma21, sigma22)
 }
 
-estimator_bin_ <- function(c_chains, component, lower, upper, k, m, lag) {
-    .Call('_unbiasedmcmc_estimator_bin_', PACKAGE = 'unbiasedmcmc', c_chains, component, lower, upper, k, m, lag)
+c_chains_to_measure_as_list_ <- function(c_chains, k, m) {
+    .Call('_unbiasedmcmc_c_chains_to_measure_as_list_', PACKAGE = 'unbiasedmcmc', c_chains, k, m)
 }
 
-get_measure_ <- function(c_chains, k, m) {
-    .Call('_unbiasedmcmc_get_measure_', PACKAGE = 'unbiasedmcmc', c_chains, k, m)
+estimator_bin_ <- function(c_chains, component, lower, upper, k, m, lag) {
+    .Call('_unbiasedmcmc_estimator_bin_', PACKAGE = 'unbiasedmcmc', c_chains, component, lower, upper, k, m, lag)
 }
 
 rinvgaussian_c <- function(n, mu, lambda) {
@@ -101,8 +101,8 @@ propensity_module2_loglik2_ <- function(theta1s, theta2s, X, C, Y) {
     .Call('_unbiasedmcmc_propensity_module2_loglik2_', PACKAGE = 'unbiasedmcmc', theta1s, theta2s, X, C, Y)
 }
 
-prune_ <- function(df) {
-    .Call('_unbiasedmcmc_prune_', PACKAGE = 'unbiasedmcmc', df)
+prune_measure_ <- function(df) {
+    .Call('_unbiasedmcmc_prune_measure_', PACKAGE = 'unbiasedmcmc', df)
 }
 
 sample_pair01 <- function(selection) {
