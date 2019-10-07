@@ -98,7 +98,7 @@ sample_unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = f
   uestimator <- mcmcestimator + correction
   cost <- lag + 2*(meetingtime - lag) + max(0, time - meetingtime)
   currentime <- Sys.time()
-  elapsedtime <- as.numeric(as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
+  elapsedtime <- as.numeric(lubridate::as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
   return(list(mcmcestimator = mcmcestimator / (m - k + 1), correction = correction / (m - k + 1), uestimator = uestimator / (m - k + 1),
               meetingtime = meetingtime, iteration = time, elapsedtime = elapsedtime, cost = cost))
 }

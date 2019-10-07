@@ -71,10 +71,6 @@ List ising_coupled_gibbs_sweep_(IntegerMatrix state1, IntegerMatrix state2, Nume
   int s2;
   int itop,ibottom,jright,jleft;
   IntegerVector x(2);
-  // NumericVector u(1);
-  // double p1, p10, p2, p20;
-  // double minoriz0, minoriz1;
-  // double alpha;
   for (int i = 0; i < size; i++){
     for (int j = 0; j < size; j++){
       s1 = 0;
@@ -95,48 +91,4 @@ List ising_coupled_gibbs_sweep_(IntegerMatrix state1, IntegerMatrix state2, Nume
   return List::create(Named("state1") = state1, Named("state2") = state2);
 }
 
-// The functions below, commented out, translate location from 1d to 2d coordinate systems
 
-
-// // [[Rcpp::export]]
-// int ising_two2one_(int ix, int iy, int size){
-//   return ix + iy * size;
-// }
-//
-// // [[Rcpp::export]]
-// IntegerVector ising_one2two_(int location, int size){
-//   IntegerVector is(2);
-//   is(0) = location % size;
-//   is(1) = location / size;
-//   return is;
-// }
-//
-// // [[Rcpp::export]]
-// int ising_locationneighbour_(int location, int ineighbour, int size){
-//   IntegerVector location2 = ising_one2two_(location, size);
-//   if (ineighbour == 0){ // neighbour on the right
-//     location2(0) += 1;
-//     if (location2(0) == size){
-//       location2(0) = 0;
-//     }
-//   }
-//   if (ineighbour == 1){ // neighbour on the left
-//     location2(0) -= 1;
-//     if (location2(0) == -1){
-//       location2(0) = size-1;
-//     }
-//   }
-//   if (ineighbour == 2){ // neighbour on the top
-//     location2(1) += 1;
-//     if (location2(1) == size){
-//       location2(1) = 0;
-//     }
-//   }
-//   if (ineighbour == 3){ // neighbour on the bottom
-//     location2(1) -= 1;
-//     if (location2(1) == -1){
-//       location2(1) = size-1;
-//     }
-//   }
-//   return ising_two2one_(location2(0), location2(1), size);
-// }

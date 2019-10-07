@@ -43,6 +43,6 @@ sample_meetingtime <- function(single_kernel, coupled_kernel, rinit, lag = 1, ma
     if (coupledstates$identical) meetingtime <- time
   }
   currentime <- Sys.time()
-  elapsedtime <- as.numeric(as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
+  elapsedtime <- as.numeric(lubridate::as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
   return(list(meetingtime = meetingtime, elapsedtime = elapsedtime))
 }

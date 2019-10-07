@@ -81,7 +81,7 @@ sample_coupled_chains <- function(single_kernel, coupled_kernel, rinit, m = 1, l
   samples2 <- samples2[1:(time-lag+1),,drop=F]
   cost <- lag + 2*(meetingtime - lag) + max(0, time - meetingtime)
   currentime <- Sys.time()
-  elapsedtime <- as.numeric(as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
+  elapsedtime <- as.numeric(lubridate::as.duration(lubridate::ymd_hms(currentime) - lubridate::ymd_hms(starttime)), "seconds")
   return(list(samples1 = samples1, samples2 = samples2,
               meetingtime = meetingtime, iteration = time, elapsedtime = elapsedtime, cost = cost))
 }
