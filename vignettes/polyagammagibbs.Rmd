@@ -1,0 +1,259 @@
+---
+title: "Coupled Polya-Gamma Gibbs sampler"
+author: "Pierre E. Jacob"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    keep_md: yes
+vignette: >
+  %\VignetteIndexEntry{introduction-normaltarget}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width=8, fig.height=5,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This script illustrates the method of coupling Markov chains as developed in "Unbiased Markov chain Monte Carlo with couplings", by Pierre E. Jacob, John O'Leary and Yves F Atchade [https://arxiv.org/abs/1708.03625] and "Estimating Convergence of Markov chains with L-Lag Couplings", by Niloy Biswas, Pierre E. Jacob and Paul Vanetti [https://arxiv.org/abs/1905.09971], on the Polya-Gamma Gibbs sampler of Polson, Scott and Windle [https://www.tandfonline.com/doi/abs/10.1080/01621459.2013.829001].
+
+The "unbiasedmcmc" package originally used the "BayesLogit" package to generate Polya-Gamma variables,
+while this package uses the "pgdraw" package, and a simple coupling: maximal couplings are used
+on each of the Polya-Gamma variables, and common random numbers are used on the regression coefficients.
+
+We begin by loading packages,
+registering multiple cores and setting the random number generator.
+
+```{r setup,message=FALSE,warning=FALSE}
+library(unbiasedmcmc)
+library(doParallel)
+library(doRNG)
+library(pgdraw)
+library(ggplot2)
+# register parallel cores
+registerDoParallel(cores = detectCores()-2)
+# set RNG seed
+set.seed(1)
+```
+
+## Target distribution and MCMC algorithm
+
+The target distribution $\pi$ is here defined as the posterior
+distribution in a logistic regression model, with Gaussian priors.
+The following code loads data, and perform some precomputation.
+
+```{r loaddata, tidy=T}
+## load german credit dataset
+data(germancredit)
+X <- scale(X)
+X[,1] <- rep(1, nrow(X))
+n <- nrow(X)
+p <- ncol(X)
+cat("data set with n =", n, "and p =", p, "\n")
+## prior: Normal with variance 10 on each component
+b <- matrix(0, nrow = p, ncol = 1)
+B <- diag(10, p, p)
+## precomputation to speed things up
+pgg_precomputation <- function(Y, X, b, B){
+  invB <- solve(B)
+  invBtimesb <- invB %*% b
+  Ykappa <- matrix(Y - rep(0.5, length(Y)), ncol=1)
+  XTkappa <- t(X) %*% Ykappa
+  KTkappaplusinvBtimesb <- XTkappa + invBtimesb
+  return(list(n=nrow(X), p=ncol(X), X=X, Y=Y, b=b, B=B,
+              invB=invB, invBtimesb=invBtimesb, KTkappaplusinvBtimesb=KTkappaplusinvBtimesb))
+}
+```
+The next function computes the mean and variance of the regression coefficients
+given the Polya-Gamma variables ("omega"), using Rcpp.
+
+```{r msigma, cache=TRUE, warning=F, message=F}
+cppFunction('
+List pgg_m_sigma_(const Eigen::Map<Eigen::MatrixXd>  & omega,
+                       const Eigen::Map<Eigen::MatrixXd>  & X,
+                       const Eigen::Map<Eigen::MatrixXd>  & invB,
+                       const Eigen::Map<Eigen::VectorXd>  & KTkappaplusinvBtimesb){
+  int n = X.rows();
+  int p = X.cols();
+  // The matrix A stores XT Omega X + B^{-1}, that is, Sigma^{-1}
+  Eigen::MatrixXd A(p,p);
+  for (int j1 = 0; j1 < p; j1 ++){
+    for (int j2 = j1; j2 < p; j2 ++){
+      A(j1,j2) = invB(j1, j2);
+      for (int i = 0; i < n; i++){
+        A(j1,j2) = A(j1,j2) + X(i,j1) * X(i,j2) * omega(i);
+      }
+      A(j2,j1) = A(j1,j2);
+    }
+  }
+  Eigen::LLT<Eigen::MatrixXd> lltofA(A);
+  Eigen::MatrixXd lower = lltofA.matrixL();
+  Eigen::VectorXd x = lltofA.solve(KTkappaplusinvBtimesb);
+  return List::create(Named("m")=x,
+                      Named("Sigma_inverse") = A,
+                      Named("Cholesky_inverse") = lower,
+                      Named("Cholesky") = lower.inverse());
+}', depends = "RcppEigen")
+## function to obtain mean and variance of 'beta' given all the Polya Gamma variables
+## in a vector omega, and given precomputed quantities obtained e.g. via 'pgg_precomputation'
+pgg_m_and_sigma <- function(omega, precomputed){
+  return(pgg_m_sigma_(omega, precomputed$X, precomputed$invB, precomputed$KTkappaplusinvBtimesb))
+}
+```
+
+The next functions sample from the initial distribution of the chain
+("rinit"), and from the transition kernel of the PGG sampler ("pgg_kernel").
+
+```{r singlekernel, tidy = T}
+## initial distribution, here equal to prior 
+rinit <- function(){
+  return(list(chain_state = unbiasedmcmc:::fast_rmvnorm(1, mean = b, covariance = B)[1,]))
+}
+## function that takes a vector 'beta' and precomputed quantities (obtained e.g. via 'pgg_precomputation')
+## and performs one step of Polya Gamma Gibbs sampler, leading to another vector beta as output
+pgg_kernel <- function(state){
+  zs <- abs(pgg_precomputed$X %*% state$chain_state)
+  w <- pgdraw::pgdraw(1, zs)
+  res <- pgg_m_and_sigma(w, pgg_precomputed)
+  beta <- unbiasedmcmc:::fast_rmvnorm_chol(1, res$m, res$Cholesky)[1,]
+  return(list(chain_state = beta))
+}
+```
+
+The next function runs the PGG sampler for a little while.
+
+```{r testsinglkerel, tidy = T, cache = TRUE, fig.width=7}
+## precompute quantities
+pgg_precomputed <- pgg_precomputation(Y, X, b, B)
+##
+niterations <- 50
+pgg_betachain <- matrix(nrow = p, ncol = niterations)
+state <- rinit()
+for (iteration in 1:niterations){
+  state <- pgg_kernel(state)
+  pgg_betachain[,iteration] <- state$chain_state
+}
+## trace plot of first 10 components
+matplot(t(pgg_betachain[1:20,]), type = "l", xlab = 'iteration', ylab = 'some components')
+```
+
+## Coupled MCMC kernel
+
+We next introduce a coupling of the PGG kernel. 
+For this we define a function that samples from a maximal
+coupling of two PG variables, given two different regression coefficients.
+
+```{r maxcouplinpg, tidy=TRUE}
+## next, max coupling of two PG variables
+## using the package pgdraw 
+pg_max_coupling <- function(beta1, beta2, X){
+  w1s <- rep(0., n)
+  w2s <- rep(0., n)
+  z1s <- abs(X %*% beta1)
+  z2s <- abs(X %*% beta2)
+  for (i in 1:n){
+    z1 <- z1s[i]
+    z2 <- z2s[i]
+    w1 <- pgdraw::pgdraw(1, z1)
+    w1s[[i]] <- w1
+    u <- runif(1,0,cosh(z1/2)*exp(-0.5*z1^2*w1))
+    if(u <= cosh(z2/2)*exp(-0.5*z2^2*w1)){
+      w2 <- w1
+    } else {
+      accept <- FALSE
+      while(!accept){
+        w2 <- pgdraw::pgdraw(1, z2)
+        u <- runif(1,0,cosh(z2/2)*exp(-0.5*z2^2*w2))
+        if(u > cosh(z1/2)*exp(-0.5*z1^2*w2)){
+          accept <- TRUE
+        }
+      }
+    }
+    w2s[[i]] <- w2
+  }
+  return(list(w1=w1s, w2=w2s))
+}
+
+```
+
+The coupling of the PGG kernel involves max couplings of each PG variable,
+and common random numbers for the regression coefficients given the PG variables.
+
+```{r coupledpgg, tidy=TRUE}
+pgg_coupled_kernel <- function(state1, state2){
+  beta1 <- state1$chain_state
+  beta2 <- state2$chain_state
+  z1 <- abs(pgg_precomputed$X %*% beta1)
+  z2 <- abs(pgg_precomputed$X %*% beta2)
+  ## max coupling of each PG variable
+  w1w2 <- pg_max_coupling(beta1, beta2, pgg_precomputed$X)
+  w1 <- w1w2$w1
+  w2 <- w1w2$w2
+  ## compute mean and variance of regression coef given PG
+  res1 <- pgg_m_and_sigma(w1, pgg_precomputed)
+  res2 <- pgg_m_and_sigma(w2, pgg_precomputed)
+  ## common random numbers
+  increment <- rnorm(p)
+  beta1 <- res1$m + matrix(increment, nrow = 1) %*% res1$Cholesky
+  beta2 <- res2$m + matrix(increment, nrow = 1) %*% res2$Cholesky
+  ## chains meet if and only if all the PG variables are identical
+  if (all(w1 == w2)){
+    identical <- TRUE
+  } else {
+    identical <- FALSE
+  }
+  return(list(state1 = list(chain_state = beta1[1,]), 
+              state2 = list(chain_state = beta2[1,]), 
+              identical = identical))
+}
+
+```
+
+## Meeting times
+
+We can now run coupled chains with a lag and estimate
+upper bounds on the TV between the marginal distribution of the chain and its limiting distribution.
+
+```{r meetings, tidy=T, cache=T}
+## Generating meeting times
+nsamples <- 50
+## stop if chains have not met at "max_iterations"
+max_iterations <- 1e5
+## lag between the chains
+lag <- 75
+## generate meetings in parallel
+meetings <- foreach(isample = 1:nsamples) %dopar% {
+  res <- unbiasedmcmc::sample_meetingtime(pgg_kernel, pgg_coupled_kernel, rinit, lag = lag, max_iterations = max_iterations)
+  res$meetingtime
+}
+meetingtimes <- unlist(meetings)
+## compute TV upper bounds based on meeting times
+## see Biswas, Jacob & Vanetti (2019)
+tv_upper_bound <- function(meetingtimes, lag, t){
+  return(pmax(0,ceiling((meetingtimes-lag-t)/lag)))
+}
+## plot TV upper bounds as a function of iteration
+niterations <- 75
+tvupperbounds <- sapply(1:niterations, function(t) mean(tv_upper_bound(meetingtimes, lag, t)))
+matplot(x = 1:niterations, y = tvupperbounds, type = 'l', xlab = "iteration", ylab = "TV upper bounds")
+```
+
+The functions "rinit", "pgg_kernel" and "pgg_coupled_kernel"
+are made such that one can also use other convenient functions
+of the unbiasedmcmc package, for example 
+"sample_coupled_chains".
+
+
+```{r coupledchains, tidy=T}
+res <- unbiasedmcmc::sample_coupled_chains(pgg_kernel, pgg_coupled_kernel, rinit, lag = lag, max_iterations = 1e3)
+plot(x = 0:res$iteration, y = res$samples1[,1], type = 'l', xlab = "iteration", ylab = "first component", ylim = 
+       range(c(res$samples1[,1], res$samples2[,1])))
+lines(x = lag:res$iteration, y = res$samples2[,1])
+```
+

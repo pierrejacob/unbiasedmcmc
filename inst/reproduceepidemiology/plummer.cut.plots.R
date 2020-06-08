@@ -58,7 +58,7 @@ meetingtime <- sapply(c_chains_2, function(x) x$meetingtime)
 summary(meetingtime)
 
 # ggsave(filename = "plummer.meetingtimes.pdf", plot = g, width = 7, height = 7)
-gmeetingtime <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time")
+gmeetingtime <- qplot(x = meetingtime, geom = "blank") + geom_histogram(aes(y = ..density..)) + xlab("meeting time") + ylab("density")
 gmeetingtime
 ggsave(filename = "plummer.meetingtimes.pdf", plot = gmeetingtime, width = 5, height = 5)
 
