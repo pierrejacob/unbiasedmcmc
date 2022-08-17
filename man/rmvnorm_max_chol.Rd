@@ -4,8 +4,14 @@
 \alias{rmvnorm_max_chol}
 \title{Maximal coupling of two multivariate Normal distributions}
 \usage{
-rmvnorm_max_chol(mu1, mu2, Cholesky1, Cholesky2, Cholesky_inverse1,
-  Cholesky_inverse2)
+rmvnorm_max_chol(
+  mu1,
+  mu2,
+  Cholesky1,
+  Cholesky2,
+  Cholesky_inverse1,
+  Cholesky_inverse2
+)
 }
 \arguments{
 \item{mu1}{First mean}

@@ -57,7 +57,7 @@ sample_unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = f
   if (k > 0){
     mcmcestimator <- rep(0, dimh)
   }
-  # correction computes the sum of min(m-k+1, ceiling((t - k)/lag)) * (h(X_{t}) - h(Y_{t-lag})) for t=k+lag,..., tau - 1
+  # correction computes the sum of (floor((time-k) / lag) - ceiling(max(lag, time-m)/lag) + 1) * (h(X_{t}) - h(Y_{t-lag})) for t=k+lag,..., tau - 1
   correction <- rep(0, dimh)
   time <- 0
   for (t in 1:lag){
@@ -68,7 +68,7 @@ sample_unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = f
     }
   }
   if (time >= k + lag){
-    correction <- correction + min(m-k+1, ceiling((time - k)/lag)) * (h(state1$chain_state) - h(state2$chain_state))
+    correction <- correction + (floor((time-k) / lag) - ceiling(max(lag, time-m)/lag) + 1) * (h(state1$chain_state) - h(state2$chain_state))
   }
   meetingtime <- Inf
   # time here is equal to lag; at this point we have X_lag,Y_0 and we are going to generate successively X_{t},Y_{t-lag} where time t is >= lag+1
@@ -91,7 +91,7 @@ sample_unbiasedestimator <- function(single_kernel, coupled_kernel, rinit, h = f
         mcmcestimator <- mcmcestimator + h(state1$chain_state)
       }
       if (time >= k + lag){
-        correction <- correction + min(m-k+1, ceiling((time - k)/lag)) * (h(state1$chain_state) - h(state2$chain_state))
+        correction <- correction + (floor((time-k) / lag) - ceiling(max(lag, time-m)/lag) + 1) * (h(state1$chain_state) - h(state2$chain_state))
       }
     }
   }

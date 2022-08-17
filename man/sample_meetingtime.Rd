@@ -4,8 +4,13 @@
 \alias{sample_meetingtime}
 \title{Sample coupled Markov chains until meeting}
 \usage{
-sample_meetingtime(single_kernel, coupled_kernel, rinit, lag = 1,
-  max_iterations = Inf)
+sample_meetingtime(
+  single_kernel,
+  coupled_kernel,
+  rinit,
+  lag = 1,
+  max_iterations = Inf
+)
 }
 \arguments{
 \item{single_kernel}{A list taking a state and returning a state, performing one step of a Markov kernel}

@@ -4,8 +4,16 @@
 \alias{sample_unbiasedestimator}
 \title{Unbiased MCMC estimators}
 \usage{
-sample_unbiasedestimator(single_kernel, coupled_kernel, rinit,
-  h = function(x) x, k = 0, m = 1, lag = 1, max_iterations = Inf)
+sample_unbiasedestimator(
+  single_kernel,
+  coupled_kernel,
+  rinit,
+  h = function(x) x,
+  k = 0,
+  m = 1,
+  lag = 1,
+  max_iterations = Inf
+)
 }
 \arguments{
 \item{single_kernel}{A list taking a state and returning a state, performing one step of a Markov kernel}

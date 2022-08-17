@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <math.h>
 using namespace Rcpp;
 
 // This function takes coupled chains, containing chains X (samples1) and Y (samples2)
@@ -18,15 +19,9 @@ using namespace Rcpp;
 // X_0,..., X_{max(m,tau)}  (of length 1+max(m, tau))
 // Y_0,..., Y_{max(m,tau)-lag} (of length 1+max(m, tau) - lag)
 
-// The signed measure approximation, for a lag of one is given by
+// The signed measure approximation, for a general lag, is given by
 // (MCMC):             (m-k+1)^{-1} \sum_{t=k}^m delta_{X_t}
-// (bias correction):  (m-k+1)^{-1} \sum_{t=k+1}^{tau-1} min(m-k+1, t-k) {delta_{X_t} - delta_{Y_{t-1}}}
-
-// For a general lag, it is given by
-// (MCMC):             (m-k+1)^{-1} \sum_{t=k}^m delta_{X_t}
-// (bias correction):  (m-k+1)^{-1} \sum_{t=k+lag}^{tau-1} min(m-k+1, ceil((t-k)/lag)) {delta_{X_t} - delta_{Y_{t-lag}}}
-
-// sanity check: it should be the same if lag = 1
+// (bias correction):  (m-k+1)^{-1} \sum_{t=k+lag}^{tau-1} (floor((t-k) / lag) - ceil(max(lag, t-m)/lag) + 1) {delta_{X_t} - delta_{Y_{t-lag}}}
 
 // Thus total number of atoms is
 // m-k+1                    from the MCMC approximation
@@ -73,10 +68,11 @@ List c_chains_to_measure_as_list_(const List & c_chains, int k, int m){
     for (int time = k+lag; time <= meetingtime-1; time ++){
       atoms(index,_) = samples1(time,_);
       atoms(index+1,_) = samples2(time-lag,_);
-      weights(index) = ceil(((double) time - k)/((double) lag));
-      if ((m - k + 1) < weights(index)){
-        weights(index) = m - k + 1;
-      }
+      // weights(index) = ceil(((double) time - k)/((double) lag));
+      //if ((m - k + 1) < weights(index)){
+      //  weights(index) = m - k + 1;
+      //}
+      weights(index) = floor(((double) time - k) / (double) lag) - ceil(std::max<double>(lag, (double) time - m)/ (double) lag) + 1.;
       weights(index) = weights(index) * eqweight;
       weights(index+1) = - weights(index);
       whichpart(index) = false;

@@ -29,7 +29,7 @@ H_bar <- function(c_chains, h = function(x) x, k = 0, m = 1){
   # infer the lag from the number of rows in samples1 and samples2
   lag <- dim(c_chains$samples1)[1] - dim(c_chains$samples2)[1]
   # test the dimension of h(X)
-  p <- length(h(c_chains$samples1[1,]))
+  # p <- length(h(c_chains$samples1[1,]))
   h_of_chain <- apply(X = c_chains$samples1[(k+1):(m+1),,drop=F], MARGIN = 1, FUN = h)
   if (is.null(dim(h_of_chain))){
     h_of_chain <- matrix(h_of_chain, ncol = 1)
@@ -44,7 +44,7 @@ H_bar <- function(c_chains, h = function(x) x, k = 0, m = 1){
   } else {
     for (time in (k+lag):(c_chains$meetingtime-1)){
       # time is the index t of X_{t} where the chain start from X_{0}
-      coefficient_t <- min(m-k+1, ceiling((time-k)/lag))
+      coefficient_t <- (floor((time-k) / lag) - ceiling(max(lag, time-m)/lag) + 1)
       Delta_t <- h(c_chains$samples1[time+1,]) - h(c_chains$samples2[time-lag+1,])
       H_bar <- H_bar + coefficient_t * Delta_t
     }

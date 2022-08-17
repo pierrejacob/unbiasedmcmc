@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // blassoconditional
 List blassoconditional(const Eigen::VectorXd& Y, const Eigen::MatrixXd& X, const Eigen::VectorXd& XtY, const Eigen::MatrixXd& XtX, const NumericVector tau2, const double sigma2);
 RcppExport SEXP _unbiasedmcmc_blassoconditional(SEXP YSEXP, SEXP XSEXP, SEXP XtYSEXP, SEXP XtXSEXP, SEXP tau2SEXP, SEXP sigma2SEXP) {

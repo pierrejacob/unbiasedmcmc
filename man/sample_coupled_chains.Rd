@@ -4,8 +4,15 @@
 \alias{sample_coupled_chains}
 \title{Sample coupled Markov chains}
 \usage{
-sample_coupled_chains(single_kernel, coupled_kernel, rinit, m = 1,
-  lag = 1, max_iterations = Inf, preallocate = 10)
+sample_coupled_chains(
+  single_kernel,
+  coupled_kernel,
+  rinit,
+  m = 1,
+  lag = 1,
+  max_iterations = Inf,
+  preallocate = 10
+)
 }
 \arguments{
 \item{single_kernel}{A list taking a state and returning a state, performing one step of a Markov kernel}

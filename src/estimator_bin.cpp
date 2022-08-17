@@ -23,11 +23,12 @@ double estimator_bin_(List c_chains, int component, double lower, double upper, 
     double increment = 0.;
     for (int time = k+lag; time <= meetingtime-1; time ++){
       increment = 0.;
+      coefficient = floor(((double) time - k) / (double) lag) - ceil(std::max<double>(lag, (double) time - m)/ (double) lag) + 1.;
       // compute min between m - k + 1 and ceiling ((t - k) / L)
-      coefficient = ceil(((double) time - k)/((double) lag));
-      if ((m - k + 1) < coefficient){
-        coefficient = m - k + 1.;
-      }
+      // coefficient = ceil(((double) time - k)/((double) lag));
+      // if ((m - k + 1) < coefficient){
+      //   coefficient = m - k + 1.;
+      // }
       if (samples1(time,component-1) > lower && samples1(time,component-1) < upper){
         increment += coefficient;
       }

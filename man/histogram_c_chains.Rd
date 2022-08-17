@@ -4,8 +4,15 @@
 \alias{histogram_c_chains}
 \title{histogram_c_chains}
 \usage{
-histogram_c_chains(c_chains, component, k, m, breaks = NULL,
-  nclass = 30, dopar = FALSE)
+histogram_c_chains(
+  c_chains,
+  component,
+  k,
+  m,
+  breaks = NULL,
+  nclass = 30,
+  dopar = FALSE
+)
 }
 \arguments{
 \item{c_chains}{A list of coupled chains, each as produced by \code{\link{sample_coupled_chains}}}
