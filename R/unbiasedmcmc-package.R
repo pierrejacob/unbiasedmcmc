@@ -1,6 +1,4 @@
-#'@name unbiasedmcmc-package
 #'@aliases unbiasedmcmc
-#'@docType package
 #'@title unbiasedmcmc
 #'@author Pierre E. Jacob <pierre.jacob.work@@gmail.com>, John O'Leary, Yves F. Atchade
 #'@description Unbiased MCMC estimators with couplings
@@ -11,4 +9,4 @@
 #'@keywords package
 #'@useDynLib unbiasedmcmc
 #'@importFrom Rcpp sourceCpp
-NULL
+"_PACKAGE"
