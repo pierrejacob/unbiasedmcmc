@@ -71,19 +71,18 @@ scripts dealing with the Polya-Gamma sampler do.
 
 The following code
 
--   defines a target distribution as a mixture of univariate Normal
-    distributions, via its probability density function, returning
-    log-values,
+- defines a target distribution as a mixture of univariate Normal
+  distributions, via its probability density function, returning
+  log-values,
 
--   defines an initial distribution “rinit”, a Markov kernel
-    “single_kernel”, and a coupled Markov kernel “coupled_kernel”,
-    defined through their sampling mechanisms,
+- defines an initial distribution “rinit”, a Markov kernel
+  “single_kernel”, and a coupled Markov kernel “coupled_kernel”, defined
+  through their sampling mechanisms,
 
--   draws meeting times and shows a histogram of them,
+- draws meeting times and shows a histogram of them,
 
--   draws more coupled chains, with a certain “lag” and time horizon
-    “m”, and use them to produce an approximation of the target
-    distribution.
+- draws more coupled chains, with a certain “lag” and time horizon “m”,
+  and use them to produce an approximation of the target distribution.
 
 ``` r
 library(unbiasedmcmc)

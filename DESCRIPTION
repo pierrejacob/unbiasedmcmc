@@ -1,9 +1,9 @@
 Package: unbiasedmcmc
 Type: Package
 Title: Unbiased MCMC with couplings
-Version: 0.3.0
+Version: 0.3.1
 Author: Pierre E Jacob, John O'Leary, Yves F Atchade
-Maintainer: Pierre E Jacob <pjacob@fas.harvard.edu>
+Maintainer: Pierre E Jacob <pjacob@essec.edu>
 Description: This package includes the scripts to reproduce the article
     "Unbiased Markov chain Monte Carlo with couplings" by Pierre E. Jacob, John
     O'Leary, Yves F. Atchade, where it is described how the bias of MCMC can
@@ -21,3 +21,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.2
